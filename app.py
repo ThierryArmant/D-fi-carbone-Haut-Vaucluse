@@ -1,20 +1,27 @@
 import streamlit as st
+from streamlit_gsheets import GSheetsConnection
 
-# Configuration de base
-st.set_page_config(page_title="Défi Carbone 2026", layout="wide")
+st.set_page_config(page_title="Défi Carbone", layout="wide")
 
-# Titre et texte d'accueil
-st.title("🌱 Défi Carbone : Les 14 Établissements")
-st.subheader("Suivi en temps réel de notre impact environnemental")
+st.title("🌱 Défi Carbone : Réseau Haut Vaucluse")
 
-st.write("---")
+# Connexion
+conn = st.connection("gsheets", type=GSheetsConnection)
 
-# Simulation de l'affichage (On connectera ton Sheet après)
-col1, col2 = st.columns(2)
+try:
+    df = conn.read(worksheet="bilan carbone")
+    st.success("Données synchronisées !")
 
-with col1:
-    st.image("https://images.unsplash.com/photo-1497366216548-37526070297c?w=500", caption="Exemple d'établissement")
-    st.metric(label="Consommation", value="450 kWh", delta="-5%")
+    # --- AJOUT DU GRAPHIQUE ---
+    st.subheader("📊 Émissions par établissement")
+    
+    # On utilise la colonne 'Etablissement' pour les noms 
+    # et 'Total émissions (kg CO2e)' pour les barres
+    st.bar_chart(data=df, x="Etablissement", y="Total émissions (kg CO2e)")
 
-with col2:
-    st.info("Bientôt ici : Le classement de vos 14 établissements avec leurs photos et leurs données réelles.")
+    # --- LE TABLEAU EN DESSOUS ---
+    st.subheader("📋 Tableau de bord détaillé")
+    st.dataframe(df, use_container_width=True)
+
+except Exception as e:
+    st.error(f"Erreur : {e}")
