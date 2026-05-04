@@ -28,7 +28,6 @@ ETABLISSEMENTS = {
     "ECOLE CURIE": "977476270"
 }
 
-# --- BARRE LATÉRALE ---
 st.sidebar.title("Navigation")
 selection = st.sidebar.selectbox("Choisir un établissement :", list(ETABLISSEMENTS.keys()))
 votre_gid = ETABLISSEMENTS[selection]
@@ -39,33 +38,33 @@ base_url = "https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-N
 sheet_url = f"{base_url}{votre_gid}"
 
 try:
-    # 1. Chargement et nettoyage des colonnes fantômes
     df_raw = pd.read_csv(sheet_url)
     df_raw = df_raw.loc[:, ~df_raw.columns.str.contains('^Unnamed|^nan|Unnamed', na=False)]
-    
-    # Initialisation de df pour éviter l'erreur "not defined"
     df = pd.DataFrame()
 
-    # --- CAS 1 : PAGE D'ACCUEIL GLOBAL ---
     if selection == "ACCUEIL (Global)":
+        # RECHERCHE FLEXIBLE : On cherche "etablissement" (sans accent, minuscule) n'importe où
         for i in range(len(df_raw)):
-            if any("Etablissements" in str(val) for val in df_raw.iloc[i].values):
+            ligne_texte = [str(val).lower().strip() for val in df_raw.iloc[i].values]
+            if any("etablissement" in val for val in ligne_texte):
                 df = df_raw.iloc[i:].copy()
                 df.columns = df.iloc[0]
                 df = df.iloc[1:].reset_index(drop=True)
                 break
         
         if not df.empty:
+            # Nettoyage profond des noms de colonnes
             df.columns = [str(c).strip() for c in df.columns]
-            col_nom = "Etablissements"
-            col_data = "Total émissions"
+            
+            # On identifie les colonnes par "mots clés" plutôt que par nom exact
+            col_nom = next((c for c in df.columns if "etablissement" in c.lower()), None)
+            col_data = next((c for c in df.columns if "total" in c.lower() and "émissions" in c.lower()), None)
 
-            if col_data in df.columns:
+            if col_nom and col_data:
                 df[col_data] = df[col_data].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True)
                 df[col_data] = pd.to_numeric(df[col_data], errors='coerce').fillna(0)
                 df = df.dropna(subset=[col_nom])
 
-                # Couleurs
                 def get_color(v):
                     if v < 2000: return "#2ecc71"
                     elif v <= 4000: return "#f39c12"
@@ -82,18 +81,19 @@ try:
                 
                 st.altair_chart(chart, use_container_width=True)
                 st.info("💡 Seuils : 🟢 < 2000 | 🟡 2000-4000 | 🔴 > 4000")
-                
                 st.subheader("📋 Récapitulatif")
                 st.dataframe(df.drop(columns=['color_hex']), use_container_width=True)
+            else:
+                st.error(f"Colonnes détectées : {list(df.columns)}")
+                st.warning("Vérifiez que les colonnes 'Etablissements' et 'Total émissions' existent bien.")
         else:
-            st.warning("Impossible de trouver la ligne 'Etablissements' dans le fichier.")
+            st.warning("⚠️ Impossible de localiser la ligne de titres dans l'onglet Global.")
 
-    # --- CAS 2 : PAGES INDIVIDUELLES ---
     else:
-        st.info(f"Fiche de données en cours pour : **{selection}**")
+        # Pages individuelles
+        st.info(f"Visualisation de la fiche : **{selection}**")
         df_indiv = df_raw.dropna(how='all', axis=1).dropna(how='all', axis=0)
         st.dataframe(df_indiv, use_container_width=True)
-        st.warning("🔒 L'accès sécurisé pour modifier ces chiffres sera activé prochainement.")
 
 except Exception as e:
     st.error(f"Erreur technique : {e}")
