@@ -35,7 +35,7 @@ votre_gid = ETABLISSEMENTS[selection]
 
 st.title(f"🌱 {selection}")
 
-# URL de base (on change juste le GID)
+# URL de base
 base_url = "https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid="
 sheet_url = f"{base_url}{votre_gid}"
 
@@ -44,7 +44,7 @@ try:
 
     # --- CAS 1 : PAGE D'ACCUEIL GLOBAL ---
     if selection == "ACCUEIL (Global)":
-        # (Ton code actuel pour le graphique global)
+        # On cherche la ligne de titre
         for i in range(len(df_raw)):
             if "Etablissements" in df_raw.iloc[i].values:
                 df = df_raw.iloc[i:].copy()
@@ -57,32 +57,48 @@ try:
         df.columns = [str(c).strip() for c in df.columns]
         
         if col_data in df.columns:
+            # Nettoyage des chiffres
             df[col_data] = df[col_data].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True)
             df[col_data] = pd.to_numeric(df[col_data], errors='coerce').fillna(0)
-            
             df = df.dropna(subset=[col_nom])
+
+            # CALCUL DE LA COULEUR (Méthode robuste)
+            def get_color(v):
+                if v < 2000: return "#2ecc71"
+                elif v <= 4000: return "#f39c12"
+                else: return "#e74c3c"
             
-            # Graphique
+            df['color_hex'] = df[col_data].apply(get_color)
+
+            # GRAPHIQUE
             chart = alt.Chart(df).mark_bar().encode(
-                x=alt.X(f"{col_nom}:N", sort='-y'),
-                y=alt.Y(f"{col_data}:Q"),
-                color=alt.condition(alt.datum[col_data] < 2000, alt.value("#2ecc71"), 
-                     alt.condition(alt.datum[col_data] <= 4000, alt.value("#f39c12"), alt.value("#e74c3c"))),
+                x=alt.X(f"{col_nom}:N", sort='-y', title="Établissements"),
+                y=alt.Y(f"{col_data}:Q", title="Émissions (kg CO2e)"),
+                color=alt.Color('color_hex:N', scale=None),
                 tooltip=[col_nom, col_data]
             ).properties(height=450).interactive()
+            
             st.altair_chart(chart, use_container_width=True)
             st.info("💡 Seuils : 🟢 < 2000 | 🟡 2000-4000 | 🔴 > 4000")
+            
             st.subheader("📋 Récapitulatif")
-            st.dataframe(df.loc[:, ~df.columns.str.contains('^Unnamed|^nan', na=False)], use_container_width=True)
+            # Nettoyage des colonnes Unnamed pour le tableau
+            df_display = df.drop(columns=['color_hex'])
+            df_display = df_display.loc[:, ~df_display.columns.str.contains('^Unnamed|^nan', na=False)]
+            st.dataframe(df_display, use_container_width=True)
 
     # --- CAS 2 : PAGES INDIVIDUELLES ---
     else:
-        st.info(f"Visualisation des données pour {selection}")
-        # Affichage des données brutes de l'onglet établissement
-        st.subheader("📊 Fiche de saisie actuelle")
-        st.dataframe(df_raw, use_container_width=True)
+        st.info(f"Visualisation de la fiche de saisie pour : **{selection}**")
         
-        st.warning("🔒 La modification directe sera disponible après configuration du code secret.")
+        # On affiche la fiche telle qu'elle apparaît sur l'image_47f0e3.png
+        st.subheader(f"📊 Données en direct (Onglet GID {votre_gid})")
+        
+        # Nettoyage rapide pour l'affichage de la fiche individuelle
+        df_indiv = df_raw.dropna(how='all', axis=0).dropna(how='all', axis=1)
+        st.dataframe(df_indiv, use_container_width=True)
+        
+        st.warning("🔒 Pour modifier ces chiffres, vous devrez saisir le code d'accès de l'établissement (Prochainement).")
 
 except Exception as e:
-    st.error(f"Erreur de chargement : {e}")
+    st.error(f"Erreur technique : {e}")
