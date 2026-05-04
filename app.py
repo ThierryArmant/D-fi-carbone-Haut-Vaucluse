@@ -24,39 +24,33 @@ try:
     col_nom = "Etablissements"
     col_data = "Total émissions"
 
-    # On nettoie les noms de colonnes et on convertit en nombres
     df.columns = [str(c).strip() for c in df.columns]
     if col_data in df.columns:
-        # Transformation des chiffres (gestion des virgules et espaces)
         df[col_data] = df[col_data].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True)
         df[col_data] = pd.to_numeric(df[col_data], errors='coerce').fillna(0)
     
-    # On garde seulement les vrais établissements
     df = df.dropna(subset=[col_nom])
     df = df.loc[:, df.columns.notnull()]
     df = df.loc[:, ~df.columns.str.contains('^Unnamed|^nan', na=False)]
 
     st.success("Données synchronisées avec succès !")
 
-    # --- GRAPHIQUE AVEC COULEURS DYNAMIQUES ---
+    # --- GRAPHIQUE AVEC COULEURS DYNAMIQUES (Correction Syntaxique) ---
     st.subheader("📊 Analyse des émissions par établissement")
 
-    # Définition des règles : Vert < 2000 | Orange 2000-4000 | Rouge > 4000
-    color_condition = alt.condition(
-        alt.datum[col_data] < 2000,
-        alt.value("#2ecc71"),  # Vert
-        alt.condition(
-            alt.datum[col_data] <= 4000,
-            alt.value("#f39c12"),  # Orange
-            alt.value("#e74c3c")   # Rouge
-        )
-    )
-
-    # Création du graphique Altair
+    # Nouvelle syntaxe Altair plus robuste
     chart = alt.Chart(df).mark_bar().encode(
         x=alt.X(f"{col_nom}:N", sort='-y', title="Établissements"),
         y=alt.Y(f"{col_data}:Q", title="Émissions (kg CO2e)"),
-        color=color_condition,
+        color=alt.condition(
+            alt.datum[col_data] < 2000,
+            alt.value("#2ecc71"),  # Vert
+            alt.condition(
+                alt.datum[col_data] <= 4000,
+                alt.value("#f39c12"),  # Orange
+                alt.value("#e74c3c")   # Rouge
+            )
+        ),
         tooltip=[col_nom, col_data]
     ).properties(height=450).interactive()
 
