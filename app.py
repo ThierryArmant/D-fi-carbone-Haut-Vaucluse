@@ -27,7 +27,7 @@ etablissements = {
     "Arausio": "ARAUSIO",
     "Collège Vallis Aeria": "VALLIS_AERIA",
     "Argensol": "ARGENSOL",
-    "Collège Barbara": "BARBARA",
+    "Collège Barbara": "HENDRICKS",
     "Lycée de l'Arc": "ARC",
     "Lycée Viticole": "VITICOLE",
     "École Jules Ferry": "FERRY",
