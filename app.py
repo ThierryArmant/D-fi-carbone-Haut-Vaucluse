@@ -38,45 +38,53 @@ base_url = "https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-N
 sheet_url = f"{base_url}{votre_gid}"
 
 try:
-    # Chargement sans header pour scanner
+    # 1. Chargement brut sans noms de colonnes imposés
     df_raw = pd.read_csv(sheet_url, header=None)
     
     if selection == "ACCUEIL (Global)":
-        # 1. Scanner pour trouver la ligne de titres
-        header_row = 0
+        # 2. Scanner pour trouver la ligne de titres
+        header_row_index = 0
         for i, row in df_raw.iterrows():
-            # Correction ici : on force chaque élément en string avant de joindre
             row_str = " ".join([str(val).lower() for val in row.values])
             if "etablissement" in row_str or "lycée" in row_str or "collège" in row_str:
-                header_row = i
+                header_row_index = i
                 break
         
-        # 2. Re-préparer le tableau
-        df = df_raw.iloc[header_row:].copy()
-        df.columns = df.iloc[0]
-        df = df.iloc[1:].reset_index(drop=True)
-        df.columns = [str(c).strip() for c in df.columns]
+        # 3. Préparer les titres proprement (Anti-doublons)
+        raw_headers = df_raw.iloc[header_row_index].values
+        clean_headers = []
+        for i, h in enumerate(raw_headers):
+            h_str = str(h).strip()
+            if h_str == "" or h_str.lower() == "nan":
+                clean_headers.append(f"Vide_{i}") # On nomme les colonnes vides différemment
+            else:
+                clean_headers.append(h_str)
 
-        # 3. Identifier les colonnes
+        # 4. Appliquer les titres au tableau
+        df = df_raw.iloc[header_row_index + 1:].copy()
+        df.columns = clean_headers
+        df = df.reset_index(drop=True)
+
+        # 5. Identifier les colonnes de données
         col_nom = next((c for c in df.columns if "etab" in str(c).lower()), df.columns[0])
         col_data = next((c for c in df.columns if "total" in str(c).lower() and "émis" in str(c).lower()), None)
         
         if not col_data:
-            col_data = df.columns[-1] # Fallback sur la dernière colonne
+            # Si on ne trouve pas par nom, on cherche la colonne qui contient le plus de chiffres
+            col_data = df.columns[-1]
 
-        # 4. Nettoyage numérique
+        # 6. Nettoyage numérique
         df[col_data] = df[col_data].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True)
         df[col_data] = pd.to_numeric(df[col_data], errors='coerce').fillna(0)
         df = df.dropna(subset=[col_nom])
 
-        # 5. Couleurs
+        # 7. Couleurs et Graphique
         def set_color(v):
             if v < 2000: return "#2ecc71"
             elif v <= 4000: return "#f39c12"
             else: return "#e74c3c"
         df['color_hex'] = df[col_data].apply(set_color)
 
-        # 6. Graphique
         chart = alt.Chart(df).mark_bar().encode(
             x=alt.X(f"{col_nom}:N", sort='-y', title="Établissements"),
             y=alt.Y(f"{col_data}:Q", title="Émissions (kg CO2e)"),
@@ -86,14 +94,16 @@ try:
         
         st.altair_chart(chart, use_container_width=True)
         st.info("💡 Seuils : 🟢 < 2000 | 🟡 2000-4000 | 🔴 > 4000")
-        st.dataframe(df.drop(columns=['color_hex'], errors='ignore'), use_container_width=True)
+        
+        # Affichage du tableau final (en cachant les colonnes "Vide_x")
+        cols_finales = [c for c in df.columns if "Vide_" not in str(c) and c != "color_hex"]
+        st.dataframe(df[cols_finales], use_container_width=True)
 
     else:
-        # Pages individuelles
+        # Pages individuelles : on utilise la même logique de titres pour éviter le crash
         st.info(f"Fiche de données : **{selection}**")
-        # Nettoyage des lignes et colonnes totalement vides
         df_indiv = df_raw.dropna(how='all', axis=1).dropna(how='all', axis=0)
         st.dataframe(df_indiv, use_container_width=True)
 
 except Exception as e:
-    st.error(f"Erreur : {e}")
+    st.error(f"Erreur technique : {e}")
