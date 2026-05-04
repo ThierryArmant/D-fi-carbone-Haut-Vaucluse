@@ -14,7 +14,7 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 # A gauche : le nom qui s'affiche sur le site
 # A droite : le nom EXACT de l'onglet dans ton Google Sheets
 etablissements = {
-    "Collège Saint-Exupéry": "ST_EXUPERY",
+    "Collège Saint-Exupéry": "EXUPERY",
     "Lycée Jean Giono": "GIONO",
     "Lycée Pro A. Briand": "BRIAND",
     "Collège Victor Schoelcher": "SCHOELCHER",
