@@ -32,24 +32,26 @@ try:
     df = df.loc[:, df.columns.notnull()]
     df = df.loc[:, ~df.columns.str.contains('^Unnamed|^nan', na=False)]
 
+    # --- CALCUL DE LA COULEUR DANS LE TABLEAU (Simple et fiable) ---
+    def determiner_couleur(valeur):
+        if valeur < 2000:
+            return "#2ecc71" # Vert
+        elif valeur <= 4000:
+            return "#f39c12" # Orange
+        else:
+            return "#e74c3c" # Rouge
+
+    df['color_hex'] = df[col_data].apply(determiner_couleur)
+
     st.success("Données synchronisées !")
 
-    # --- GRAPHIQUE CORRIGÉ ---
+    # --- GRAPHIQUE SIMPLIFIÉ ---
     st.subheader("📊 Analyse des émissions par établissement")
 
-    # On crée le graphique sans définir 'color' dans alt.Chart pour éviter le conflit
     chart = alt.Chart(df).mark_bar().encode(
         x=alt.X(f"{col_nom}:N", sort='-y', title="Établissements"),
         y=alt.Y(f"{col_data}:Q", title="Émissions (kg CO2e)"),
-        color=alt.condition(
-            alt.datum[col_data] < 2000,
-            alt.value("#2ecc71"), # Vert
-            alt.condition(
-                alt.datum[col_data] <= 4000,
-                alt.value("#f39c12"), # Orange
-                alt.value("#e74c3c")  # Rouge
-            )
-        ),
+        color=alt.Color('color_hex:N', scale=None), # On utilise directement le code couleur du tableau
         tooltip=[col_nom, col_data]
     ).properties(height=450).interactive()
 
@@ -59,7 +61,7 @@ try:
 
     # --- TABLEAU ---
     st.subheader("📋 Détail des résultats")
-    st.dataframe(df, use_container_width=True)
+    st.dataframe(df.drop(columns=['color_hex']), use_container_width=True)
     
 except Exception as e:
     st.error(f"Erreur technique : {e}")
