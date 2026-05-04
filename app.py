@@ -38,44 +38,45 @@ base_url = "https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-N
 sheet_url = f"{base_url}{votre_gid}"
 
 try:
-    # On charge sans header au début pour scanner tout le fichier
+    # Chargement sans header pour scanner
     df_raw = pd.read_csv(sheet_url, header=None)
     
     if selection == "ACCUEIL (Global)":
-        # 1. Chercher la ligne qui contient "Lycée" ou "Collège" ou "Etablissement"
+        # 1. Scanner pour trouver la ligne de titres
         header_row = 0
         for i, row in df_raw.iterrows():
-            row_str = " ".join(row.astype(str).values).lower()
+            # Correction ici : on force chaque élément en string avant de joindre
+            row_str = " ".join([str(val).lower() for val in row.values])
             if "etablissement" in row_str or "lycée" in row_str or "collège" in row_str:
                 header_row = i
                 break
         
-        # 2. Re-préparer le tableau avec la bonne ligne de titre
+        # 2. Re-préparer le tableau
         df = df_raw.iloc[header_row:].copy()
         df.columns = df.iloc[0]
         df = df.iloc[1:].reset_index(drop=True)
         df.columns = [str(c).strip() for c in df.columns]
 
-        # 3. Identifier les bonnes colonnes
-        col_nom = next((c for c in df.columns if "etab" in c.lower()), df.columns[0])
-        col_data = next((c for c in df.columns if "total" in c.lower() and "émis" in c.lower()), None)
+        # 3. Identifier les colonnes
+        col_nom = next((c for c in df.columns if "etab" in str(c).lower()), df.columns[0])
+        col_data = next((c for c in df.columns if "total" in str(c).lower() and "émis" in str(c).lower()), None)
         
-        # Si on ne trouve pas "Total émissions", on prend la dernière colonne (souvent le total)
         if not col_data:
-            col_data = df.columns[-1]
+            col_data = df.columns[-1] # Fallback sur la dernière colonne
 
-        # 4. Nettoyage et conversion
+        # 4. Nettoyage numérique
         df[col_data] = df[col_data].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True)
         df[col_data] = pd.to_numeric(df[col_data], errors='coerce').fillna(0)
         df = df.dropna(subset=[col_nom])
 
-        # 5. Couleurs et Graphique
+        # 5. Couleurs
         def set_color(v):
             if v < 2000: return "#2ecc71"
             elif v <= 4000: return "#f39c12"
             else: return "#e74c3c"
         df['color_hex'] = df[col_data].apply(set_color)
 
+        # 6. Graphique
         chart = alt.Chart(df).mark_bar().encode(
             x=alt.X(f"{col_nom}:N", sort='-y', title="Établissements"),
             y=alt.Y(f"{col_data}:Q", title="Émissions (kg CO2e)"),
@@ -88,8 +89,9 @@ try:
         st.dataframe(df.drop(columns=['color_hex'], errors='ignore'), use_container_width=True)
 
     else:
-        # Pages individuelles : affichage simple
+        # Pages individuelles
         st.info(f"Fiche de données : **{selection}**")
+        # Nettoyage des lignes et colonnes totalement vides
         df_indiv = df_raw.dropna(how='all', axis=1).dropna(how='all', axis=0)
         st.dataframe(df_indiv, use_container_width=True)
 
