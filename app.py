@@ -1,27 +1,19 @@
 import streamlit as st
-from streamlit_gsheets import GSheetsConnection
+import pandas as pd
 
 st.set_page_config(page_title="Défi Carbone", layout="wide")
-
 st.title("🌱 Défi Carbone : Réseau Haut Vaucluse")
 
-# Connexion
-conn = st.connection("gsheets", type=GSheetsConnection)
+# Lien direct SANS passer par les secrets
+# On utilise le format /export?format=csv pour forcer la lecture
+sheet_url = "https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid=477228602"
 
 try:
-    df = conn.read(worksheet="bilan carbone")
-    st.success("Données synchronisées !")
-
-    # --- AJOUT DU GRAPHIQUE ---
-    st.subheader("📊 Émissions par établissement")
+    df = pd.read_csv(sheet_url)
+    st.success("Connexion réussie via lien direct !")
     
-    # On utilise la colonne 'Etablissement' pour les noms 
-    # et 'Total émissions (kg CO2e)' pour les barres
-    st.bar_chart(data=df, x="Etablissement", y="Total émissions (kg CO2e)")
-
-    # --- LE TABLEAU EN DESSOUS ---
-    st.subheader("📋 Tableau de bord détaillé")
-    st.dataframe(df, use_container_width=True)
-
+    st.subheader("📊 Aperçu des données")
+    st.dataframe(df)
+    
 except Exception as e:
-    st.error(f"Erreur : {e}")
+    st.error(f"Nouvelle erreur : {e}")
