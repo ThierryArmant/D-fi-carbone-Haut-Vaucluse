@@ -39,12 +39,13 @@ base_url = "https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-N
 sheet_url = f"{base_url}{votre_gid}"
 
 try:
-    # 1. Chargement brut
+    # 1. Chargement et nettoyage des colonnes fantômes
     df_raw = pd.read_csv(sheet_url)
-    
-    # 2. NETTOYAGE CRUCIAL : On supprime les colonnes totalement vides ou sans nom (les fameux 'nan')
     df_raw = df_raw.loc[:, ~df_raw.columns.str.contains('^Unnamed|^nan|Unnamed', na=False)]
     
+    # Initialisation de df pour éviter l'erreur "not defined"
+    df = pd.DataFrame()
+
     # --- CAS 1 : PAGE D'ACCUEIL GLOBAL ---
     if selection == "ACCUEIL (Global)":
         for i in range(len(df_raw)):
@@ -54,41 +55,42 @@ try:
                 df = df.iloc[1:].reset_index(drop=True)
                 break
         
-        # Nettoyage des noms de colonnes (espaces, etc.)
-        df.columns = [str(c).strip() for c in df.columns]
-        col_nom = "Etablissements"
-        col_data = "Total émissions"
+        if not df.empty:
+            df.columns = [str(c).strip() for c in df.columns]
+            col_nom = "Etablissements"
+            col_data = "Total émissions"
 
-        if col_data in df.columns:
-            df[col_data] = df[col_data].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True)
-            df[col_data] = pd.to_numeric(df[col_data], errors='coerce').fillna(0)
-            df = df.dropna(subset=[col_nom])
+            if col_data in df.columns:
+                df[col_data] = df[col_data].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True)
+                df[col_data] = pd.to_numeric(df[col_data], errors='coerce').fillna(0)
+                df = df.dropna(subset=[col_nom])
 
-            # Couleurs dynamiques
-            def get_color(v):
-                if v < 2000: return "#2ecc71"
-                elif v <= 4000: return "#f39c12"
-                else: return "#e74c3c"
-            
-            df['color_hex'] = df[col_data].apply(get_color)
+                # Couleurs
+                def get_color(v):
+                    if v < 2000: return "#2ecc71"
+                    elif v <= 4000: return "#f39c12"
+                    else: return "#e74c3c"
+                
+                df['color_hex'] = df[col_data].apply(get_color)
 
-            chart = alt.Chart(df).mark_bar().encode(
-                x=alt.X(f"{col_nom}:N", sort='-y', title="Établissements"),
-                y=alt.Y(f"{col_data}:Q", title="Émissions (kg CO2e)"),
-                color=alt.Color('color_hex:N', scale=None),
-                tooltip=[col_nom, col_data]
-            ).properties(height=450).interactive()
-            
-            st.altair_chart(chart, use_container_width=True)
-            st.info("💡 Seuils : 🟢 < 2000 | 🟡 2000-4000 | 🔴 > 4000")
-            
-            st.subheader("📋 Récapitulatif")
-            st.dataframe(df.drop(columns=['color_hex']), use_container_width=True)
+                chart = alt.Chart(df).mark_bar().encode(
+                    x=alt.X(f"{col_nom}:N", sort='-y', title="Établissements"),
+                    y=alt.Y(f"{col_data}:Q", title="Émissions (kg CO2e)"),
+                    color=alt.Color('color_hex:N', scale=None),
+                    tooltip=[col_nom, col_data]
+                ).properties(height=450).interactive()
+                
+                st.altair_chart(chart, use_container_width=True)
+                st.info("💡 Seuils : 🟢 < 2000 | 🟡 2000-4000 | 🔴 > 4000")
+                
+                st.subheader("📋 Récapitulatif")
+                st.dataframe(df.drop(columns=['color_hex']), use_container_width=True)
+        else:
+            st.warning("Impossible de trouver la ligne 'Etablissements' dans le fichier.")
 
     # --- CAS 2 : PAGES INDIVIDUELLES ---
     else:
         st.info(f"Fiche de données en cours pour : **{selection}**")
-        # On affiche le tableau de l'établissement sans les colonnes vides
         df_indiv = df_raw.dropna(how='all', axis=1).dropna(how='all', axis=0)
         st.dataframe(df_indiv, use_container_width=True)
         st.warning("🔒 L'accès sécurisé pour modifier ces chiffres sera activé prochainement.")
