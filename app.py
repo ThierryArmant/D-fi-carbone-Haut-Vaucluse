@@ -12,7 +12,7 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 
 # 2. CHOIX DE L'ÉTABLISSEMENT
 # Ajoute ici tous les noms de tes onglets exactement comme dans Google Sheets
-liste_etablissements = ["COLLEGE SAINT EXUPERY", "JEAN GIONO", "Lycée Pro A.BRIAND", "VICTOR SCHOELCHER", "Lycée Pro F.REVOUL", "Saint Jean le Batiste", "L.AUBRAC", "ES SAINT LOUIS", "COLLEGE H.BOUDON", "college P.Eluard", "Arausio", "COLLEGE VALLIS AERIA", "ARGENSOL", "college barbara", "lycée de l'arc", "Lycée Viticole", "Ecole Jules Ferry", "école du grillon", "école curie"] 
+liste_etablissements = ["SAINT-EXUPERY", "JEAN-GIONO", "A.BRIAND", "VICTOR-SCHOELCHER", "F.REVOUL", "ST-JEAN-LE-BATISTE", "L.AUBRAC", "ST-LOUIS", "H.BOUDON", "P.ELUARD", "ARAUSIO", "VALLIS-AERIA", "ARGENSOL", "B-HENDRICKS", "L-ARC", "LYCEE-VITICOLE", "JULES-FERRY", "GRILLON", "CURIE"] 
 choix = st.selectbox("Sélectionnez votre établissement :", liste_etablissements)
 
 # 3. LECTURE DE L'ONGLET SÉLECTIONNÉ
