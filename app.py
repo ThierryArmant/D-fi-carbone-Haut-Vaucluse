@@ -38,62 +38,69 @@ base_url = "https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-N
 sheet_url = f"{base_url}{votre_gid}"
 
 try:
+    # Lecture brute
     df_raw = pd.read_csv(sheet_url)
-    df_raw = df_raw.loc[:, ~df_raw.columns.str.contains('^Unnamed|^nan|Unnamed', na=False)]
-    df = pd.DataFrame()
-
+    
     if selection == "ACCUEIL (Global)":
-        # RECHERCHE FLEXIBLE : On cherche "etablissement" (sans accent, minuscule) n'importe où
+        # Tentative de nettoyage des colonnes vides
+        df_raw = df_raw.loc[:, ~df_raw.columns.str.contains('^Unnamed|^nan', na=False)]
+        
+        # Étape 1 : Trouver la ligne où il y a "Etablissements"
+        target_row = None
         for i in range(len(df_raw)):
-            ligne_texte = [str(val).lower().strip() for val in df_raw.iloc[i].values]
-            if any("etablissement" in val for val in ligne_texte):
-                df = df_raw.iloc[i:].copy()
-                df.columns = df.iloc[0]
-                df = df.iloc[1:].reset_index(drop=True)
+            row_values = [str(x).lower() for x in df_raw.iloc[i].values]
+            if any("etablissement" in x for x in row_values):
+                target_row = i
                 break
         
-        if not df.empty:
-            # Nettoyage profond des noms de colonnes
-            df.columns = [str(c).strip() for c in df.columns]
-            
-            # On identifie les colonnes par "mots clés" plutôt que par nom exact
-            col_nom = next((c for c in df.columns if "etablissement" in c.lower()), None)
-            col_data = next((c for c in df.columns if "total" in c.lower() and "émissions" in c.lower()), None)
-
-            if col_nom and col_data:
-                df[col_data] = df[col_data].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True)
-                df[col_data] = pd.to_numeric(df[col_data], errors='coerce').fillna(0)
-                df = df.dropna(subset=[col_nom])
-
-                def get_color(v):
-                    if v < 2000: return "#2ecc71"
-                    elif v <= 4000: return "#f39c12"
-                    else: return "#e74c3c"
-                
-                df['color_hex'] = df[col_data].apply(get_color)
-
-                chart = alt.Chart(df).mark_bar().encode(
-                    x=alt.X(f"{col_nom}:N", sort='-y', title="Établissements"),
-                    y=alt.Y(f"{col_data}:Q", title="Émissions (kg CO2e)"),
-                    color=alt.Color('color_hex:N', scale=None),
-                    tooltip=[col_nom, col_data]
-                ).properties(height=450).interactive()
-                
-                st.altair_chart(chart, use_container_width=True)
-                st.info("💡 Seuils : 🟢 < 2000 | 🟡 2000-4000 | 🔴 > 4000")
-                st.subheader("📋 Récapitulatif")
-                st.dataframe(df.drop(columns=['color_hex']), use_container_width=True)
-            else:
-                st.error(f"Colonnes détectées : {list(df.columns)}")
-                st.warning("Vérifiez que les colonnes 'Etablissements' et 'Total émissions' existent bien.")
+        # Étape 2 : Si on a trouvé la ligne, on redéfinit le tableau
+        if target_row is not None:
+            df = df_raw.iloc[target_row:].copy()
+            df.columns = df.iloc[0]
+            df = df.iloc[1:].reset_index(drop=True)
         else:
-            st.warning("⚠️ Impossible de localiser la ligne de titres dans l'onglet Global.")
+            # Plan B : On prend les titres actuels si la recherche échoue
+            df = df_raw.copy()
+
+        # Nettoyage des noms de colonnes
+        df.columns = [str(c).strip() for c in df.columns]
+        
+        # Identification des colonnes vitales
+        col_nom = next((c for c in df.columns if "etab" in c.lower()), df.columns[0])
+        col_data = next((c for c in df.columns if "total" in c.lower()), None)
+
+        if col_data:
+            # Conversion numérique
+            df[col_data] = df[col_data].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True)
+            df[col_data] = pd.to_numeric(df[col_data], errors='coerce').fillna(0)
+            df = df.dropna(subset=[col_nom])
+
+            # Application des couleurs
+            def set_color(v):
+                if v < 2000: return "#2ecc71"
+                elif v <= 4000: return "#f39c12"
+                else: return "#e74c3c"
+            df['color_hex'] = df[col_data].apply(set_color)
+
+            # Graphique Altair
+            chart = alt.Chart(df).mark_bar().encode(
+                x=alt.X(f"{col_nom}:N", sort='-y', title="Établissements"),
+                y=alt.Y(f"{col_data}:Q", title="Émissions (kg CO2e)"),
+                color=alt.Color('color_hex:N', scale=None),
+                tooltip=[col_nom, col_data]
+            ).properties(height=450).interactive()
+            
+            st.altair_chart(chart, use_container_width=True)
+            st.info("💡 Seuils : 🟢 < 2000 | 🟡 2000-4000 | 🔴 > 4000")
+            st.dataframe(df.drop(columns=['color_hex'], errors='ignore'), use_container_width=True)
+        else:
+            st.error("Impossible de trouver la colonne 'Total émissions'.")
+            st.write("Colonnes détectées :", list(df.columns))
 
     else:
-        # Pages individuelles
-        st.info(f"Visualisation de la fiche : **{selection}**")
-        df_indiv = df_raw.dropna(how='all', axis=1).dropna(how='all', axis=0)
-        st.dataframe(df_indiv, use_container_width=True)
+        # Pages individuelles (Jean Giono, etc.)
+        st.info(f"Données brutes pour : **{selection}**")
+        st.dataframe(df_raw.dropna(how='all', axis=1), use_container_width=True)
 
 except Exception as e:
-    st.error(f"Erreur technique : {e}")
+    st.error(f"Erreur : {e}")
