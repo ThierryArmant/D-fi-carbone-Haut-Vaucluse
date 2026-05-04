@@ -1,109 +1,67 @@
 import streamlit as st
+from streamlit_gsheets import GSheetsConnection
 import pandas as pd
-import altair as alt
+import plotly.express as px
 
-st.set_page_config(page_title="Défi Carbone", layout="wide")
+# Configuration de la page
+st.set_page_config(page_title="Défi Carbone Haut-Vaucluse", layout="wide")
+st.title("🚗 Mon Défi Carbone - Suivi des émissions")
 
-# --- DICTIONNAIRE DES GIDs ---
-ETABLISSEMENTS = {
-    "ACCUEIL (Global)": "169103083",
-    "LYCEE DE L’ARC": "424429658",
-    "COLLEGE ARAUSIO": "1079800482",
-    "COLLEGE B. HENDRICKS": "413375690",
-    "COLLEGE J. GIONO": "848288657",
-    "LP A. BRIAND": "1890998348",
-    "LP ARGENSOL": "1856139655",
-    "LYCEE VITICOLE": "1275913125",
-    "ES SAINT LOUIS": "1284271428",
-    "LYCEE L. AUBRAC": "1075832409",
-    "COLLEGE H. BOUDON": "1926531695",
-    "COLLEGE P. ELUARD": "1779665525",
-    "COLLEGE VALLIS AERIA": "1912810443",
-    "LP F. REVOUL": "1215829245",
-    "ES SAINT-JEAN-LE-BAPTISTE": "864334585",
-    "COLLEGE V. SCHOELCHER": "1941498887",
-    "COLLEGE SAINT-EXUPERY": "1790573676",
-    "ECOLE JULES FERRY": "1186020464",
-    "ECOLE DU GRILLON": "1100355066",
-    "ECOLE CURIE": "977476270"
-}
+# 1. CONNEXION AU GOOGLE SHEETS
+# Utilise la configuration 'gsheets' définie dans les Secrets de Streamlit
+conn = st.connection("gsheets", type=GSheetsConnection)
 
-st.sidebar.title("Navigation")
-selection = st.sidebar.selectbox("Choisir un établissement :", list(ETABLISSEMENTS.keys()))
-votre_gid = ETABLISSEMENTS[selection]
+# 2. LECTURE DES DONNÉES
+# On lit le tableau en temps réel
+df = conn.read()
 
-st.title(f"🌱 {selection}")
+# --- PARTIE AFFICHAGE (TES GRAPHIQUES) ---
+st.subheader("📊 Récapitulatif de mes trajets")
 
-base_url = "https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid="
-sheet_url = f"{base_url}{votre_gid}"
-
-try:
-    # 1. Chargement brut sans noms de colonnes imposés
-    df_raw = pd.read_csv(sheet_url, header=None)
+if not df.empty:
+    col1, col2 = st.columns(2)
     
-    if selection == "ACCUEIL (Global)":
-        # 2. Scanner pour trouver la ligne de titres
-        header_row_index = 0
-        for i, row in df_raw.iterrows():
-            row_str = " ".join([str(val).lower() for val in row.values])
-            if "etablissement" in row_str or "lycée" in row_str or "collège" in row_str:
-                header_row_index = i
-                break
-        
-        # 3. Préparer les titres proprement (Anti-doublons)
-        raw_headers = df_raw.iloc[header_row_index].values
-        clean_headers = []
-        for i, h in enumerate(raw_headers):
-            h_str = str(h).strip()
-            if h_str == "" or h_str.lower() == "nan":
-                clean_headers.append(f"Vide_{i}") # On nomme les colonnes vides différemment
-            else:
-                clean_headers.append(h_str)
+    with col1:
+        st.write("Derniers enregistrements :")
+        st.dataframe(df.tail(5)) # Affiche les 5 dernières lignes
+    
+    with col2:
+        # Petit graphique simple pour voir l'évolution des KM
+        fig = px.bar(df, x="Date", y="KM", color="Transport", title="KM par jour et transport")
+        st.plotly_chart(fig, use_container_width=True)
+else:
+    st.info("Le tableau est vide pour le moment. Ajoutez un trajet ci-dessous !")
 
-        # 4. Appliquer les titres au tableau
-        df = df_raw.iloc[header_row_index + 1:].copy()
-        df.columns = clean_headers
-        df = df.reset_index(drop=True)
+st.divider()
 
-        # 5. Identifier les colonnes de données
-        col_nom = next((c for c in df.columns if "etab" in str(c).lower()), df.columns[0])
-        col_data = next((c for c in df.columns if "total" in str(c).lower() and "émis" in str(c).lower()), None)
-        
-        if not col_data:
-            # Si on ne trouve pas par nom, on cherche la colonne qui contient le plus de chiffres
-            col_data = df.columns[-1]
+# --- PARTIE ACTION (TON BOUTON POUR MODIFIER) ---
+st.subheader("📝 Ajouter un nouveau trajet")
 
-        # 6. Nettoyage numérique
-        df[col_data] = df[col_data].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True)
-        df[col_data] = pd.to_numeric(df[col_data], errors='coerce').fillna(0)
-        df = df.dropna(subset=[col_nom])
+with st.form("form_ajout"):
+    col_a, col_b, col_c = st.columns(3)
+    
+    with col_a:
+        nouvelle_date = st.date_input("Date du trajet")
+    with col_b:
+        nouveaux_km = st.number_input("Nombre de KM", min_value=0.0, step=0.1)
+    with col_c:
+        nouveau_transport = st.selectbox("Moyen de transport", ["Voiture", "Bus", "Train", "Vélo"])
+    
+    bouton_valider = st.form_submit_button("Enregistrer dans le Google Sheets")
 
-        # 7. Couleurs et Graphique
-        def set_color(v):
-            if v < 2000: return "#2ecc71"
-            elif v <= 4000: return "#f39c12"
-            else: return "#e74c3c"
-        df['color_hex'] = df[col_data].apply(set_color)
-
-        chart = alt.Chart(df).mark_bar().encode(
-            x=alt.X(f"{col_nom}:N", sort='-y', title="Établissements"),
-            y=alt.Y(f"{col_data}:Q", title="Émissions (kg CO2e)"),
-            color=alt.Color('color_hex:N', scale=None),
-            tooltip=[col_nom, col_data]
-        ).properties(height=450).interactive()
-        
-        st.altair_chart(chart, use_container_width=True)
-        st.info("💡 Seuils : 🟢 < 2000 | 🟡 2000-4000 | 🔴 > 4000")
-        
-        # Affichage du tableau final (en cachant les colonnes "Vide_x")
-        cols_finales = [c for c in df.columns if "Vide_" not in str(c) and c != "color_hex"]
-        st.dataframe(df[cols_finales], use_container_width=True)
-
-    else:
-        # Pages individuelles : on utilise la même logique de titres pour éviter le crash
-        st.info(f"Fiche de données : **{selection}**")
-        df_indiv = df_raw.dropna(how='all', axis=1).dropna(how='all', axis=0)
-        st.dataframe(df_indiv, use_container_width=True)
-
-except Exception as e:
-    st.error(f"Erreur technique : {e}")
+if bouton_valider:
+    # On prépare la nouvelle ligne
+    nouvelle_donnee = pd.DataFrame([{
+        "Date": str(nouvelle_date),
+        "KM": nouveaux_km,
+        "Transport": nouveau_transport
+    }])
+    
+    # On ajoute la ligne à l'ancien tableau
+    df_mis_a_jour = pd.concat([df, nouvelle_donnee], ignore_index=True)
+    
+    # ON ENVOIE TOUT À GOOGLE SHEETS
+    conn.update(data=df_mis_a_jour)
+    
+    st.success("✅ Données envoyées ! Le graphique va se mettre à jour.")
+    st.balloons()
