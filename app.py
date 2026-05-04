@@ -11,11 +11,9 @@ st.title("🚗 Mon Défi Carbone - Suivi des émissions")
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 # 2. DICTIONNAIRE DES ETABLISSEMENTS
-# A gauche : le nom qui s'affiche sur le site
-# A droite : le nom EXACT de l'onglet dans ton Google Sheets
 etablissements = {
     "Collège Saint-Exupéry": "EXUPERY",
-    "Lycée Jean Giono": "GIONO",
+    "Collège Jean Giono": "GIONO",
     "Lycée Pro A. Briand": "BRIAND",
     "Collège Victor Schoelcher": "SCHOELCHER",
     "Lycée Pro F. Revoul": "REVOUL",
@@ -27,7 +25,7 @@ etablissements = {
     "Arausio": "ARAUSIO",
     "Collège Vallis Aeria": "VALLIS_AERIA",
     "Argensol": "ARGENSOL",
-    "Collège Barbara": "HENDRICKS",
+    "Collège Barbara": "BARBARA",
     "Lycée de l'Arc": "ARC",
     "Lycée Viticole": "VITICOLE",
     "École Jules Ferry": "FERRY",
@@ -41,18 +39,13 @@ nom_onglet_reel = etablissements[choix_joli]
 
 # 4. LECTURE DES DONNÉES
 try:
-    # On lit l'onglet simplifié (ex: GIONO)
-    # ttl=0 permet de voir les changements immédiatement
     df = conn.read(worksheet=nom_onglet_reel, ttl=0)
     
     if df is not None and not df.empty:
         st.subheader(f"📊 Résultats pour : {choix_joli}")
-        
-        # Affichage du tableau
         st.write("Derniers trajets enregistrés :")
         st.dataframe(df.tail(10))
         
-        # Graphique si les colonnes existent
         if "KM" in df.columns and "Date" in df.columns:
             fig = px.bar(df, x="Date", y="KM", title=f"Consommation KM - {choix_joli}")
             st.plotly_chart(fig, use_container_width=True)
@@ -61,7 +54,7 @@ try:
 
 except Exception as e:
     st.error(f"Impossible d'ouvrir l'onglet '{nom_onglet_reel}'")
-    st.info("Vérifiez que vous avez bien renommé vos onglets dans Google Sheets comme convenu.")
+    st.info("Vérifiez le nom de vos onglets dans Google Sheets.")
 
 st.divider()
 
@@ -80,20 +73,14 @@ with st.form("form_ajout"):
 
 if valider:
     try:
-        # On prépare la nouvelle ligne
         nouvelle_ligne = pd.DataFrame([{
             "Date": str(date_saisie),
             "KM": km_saisie,
             "Transport": transport_saisie
         }])
-        
-        # On fusionne avec l'existant
         df_final = pd.concat([df, nouvelle_ligne], ignore_index=True)
-        
-        # On renvoie tout vers le bon onglet
         conn.update(worksheet=nom_onglet_reel, data=df_final)
         st.success(f"✅ Trajet enregistré avec succès pour {choix_joli} !")
         st.balloons()
     except Exception as e:
         st.error("Erreur lors de l'enregistrement.")
-        st.write(e)
