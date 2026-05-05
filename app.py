@@ -18,7 +18,7 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 # 4. Sélection de l'établissement dans la barre latérale
 etablissement = st.sidebar.selectbox(
     "Choisir un établissement",
-    ["GIONO", "EXUPERY"] 
+    ["JEAN GIONO", "PAUL ELUARD"? ] 
 )
 
 # 5. Lecture UNIQUE (On ne lit que l'onglet sélectionné)
