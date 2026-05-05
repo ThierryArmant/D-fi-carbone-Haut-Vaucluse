@@ -23,11 +23,16 @@ def set_bg():
             border-radius: 15px;
             margin-top: 20px;
         }}
-        /* Style pour rendre le graphique déroulable horizontalement */
-        .scroll-container {{
+        
+        /* ZONE DÉROULANTE POUR LE GRAPHIQUE DU HAUT */
+        .scroll-graph {{
+            height: 300px;
+            overflow-y: auto;
             overflow-x: auto;
-            white-space: nowrap;
-            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: white;
+            padding: 10px;
         }}
         </style>
         """,
@@ -65,38 +70,41 @@ try:
     df = df.loc[:, ~df.columns.str.contains('^Unnamed|^nan', na=False)]
 
     def determiner_couleur(valeur):
-        if valeur < 2000: return "#2ecc71" # Vert
-        elif valeur <= 4000: return "#f39c12" # Orange
-        else: return "#e74c3c" # Rouge
+        if valeur < 2000: return "#2ecc71"
+        elif valeur <= 4000: return "#f39c12"
+        else: return "#e74c3c"
 
     df['color_hex'] = df[col_data].apply(determiner_couleur)
 
     st.success("Données synchronisées !")
 
-    # --- 📊 GRAPHIQUE DES SCORES COMPACT ET DÉROULABLE ---
+    # --- 📊 GRAPHIQUE DES SCORES DÉROULABLE ---
     st.subheader("📊 Analyse des émissions par établissement")
     
-    # On place le graphique dans un conteneur HTML pour le défilement
-    st.markdown('<div class="scroll-container">', unsafe_allow_html=True)
+    # On enferme le graphique dans une "div" scrollable
+    st.markdown('<div class="scroll-graph">', unsafe_allow_html=True)
     
     chart = alt.Chart(df).mark_bar().encode(
         x=alt.X(f"{col_nom}:N", sort='-y', title="Établissements", axis=alt.Axis(labelAngle=-45)),
         y=alt.Y(f"{col_data}:Q", title="Émissions (kg CO2e)"),
         color=alt.Color('color_hex:N', scale=None),
         tooltip=[col_nom, col_data]
-    ).properties(height=350).interactive() # Hauteur réduite pour tout voir d'un coup
+    ).properties(
+        width=1200, # Largeur augmentée pour forcer le scroll horizontal si besoin
+        height=280   # Hauteur contenue pour le scroll vertical
+    ).interactive()
 
-    st.altair_chart(chart, use_container_width=True)
+    st.altair_chart(chart, use_container_width=False) # False pour respecter la largeur de 1200
     st.markdown('</div>', unsafe_allow_html=True)
     
     st.info("💡 **Seuils :** 🟢 < 2000 kg | 🟡 2000-4000 kg | 🔴 > 4000 kg")
 
-    # --- 📋 TABLEAU ET CAMEMBERT SUR LA MÊME LIGNE ---
-    col_gauche, col_droite = st.columns([1.8, 1.2]) # Ajustement des proportions
+    # --- 📋 TABLEAU ET CAMEMBERT ---
+    col_gauche, col_droite = st.columns([1.8, 1.2])
 
     with col_gauche:
         st.subheader("📋 Détail des résultats")
-        st.dataframe(df.drop(columns=['color_hex']), use_container_width=True, height=350)
+        st.dataframe(df.drop(columns=['color_hex']), use_container_width=True, height=300)
     
     with col_droite:
         st.subheader("🎯 Répartition Globale")
@@ -113,15 +121,12 @@ try:
             couleurs_perso = ['#2ecc71', '#ff8a80', '#fbc02d', '#3498db', '#f39c12']
 
             fig_pie = px.pie(
-                totaux, 
-                values='Valeur', 
-                names='Poste', 
-                hole=0.4,
+                totaux, values='Valeur', names='Poste', hole=0.4,
                 color_discrete_sequence=couleurs_perso
             )
             fig_pie.update_traces(textposition='inside', textinfo='percent')
             fig_pie.update_layout(
-                height=350, 
+                height=300, 
                 margin=dict(t=0, b=0, l=0, r=0), 
                 legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.0)
             )
