@@ -5,7 +5,7 @@ import plotly.express as px
 # 1. Configuration de la page (Mode Dashboard compact)
 st.set_page_config(page_title="Défi Carbone", layout="wide")
 
-# --- FOND D'ÉCRAN DÉZOOMÉ ---
+# --- FONCTION POUR LE FOND D'ÉCRAN DÉZOOMÉ ---
 def set_bg():
     st.markdown(
         f"""
@@ -15,7 +15,7 @@ def set_bg():
             background-attachment: fixed;
             background-repeat: no-repeat;
             background-position: center;
-            background-size: 70%;
+            background-size: 75%;
             background-color: #f0f2f6;
         }}
         .main .block-container {{
@@ -24,7 +24,7 @@ def set_bg():
             border-radius: 15px;
             margin-top: 10px;
         }}
-        /* Réduction des espaces entre les éléments */
+        /* Réduction des espaces entre les éléments pour optimiser la place */
         div.stMarkdown {{ margin-bottom: -10px; }}
         </style>
         """,
@@ -38,15 +38,12 @@ votre_gid = "169103083"
 sheet_url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid={votre_gid}"
 
 try:
-    # On lit le CSV normalement
     df_raw = pd.read_csv(sheet_url)
     
     # Correction du bug "nan" : on cherche la ligne de titre
     for i in range(len(df_raw)):
         if "Etablissements" in df_raw.iloc[i].values:
-            # On définit les colonnes
             new_cols = df_raw.iloc[i].values
-            # On remplace les noms de colonnes vides par un nom temporaire pour éviter l'erreur
             cleaned_cols = [str(c) if pd.notnull(c) else f"vide_{idx}" for idx, c in enumerate(new_cols)]
             df = df_raw.iloc[i+1:].copy()
             df.columns = cleaned_cols
@@ -64,9 +61,10 @@ try:
     
     df = df.dropna(subset=[col_nom])
 
-    # --- AFFICHAGE COMPACT (Ligne 1 : Camemberts) ---
+    # --- AFFICHAGE (Titre) ---
     st.markdown("<h3 style='text-align: center;'>🌱 Défi Carbone : Réseau Haut Vaucluse</h3>", unsafe_allow_html=True)
     
+    # --- LIGNE 1 : LES CAMEMBERTS (Côte à côte) ---
     col1, col2 = st.columns(2)
 
     with col1:
@@ -92,10 +90,10 @@ try:
             fig_postes.update_layout(height=280, margin=dict(t=0, b=0, l=0, r=0))
             st.plotly_chart(fig_postes, use_container_width=True)
 
-    # --- AFFICHAGE COMPACT (Ligne 2 : Tableau) ---
-    st.markdown("<p style='font-weight: bold;'>📋 Détail des résultats</p>", unsafe_allow_html=True)
-    # Hauteur fixée à 220px pour forcer tout le Dashboard sur un seul écran
-    st.dataframe(df, use_container_width=True, height=220, hide_index=True)
+    # --- LIGNE 2 : LE TABLEAU (HAUTEUR AUGMENTÉE) ---
+    st.markdown("<p style='font-weight: bold; margin-top: 10px;'>📋 Détail des résultats</p>", unsafe_allow_html=True)
+    # Hauteur passée à 400px pour qu'il occupe plus d'espace
+    st.dataframe(df, use_container_width=True, height=400, hide_index=True)
 
 except Exception as e:
     st.error(f"Erreur technique : {e}")
