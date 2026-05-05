@@ -34,9 +34,9 @@ try:
 
     # --- CALCUL DE LA COULEUR DANS LE TABLEAU (Simple et fiable) ---
     def determiner_couleur(valeur):
-        if valeur < 2000:
+        if valeur < 10000:
             return "#2ecc71" # Vert
-        elif valeur <= 4000:
+        elif valeur <= 20000:
             return "#f39c12" # Orange
         else:
             return "#e74c3c" # Rouge
