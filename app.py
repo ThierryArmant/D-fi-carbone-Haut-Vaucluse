@@ -7,7 +7,6 @@ import plotly.express as px
 st.set_page_config(page_title="Défi Carbone", layout="wide")
 
 # --- FONCTION POUR LE FOND D'ÉCRAN ---
-# Cette fonction utilise ton image "Design sans titre (11) (1).png" via ton lien Drive
 def set_bg():
     st.markdown(
         f"""
@@ -18,7 +17,6 @@ def set_bg():
             background-size: cover;
         }}
         
-        /* On ajoute un filtre léger sur le contenu pour que tes données restent lisibles */
         .main .block-container {{
             background-color: rgba(255, 255, 255, 0.85);
             padding: 30px;
@@ -60,10 +58,11 @@ try:
     df = df.loc[:, df.columns.notnull()]
     df = df.loc[:, ~df.columns.str.contains('^Unnamed|^nan', na=False)]
 
+    # Couleurs du graphique à barres (Seuils)
     def determiner_couleur(valeur):
-        if valeur < 2000: return "#2ecc71"
-        elif valeur <= 4000: return "#f39c12"
-        else: return "#e74c3c"
+        if valeur < 2000: return "#2ecc71" # Vert
+        elif valeur <= 4000: return "#f39c12" # Orange
+        else: return "#e74c3c" # Rouge
 
     df['color_hex'] = df[col_data].apply(determiner_couleur)
 
@@ -97,9 +96,22 @@ try:
             totaux = df[cols_valides].sum().reset_index()
             totaux.columns = ['Poste', 'Valeur']
 
-            fig_pie = px.pie(totaux, values='Valeur', names='Poste', hole=0.4)
+            # --- APPLICATION DE TES COULEURS PRÉFÉRÉES ---
+            couleurs_perso = ['#2ecc71', '#ff8a80', '#fbc02d', '#3498db', '#f39c12'] # Vert, Saumon, Jaune, Bleu, Orange
+
+            fig_pie = px.pie(
+                totaux, 
+                values='Valeur', 
+                names='Poste', 
+                hole=0.4,
+                color_discrete_sequence=couleurs_perso
+            )
             fig_pie.update_traces(textposition='inside', textinfo='percent')
-            fig_pie.update_layout(height=400, margin=dict(t=0, b=0, l=0, r=0), legend=dict(orientation="h", y=-0.2))
+            fig_pie.update_layout(
+                height=400, 
+                margin=dict(t=0, b=0, l=0, r=0), 
+                legend=dict(orientation="h", y=-0.2)
+            )
             st.plotly_chart(fig_pie, use_container_width=True)
 
 except Exception as e:
