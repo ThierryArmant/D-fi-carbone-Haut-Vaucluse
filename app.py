@@ -1,67 +1,76 @@
 import streamlit as st
 import pandas as pd
-import altair as alt
+import plotly.express as px
+import plotly.graph_objects as go
 
-st.set_page_config(page_title="Défi Carbone", layout="wide")
-st.title("🌱 Défi Carbone : Réseau Haut Vaucluse")
+# 1. Configuration de la page en mode large
+st.set_page_config(page_title="Défi Carbone : Réseau Haut Vaucluse", layout="wide")
 
-# --- CONNEXION ---
-votre_gid = "169103083" 
-sheet_url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid={votre_gid}"
+st.title("🌍 Défi Carbone : Réseau Haut Vaucluse")
+
+# 2. Identifiant de ton Google Sheets
+sheet_id = "12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M"
+# On cible l'onglet principal qui contient le tableau récapitulatif
+onglet_global = "GIONO" # Modifie ce nom si l'onglet global s'appelle autrement
+
+url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={onglet_global}"
 
 try:
-    df = pd.read_csv(sheet_url)
+    # Lecture des données
+    df = pd.read_csv(url)
     
-    # Recherche de la ligne de titre
-    for i in range(len(df)):
-        if "Etablissements" in df.iloc[i].values:
-            df.columns = df.iloc[i]
-            df = df.iloc[i+1:].reset_index(drop=True)
-            break
-
-    # --- NETTOYAGE ---
-    col_nom = "Etablissements"
-    col_data = "Total émissions"
-
+    # Nettoyage des noms de colonnes
     df.columns = [str(c).strip() for c in df.columns]
-    if col_data in df.columns:
-        df[col_data] = df[col_data].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True)
-        df[col_data] = pd.to_numeric(df[col_data], errors='coerce').fillna(0)
-    
-    df = df.dropna(subset=[col_nom])
-    df = df.loc[:, df.columns.notnull()]
-    df = df.loc[:, ~df.columns.str.contains('^Unnamed|^nan', na=False)]
 
-    # --- CALCUL DE LA COULEUR DANS LE TABLEAU (Simple et fiable) ---
-    def determiner_couleur(valeur):
-        if valeur < 2000:
-            return "#2ecc71" # Vert
-        elif valeur <= 4000:
-            return "#f39c12" # Orange
+    # --- MISE EN PAGE : TABLEAU À GAUCHE (2/3), DASHBOARD À DROITE (1/3) ---
+    col_gauche, col_droite = st.columns([2, 1])
+
+    with col_gauche:
+        st.subheader("📑 Détail des résultats")
+        # Affichage du grand tableau
+        st.dataframe(df, use_container_width=True, hide_index=True)
+        
+        # Ajout du graphique en barres (comme sur ton image du haut)
+        st.subheader("📊 Analyse des émissions par établissement")
+        if 'Etablissement' in df.columns and 'Total' in df.columns:
+            fig_bar = px.bar(df, x='Etablissement', y='Total', color_discrete_sequence=['#e74c3c'])
+            st.plotly_chart(fig_bar, use_container_width=True)
+
+    with col_droite:
+        st.subheader("🎯 Dashboard")
+        
+        # On vérifie si les colonnes nécessaires existent pour les graphiques
+        # Note : Adapte 'Poste' et 'Total' si tes colonnes s'appellent différemment
+        if 'Poste' in df.columns and 'Total' in df.columns:
+            # 1. LE CAMEMBERT
+            fig_pie = px.pie(df, values='Total', names='Poste', hole=0.4)
+            fig_pie.update_layout(margin=dict(t=0, b=0, l=0, r=0))
+            st.plotly_chart(fig_pie, use_container_width=True)
+            
+            st.divider()
+            
+            # 2. LA FUSÉE (Jauge de consommation globale)
+            total_global = df['Total'].sum()
+            st.metric("Émissions Totales Réseau", f"{total_global:,.0f} kg CO2e")
+            
+            fig_gauge = go.Figure(go.Indicator(
+                mode = "gauge+number",
+                value = total_global,
+                gauge = {
+                    'axis': {'range': [None, 100000]}, # Limite à adapter selon ton réseau
+                    'bar': {'color': "#e74c3c"},
+                    'steps': [
+                        {'range': [0, 50000], 'color': "#f4f9f4"},
+                        {'range': [50000, 100000], 'color': "#fdf2f2"}
+                    ],
+                }
+            ))
+            fig_gauge.update_layout(height=300, margin=dict(t=30, b=0, l=30, r=30))
+            st.plotly_chart(fig_gauge, use_container_width=True)
         else:
-            return "#e74c3c" # Rouge
+            st.info("💡 Pour afficher le Camembert et la Fusée, assurez-vous d'avoir des colonnes nommées 'Poste' et 'Total'.")
 
-    df['color_hex'] = df[col_data].apply(determiner_couleur)
-
-    st.success("Données synchronisées !")
-
-    # --- GRAPHIQUE SIMPLIFIÉ ---
-    st.subheader("📊 Analyse des émissions par établissement")
-
-    chart = alt.Chart(df).mark_bar().encode(
-        x=alt.X(f"{col_nom}:N", sort='-y', title="Établissements"),
-        y=alt.Y(f"{col_data}:Q", title="Émissions (kg CO2e)"),
-        color=alt.Color('color_hex:N', scale=None), # On utilise directement le code couleur du tableau
-        tooltip=[col_nom, col_data]
-    ).properties(height=450).interactive()
-
-    st.altair_chart(chart, use_container_width=True)
-
-    st.info("💡 **Seuils :** 🟢 < 2000 kg | 🟡 2000-4000 kg | 🔴 > 4000 kg")
-
-    # --- TABLEAU ---
-    st.subheader("📋 Détail des résultats")
-    st.dataframe(df.drop(columns=['color_hex']), use_container_width=True)
-    
 except Exception as e:
-    st.error(f"Erreur technique : {e}")
+    st.error(f"Erreur d'affichage : {e}")
+
+st.caption("Données synchronisées en temps réel avec le Google Sheets de l'OCE.")
