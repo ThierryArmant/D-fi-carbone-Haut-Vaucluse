@@ -68,7 +68,7 @@ try:
     col1, col2 = st.columns(2)
 
     with col1:
-        st.markdown("<p style='text-align: center; font-weight: bold;'>🏫 Par Établissement</p>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; font-weight: bold;'>🏫 Par Établissement et par personne</p>", unsafe_allow_html=True)
         fig_etab = px.pie(df, values=col_data, names=col_nom, hole=0.4)
         fig_etab.update_traces(textposition='inside', textinfo='percent')
         fig_etab.update_layout(height=280, margin=dict(t=0, b=0, l=0, r=0))
