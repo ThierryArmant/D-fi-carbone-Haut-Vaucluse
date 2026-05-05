@@ -47,7 +47,7 @@ try:
 
     st.success("Données synchronisées !")
 
-    # --- GRAPHIQUE (Taille réduite à 200 au lieu de 450) ---
+    # --- GRAPHIQUE (Hauteur 200) ---
     st.subheader("📊 Analyse des émissions par établissement")
 
     chart = alt.Chart(df).mark_bar().encode(
@@ -55,7 +55,7 @@ try:
         y=alt.Y(f"{col_data}:Q", title="Émissions (kg CO2e)"),
         color=alt.Color('color_hex:N', scale=None),
         tooltip=[col_nom, col_data]
-    ).properties(height=200).interactive() # <--- Taille divisée par deux ici
+    ).properties(height=200).interactive()
 
     st.altair_chart(chart, use_container_width=True)
     st.info("💡 **Seuils :** 🟢 < 2000 kg | 🟡 2000-4000 kg | 🔴 > 4000 kg")
@@ -65,38 +65,48 @@ try:
 
     with col_gauche:
         st.subheader("📋 Détail des résultats")
-        # Taille du tableau fixée à 300 pour gagner de la place
         st.dataframe(df.drop(columns=['color_hex']), use_container_width=True, height=300)
     
     with col_droite:
         st.subheader("🎯 Dashboard Global")
         
-        # Calcul global pour le camembert
         postes = ['Electricité', 'Combustible', 'Transport', 'Biens et consommables', 'Alimentation']
         cols_valides = [c for c in postes if c in df.columns]
         
         if cols_valides:
-            # Conversion numérique pour sécurité
             for c in cols_valides:
                 df[c] = pd.to_numeric(df[c].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
             
             totaux = df[cols_valides].sum().reset_index()
             totaux.columns = ['Poste', 'Valeur']
 
-            # Camembert compact
-            fig_pie = px.pie(totaux, values='Valeur', names='Poste', hole=0.4)
-            fig_pie.update_layout(height=200, margin=dict(t=0, b=0, l=0, r=0), showlegend=False)
+            # --- CAMEMBERT AVEC LÉGENDES ---
+            fig_pie = px.pie(
+                totaux, 
+                values='Valeur', 
+                names='Poste', 
+                hole=0.4,
+                color_discrete_sequence=px.colors.qualitative.Pastel
+            )
+            # On affiche les pourcentages sur le graphe et les noms en légende
+            fig_pie.update_traces(textposition='inside', textinfo='percent')
+            fig_pie.update_layout(
+                height=250, 
+                margin=dict(t=0, b=0, l=0, r=0),
+                legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.1)
+            )
             st.plotly_chart(fig_pie, use_container_width=True)
             
-            # Fusée (Jauge) compacte
+            # --- FUSÉE COMPACTE ---
             total_global = totaux['Valeur'].sum()
             fig_gauge = go.Figure(go.Indicator(
                 mode = "gauge+number",
                 value = total_global,
+                title = {'text': "Total kg CO2e", 'font': {'size': 14}},
                 number = {'font': {'size': 20}},
                 gauge = {'axis': {'range': [None, 2000000]}, 'bar': {'color': "#e74c3c"}}
             ))
-            fig_gauge.update_layout(height=150, margin=dict(t=0, b=0, l=0, r=0))
+            fig_gauge.update_layout(height=150, margin=dict(t=20, b=0, l=0, r=0))
             st.plotly_chart(fig_gauge, use_container_width=True)
 
 except Exception as e:
