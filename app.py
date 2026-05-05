@@ -3,74 +3,76 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-# 1. Configuration de la page en mode large
+# 1. Configuration large
 st.set_page_config(page_title="Défi Carbone : Réseau Haut Vaucluse", layout="wide")
 
 st.title("🌍 Défi Carbone : Réseau Haut Vaucluse")
 
-# 2. Identifiant de ton Google Sheets
+# 2. Identifiant du Sheets
 sheet_id = "12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M"
-# On cible l'onglet principal qui contient le tableau récapitulatif
-onglet_global = "GIONO" # Modifie ce nom si l'onglet global s'appelle autrement
+onglet_principal = "GIONO" # L'onglet qui contient la liste de tous les collèges
 
-url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={onglet_global}"
+url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={onglet_principal}"
 
 try:
     # Lecture des données
     df = pd.read_csv(url)
-    
-    # Nettoyage des noms de colonnes
     df.columns = [str(c).strip() for c in df.columns]
 
-    # --- MISE EN PAGE : TABLEAU À GAUCHE (2/3), DASHBOARD À DROITE (1/3) ---
+    # --- GRAPHIQUE DU HAUT (Statistiques par établissement) ---
+    st.subheader("📊 Analyse des émissions par établissement")
+    if 'Etablissement' in df.columns and 'Total émissions' in df.columns:
+        fig_top = px.bar(df, x='Etablissement', y='Total émissions', color_discrete_sequence=['#e74c3c'])
+        fig_top.update_layout(height=350)
+        st.plotly_chart(fig_top, use_container_width=True)
+    
+    st.divider()
+
+    # --- MISE EN PAGE INFÉRIEURE ---
     col_gauche, col_droite = st.columns([2, 1])
 
     with col_gauche:
         st.subheader("📑 Détail des résultats")
-        # Affichage du grand tableau
         st.dataframe(df, use_container_width=True, hide_index=True)
-        
-        # Ajout du graphique en barres (comme sur ton image du haut)
-        st.subheader("📊 Analyse des émissions par établissement")
-        if 'Etablissement' in df.columns and 'Total' in df.columns:
-            fig_bar = px.bar(df, x='Etablissement', y='Total', color_discrete_sequence=['#e74c3c'])
-            st.plotly_chart(fig_bar, use_container_width=True)
 
     with col_droite:
-        st.subheader("🎯 Dashboard")
+        st.subheader("🎯 Dashboard Global")
         
-        # On vérifie si les colonnes nécessaires existent pour les graphiques
-        # Note : Adapte 'Poste' et 'Total' si tes colonnes s'appellent différemment
-        if 'Poste' in df.columns and 'Total' in df.columns:
-            # 1. LE CAMEMBERT
-            fig_pie = px.pie(df, values='Total', names='Poste', hole=0.4)
+        # On calcule les totaux par poste pour l'ensemble des établissements
+        # On additionne les colonnes de consommation
+        colonnes_conso = ['Electricité', 'Combustible', 'Transport', 'Biens et consommables', 'Alimentation']
+        
+        # Vérification si ces colonnes existent
+        existantes = [c for c in colonnes_conso if c in df.columns]
+        
+        if existantes:
+            # Somme de chaque poste pour le camembert
+            somme_postes = df[existantes].sum().reset_index()
+            somme_postes.columns = ['Poste', 'Valeur']
+
+            # 1. LE CAMEMBERT GLOBAL
+            fig_pie = px.pie(somme_postes, values='Valeur', names='Poste', hole=0.4)
             fig_pie.update_layout(margin=dict(t=0, b=0, l=0, r=0))
             st.plotly_chart(fig_pie, use_container_width=True)
             
             st.divider()
             
-            # 2. LA FUSÉE (Jauge de consommation globale)
-            total_global = df['Total'].sum()
-            st.metric("Émissions Totales Réseau", f"{total_global:,.0f} kg CO2e")
+            # 2. LA FUSÉE (Consommation totale cumulée)
+            total_reseau = somme_postes['Valeur'].sum()
+            st.metric("Total Réseau (kg CO2e)", f"{total_reseau:,.0f}")
             
             fig_gauge = go.Figure(go.Indicator(
                 mode = "gauge+number",
-                value = total_global,
+                value = total_reseau,
                 gauge = {
-                    'axis': {'range': [None, 100000]}, # Limite à adapter selon ton réseau
+                    'axis': {'range': [None, 2000000]}, # Ajusté pour le réseau global
                     'bar': {'color': "#e74c3c"},
-                    'steps': [
-                        {'range': [0, 50000], 'color': "#f4f9f4"},
-                        {'range': [50000, 100000], 'color': "#fdf2f2"}
-                    ],
                 }
             ))
-            fig_gauge.update_layout(height=300, margin=dict(t=30, b=0, l=30, r=30))
+            fig_gauge.update_layout(height=250, margin=dict(t=20, b=20, l=20, r=20))
             st.plotly_chart(fig_gauge, use_container_width=True)
-        else:
-            st.info("💡 Pour afficher le Camembert et la Fusée, assurez-vous d'avoir des colonnes nommées 'Poste' et 'Total'.")
 
 except Exception as e:
-    st.error(f"Erreur d'affichage : {e}")
+    st.error(f"Erreur : {e}")
 
-st.caption("Données synchronisées en temps réel avec le Google Sheets de l'OCE.")
+st.caption("Données synchronisées - Réseau Haut Vaucluse")
