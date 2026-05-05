@@ -71,19 +71,22 @@ try:
             df_sorted, x=col_pers, y=col_nom, orientation='h',
             text=col_pers, color=col_pers, color_continuous_scale='RdYlGn_r'
         )
-        # Augmentation de la taille de la police des chiffres (insidetextfont)
+        
+        # --- AJUSTEMENTS POUR LE TEXTE AU BOUT DES LIGNES ---
         fig_indiv.update_traces(
             texttemplate='%{text:.1f}', 
-            textposition='auto',
-            textfont_size=14,
-            insidetextfont_color='white'
+            textposition='outside', # Force le texte au bout de la barre
+            textfont_size=15,       # Taille augmentée pour la lisibilité
+            cliponaxis=False        # Empêche le texte d'être coupé
         )
+        
         fig_indiv.update_layout(
-            height=260, 
-            margin=dict(t=10, b=10, l=0, r=10), 
+            height=280, 
+            margin=dict(t=10, b=10, l=0, r=50), # Marge à droite augmentée pour le texte
             showlegend=False, 
             coloraxis_showscale=False,
-            yaxis={'tickfont': {'size': 13}} # Noms des établissements plus grands
+            xaxis={'title': ''},
+            yaxis={'tickfont': {'size': 12}, 'title': ''}
         )
         st.plotly_chart(fig_indiv, use_container_width=True)
 
@@ -99,13 +102,12 @@ try:
             totaux.columns = ['Poste', 'Valeur']
             couleurs_perso = ['#2ecc71', '#ff8a80', '#fbc02d', '#3498db', '#f39c12']
             fig_postes = px.pie(totaux, values='Valeur', names='Poste', hole=0.4, color_discrete_sequence=couleurs_perso)
-            fig_postes.update_layout(height=260, margin=dict(t=10, b=10, l=0, r=0))
+            fig_postes.update_layout(height=280, margin=dict(t=10, b=10, l=0, r=0))
             st.plotly_chart(fig_postes, use_container_width=True)
 
     # --- LIGNE 2 : TABLEAU ---
     st.markdown("<p style='font-weight: bold; margin-bottom: 5px;'>📋 Détails par établissement</p>", unsafe_allow_html=True)
-    # Hauteur ajustée à 480px pour voir la dernière ligne
-    st.dataframe(df, use_container_width=True, height=480, hide_index=True)
+    st.dataframe(df, use_container_width=True, height=450, hide_index=True)
 
 except Exception as e:
     st.error(f"Erreur : {e}")
