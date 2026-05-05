@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import altair as alt
 import plotly.express as px
 
 # 1. Configuration de la page
@@ -22,16 +21,6 @@ def set_bg():
             padding: 30px;
             border-radius: 15px;
             margin-top: 20px;
-        }}
-        
-        /* ZONE DÉROULANTE AMÉLIORÉE */
-        .scroll-graph {{
-            height: 400px;
-            overflow: auto;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background-color: white;
-            padding: 15px;
         }}
         </style>
         """,
@@ -68,32 +57,17 @@ try:
     df = df.loc[:, df.columns.notnull()]
     df = df.loc[:, ~df.columns.str.contains('^Unnamed|^nan', na=False)]
 
-    def determiner_couleur(valeur):
-        if valeur < 2000: return "#2ecc71"
-        elif valeur <= 4000: return "#f39c12"
-        else: return "#e74c3c"
-
-    df['color_hex'] = df[col_data].apply(determiner_couleur)
-
     st.success("Données synchronisées !")
 
-    # --- 📊 GRAPHIQUE DES SCORES DÉROULABLE ---
+    # --- 📊 GRAPHIQUE DU HAUT (Même comportement que le tableau) ---
     st.subheader("📊 Analyse des émissions par établissement")
     
-    st.markdown('<div class="scroll-graph">', unsafe_allow_html=True)
+    # On prépare les données pour le bar_chart natif de Streamlit
+    chart_data = df[[col_nom, col_data]].set_index(col_nom)
     
-    chart = alt.Chart(df).mark_bar().encode(
-        x=alt.X(f"{col_nom}:N", sort='-y', title="Établissements", axis=alt.Axis(labelAngle=-45, labelFontSize=12)),
-        y=alt.Y(f"{col_data}:Q", title="Émissions (kg CO2e)"),
-        color=alt.Color('color_hex:N', scale=None),
-        tooltip=[col_nom, col_data]
-    ).properties(
-        width=1800, # On force une grande largeur pour activer le scroll horizontal
-        height=320   # On laisse de la place pour les noms en bas
-    ).interactive()
-
-    st.altair_chart(chart, use_container_width=False)
-    st.markdown('</div>', unsafe_allow_html=True)
+    # On utilise st.bar_chart avec une hauteur fixe (comme pour le tableau)
+    # C'est ce qui permet d'avoir le scroll automatique et de virer le vide blanc
+    st.bar_chart(chart_data, height=300, use_container_width=True, color="#e74c3c")
     
     st.info("💡 **Seuils :** 🟢 < 2000 kg | 🟡 2000-4000 kg | 🔴 > 4000 kg")
 
@@ -102,7 +76,8 @@ try:
 
     with col_gauche:
         st.subheader("📋 Détail des résultats")
-        st.dataframe(df.drop(columns=['color_hex']), use_container_width=True, height=350)
+        # Ton tableau qui fonctionne bien
+        st.dataframe(df, use_container_width=True, height=350, hide_index=True)
     
     with col_droite:
         st.subheader("🎯 Répartition Globale")
