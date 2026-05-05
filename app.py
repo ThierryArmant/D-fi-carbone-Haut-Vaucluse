@@ -46,7 +46,7 @@ try:
     st.success("Données synchronisées !")
 
     # --- GRAPHIQUE SIMPLIFIÉ ---
-    st.subheader("📊 Analyse des émissions par établissement")
+    st.subheader("📊 Analyse des émissions par établissement par personne")
 
     chart = alt.Chart(df).mark_bar().encode(
         x=alt.X(f"{col_nom}:N", sort='-y', title="Établissements"),
