@@ -5,7 +5,7 @@ import plotly.express as px
 # 1. Configuration de la page
 st.set_page_config(page_title="Défi Carbone", layout="wide")
 
-# --- FONCTION POUR LE FOND D'ÉCRAN (DÉZOOMÉ) ---
+# --- FONCTION POUR LE FOND D'ÉCRAN ---
 def set_bg():
     st.markdown(
         f"""
@@ -15,8 +15,8 @@ def set_bg():
             background-attachment: fixed;
             background-repeat: no-repeat;
             background-position: center;
-            background-size: 80%; /* <--- MODIFIE CE % POUR DÉZOOMER (ex: 50% pour dézoomer beaucoup) */
-            background-color: #f0f2f6; /* Couleur de secours pour les bords */
+            background-size: 80%;
+            background-color: #f0f2f6;
         }}
         
         .main .block-container {{
@@ -62,22 +62,25 @@ try:
 
     st.success("Données synchronisées !")
 
-    # --- 📊 GRAPHIQUE DU HAUT (MODE DÉROULABLE) ---
-    st.subheader("📊 Analyse des émissions par établissement")
-    chart_data = df[[col_nom, col_data]].set_index(col_nom)
-    st.bar_chart(chart_data, height=300, use_container_width=True, color="#e74c3c")
-    
-    st.info("💡 **Seuils :** 🟢 < 2000 kg | 🟡 2000-4000 kg | 🔴 > 4000 kg")
+    # --- 📊 ZONE DES GRAPHIQUES (CÔTE À CÔTE) ---
+    col_pie1, col_pie2 = st.columns(2)
 
-    # --- 📋 TABLEAU ET CAMEMBERT ---
-    col_gauche, col_droite = st.columns([1.8, 1.2])
+    with col_pie1:
+        st.subheader("🏫 Émissions par Établissement")
+        # Camembert des établissements
+        fig_etab = px.pie(
+            df, 
+            values=col_data, 
+            names=col_nom, 
+            hole=0.4,
+            color_discrete_sequence=px.colors.qualitative.Set3 # Palette variée pour les collèges
+        )
+        fig_etab.update_traces(textposition='inside', textinfo='percent')
+        fig_etab.update_layout(height=400, margin=dict(t=0, b=0, l=0, r=0))
+        st.plotly_chart(fig_etab, use_container_width=True)
 
-    with col_gauche:
-        st.subheader("📋 Détail des résultats")
-        st.dataframe(df, use_container_width=True, height=350, hide_index=True)
-    
-    with col_droite:
-        st.subheader("🎯 Répartition Globale")
+    with col_pie2:
+        st.subheader("🎯 Répartition par Poste (Global)")
         postes = ['Electricité', 'Combustible', 'Transport', 'Biens et consommables', 'Alimentation']
         cols_valides = [c for c in postes if c in df.columns]
         
@@ -87,19 +90,23 @@ try:
             
             totaux = df[cols_valides].sum().reset_index()
             totaux.columns = ['Poste', 'Valeur']
+            
+            # Tes couleurs : Vert, Saumon, Jaune, Bleu, Orange
             couleurs_perso = ['#2ecc71', '#ff8a80', '#fbc02d', '#3498db', '#f39c12']
 
-            fig_pie = px.pie(
+            fig_postes = px.pie(
                 totaux, values='Valeur', names='Poste', hole=0.4,
                 color_discrete_sequence=couleurs_perso
             )
-            fig_pie.update_traces(textposition='inside', textinfo='percent')
-            fig_pie.update_layout(
-                height=350, 
-                margin=dict(t=0, b=0, l=0, r=0), 
-                legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.0)
-            )
-            st.plotly_chart(fig_pie, use_container_width=True)
+            fig_postes.update_traces(textposition='inside', textinfo='percent')
+            fig_postes.update_layout(height=400, margin=dict(t=0, b=0, l=0, r=0))
+            st.plotly_chart(fig_postes, use_container_width=True)
+
+    st.divider()
+
+    # --- 📋 TABLEAU DES RÉSULTATS (EN DESSOUS) ---
+    st.subheader("📋 Détail des résultats")
+    st.dataframe(df, use_container_width=True, height=300, hide_index=True)
 
 except Exception as e:
     st.error(f"Erreur technique : {e}")
