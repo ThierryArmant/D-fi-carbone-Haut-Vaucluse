@@ -1,86 +1,67 @@
 import streamlit as st
-from streamlit_gsheets import GSheetsConnection
 import pandas as pd
-import plotly.express as px
+import altair as alt
 
-# Configuration de la page
-st.set_page_config(page_title="Défi Carbone Haut-Vaucluse", layout="wide")
-st.title("🚗 Mon Défi Carbone - Suivi des émissions")
+st.set_page_config(page_title="Défi Carbone", layout="wide")
+st.title("🌱 Défi Carbone : Réseau Haut Vaucluse")
 
-# 1. CONNEXION
-conn = st.connection("gsheets", type=GSheetsConnection)
+# --- CONNEXION ---
+votre_gid = "169103083" 
+sheet_url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid={votre_gid}"
 
-# 2. DICTIONNAIRE DES ETABLISSEMENTS
-etablissements = {
-    "Collège Saint-Exupéry": "EXUPERY",
-    "Collège Jean Giono": "GIONO",
-    "Lycée Pro A. Briand": "BRIAND",
-    "Collège Victor Schoelcher": "SCHOELCHER",
-    "Lycée Pro F. Revoul": "REVOUL",
-    "Saint Jean le Baptiste": "BAPTISTE",
-    "Lycée Lucie Aubrac": "AUBRAC",
-    "Saint Louis": "ST_LOUIS",
-    "Collège Henri Boudon": "BOUDON",
-    "Collège Paul Éluard": "ELUARD",
-    "Arausio": "ARAUSIO",
-    "Collège Vallis Aeria": "VALLIS_AERIA",
-    "Argensol": "ARGENSOL",
-    "Collège Barbara": "BARBARA",
-    "Lycée de l'Arc": "ARC",
-    "Lycée Viticole": "VITICOLE",
-    "École Jules Ferry": "FERRY",
-    "École du Grillon": "GRILLON",
-    "École Curie": "CURIE"
-}
-
-# 3. INTERFACE DE SÉLECTION
-choix_joli = st.selectbox("Sélectionnez votre établissement :", list(etablissements.keys()))
-nom_onglet_reel = etablissements[choix_joli]
-
-# 4. LECTURE DES DONNÉES
 try:
-    df = conn.read(worksheet=nom_onglet_reel, ttl=0)
+    df = pd.read_csv(sheet_url)
     
-    if df is not None and not df.empty:
-        st.subheader(f"📊 Résultats pour : {choix_joli}")
-        st.write("Derniers trajets enregistrés :")
-        st.dataframe(df.tail(10))
-        
-        if "KM" in df.columns and "Date" in df.columns:
-            fig = px.bar(df, x="Date", y="KM", title=f"Consommation KM - {choix_joli}")
-            st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.info(f"L'onglet '{nom_onglet_reel}' est vide ou n'a pas encore de données.")
+    # Recherche de la ligne de titre
+    for i in range(len(df)):
+        if "Etablissements" in df.iloc[i].values:
+            df.columns = df.iloc[i]
+            df = df.iloc[i+1:].reset_index(drop=True)
+            break
 
+    # --- NETTOYAGE ---
+    col_nom = "Etablissements"
+    col_data = "Total émissions"
+
+    df.columns = [str(c).strip() for c in df.columns]
+    if col_data in df.columns:
+        df[col_data] = df[col_data].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True)
+        df[col_data] = pd.to_numeric(df[col_data], errors='coerce').fillna(0)
+    
+    df = df.dropna(subset=[col_nom])
+    df = df.loc[:, df.columns.notnull()]
+    df = df.loc[:, ~df.columns.str.contains('^Unnamed|^nan', na=False)]
+
+    # --- CALCUL DE LA COULEUR DANS LE TABLEAU (Simple et fiable) ---
+    def determiner_couleur(valeur):
+        if valeur < 2000:
+            return "#2ecc71" # Vert
+        elif valeur <= 4000:
+            return "#f39c12" # Orange
+        else:
+            return "#e74c3c" # Rouge
+
+    df['color_hex'] = df[col_data].apply(determiner_couleur)
+
+    st.success("Données synchronisées !")
+
+    # --- GRAPHIQUE SIMPLIFIÉ ---
+    st.subheader("📊 Analyse des émissions par établissement")
+
+    chart = alt.Chart(df).mark_bar().encode(
+        x=alt.X(f"{col_nom}:N", sort='-y', title="Établissements"),
+        y=alt.Y(f"{col_data}:Q", title="Émissions (kg CO2e)"),
+        color=alt.Color('color_hex:N', scale=None), # On utilise directement le code couleur du tableau
+        tooltip=[col_nom, col_data]
+    ).properties(height=450).interactive()
+
+    st.altair_chart(chart, use_container_width=True)
+
+    st.info("💡 **Seuils :** 🟢 < 2000 kg | 🟡 2000-4000 kg | 🔴 > 4000 kg")
+
+    # --- TABLEAU ---
+    st.subheader("📋 Détail des résultats")
+    st.dataframe(df.drop(columns=['color_hex']), use_container_width=True)
+    
 except Exception as e:
-    st.error(f"Impossible d'ouvrir l'onglet '{nom_onglet_reel}'")
-    st.info("Vérifiez le nom de vos onglets dans Google Sheets.")
-
-st.divider()
-
-# 5. FORMULAIRE D'AJOUT
-st.subheader(f"📝 Ajouter un trajet pour {choix_joli}")
-with st.form("form_ajout"):
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        date_saisie = st.date_input("Date")
-    with c2:
-        km_saisie = st.number_input("Nombre de KM", min_value=0.0, step=0.1)
-    with c3:
-        transport_saisie = st.selectbox("Transport", ["Voiture", "Bus", "Train", "Vélo"])
-    
-    valider = st.form_submit_button("Enregistrer le trajet")
-
-if valider:
-    try:
-        nouvelle_ligne = pd.DataFrame([{
-            "Date": str(date_saisie),
-            "KM": km_saisie,
-            "Transport": transport_saisie
-        }])
-        df_final = pd.concat([df, nouvelle_ligne], ignore_index=True)
-        conn.update(worksheet=nom_onglet_reel, data=df_final)
-        st.success(f"✅ Trajet enregistré avec succès pour {choix_joli} !")
-        st.balloons()
-    except Exception as e:
-        st.error("Erreur lors de l'enregistrement.")
+    st.error(f"Erreur technique : {e}")
