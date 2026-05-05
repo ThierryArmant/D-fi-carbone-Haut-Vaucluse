@@ -34,9 +34,9 @@ try:
 
     # --- CALCUL DE LA COULEUR DANS LE TABLEAU (Simple et fiable) ---
     def determiner_couleur(valeur):
-        if valeur < 10000:
+        if valeur < 4000:
             return "#2ecc71" # Vert
-        elif valeur <= 20000:
+        elif valeur <= 5000:
             return "#f39c12" # Orange
         else:
             return "#e74c3c" # Rouge
@@ -57,7 +57,7 @@ try:
 
     st.altair_chart(chart, use_container_width=True)
 
-    st.info("💡 **Seuils :** 🟢 < 10000 kg | 🟡 10000-20000 kg | 🔴 > 20000 kg")
+    st.info("💡 **Seuils :** 🟢 < 4000 kg | 🟡 4000-5000 kg | 🔴 > 5000 kg")
 
     # --- TABLEAU ---
     st.subheader("📋 Détail des résultats")
