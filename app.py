@@ -21,7 +21,7 @@ try:
 
     # --- NETTOYAGE ---
     col_nom = "Etablissements"
-    col_data = "Total émissions"
+    col_data = "conso carbone  par personne"
 
     df.columns = [str(c).strip() for c in df.columns]
     if col_data in df.columns:
