@@ -5,7 +5,7 @@ import plotly.express as px
 # 1. Configuration de la page
 st.set_page_config(page_title="Défi Carbone", layout="wide")
 
-# --- FONCTION POUR LE FOND D'ÉCRAN ET L'OPTIMISATION DE L'ESPACE ---
+# --- STYLE ET FOND D'ÉCRAN ---
 def set_bg_and_style():
     st.markdown(
         f"""
@@ -18,18 +18,14 @@ def set_bg_and_style():
             background-size: 75%;
             background-color: #f0f2f6;
         }}
-        /* On remonte tout le bloc vers le haut et on réduit les marges */
         .main .block-container {{
             background-color: rgba(255, 255, 255, 0.92);
             padding-top: 1rem !important; 
-            padding-bottom: 1rem !important;
+            padding-bottom: 0.5rem !important;
             border-radius: 15px;
             margin-top: 5px;
         }}
-        /* Suppression de l'espace vide sous le header Streamlit */
-        [data-testid="stHeader"] {{
-            height: 0px;
-        }}
+        [data-testid="stHeader"] {{ height: 0px; }}
         </style>
         """,
         unsafe_allow_html=True
@@ -63,7 +59,7 @@ try:
     df = df.dropna(subset=[col_nom])
     df_sorted = df.sort_values(by=col_pers, ascending=True)
 
-    # --- TITRE ULTRA COMPACT ---
+    # --- TITRE ---
     st.markdown("<h2 style='text-align: center; margin-top: 0px; color: #1e3d59;'>🌱 Consommation Carbone : Réseau Haut Vaucluse</h2>", unsafe_allow_html=True)
     
     # --- LIGNE 1 : GRAPHIQUES ---
@@ -75,8 +71,20 @@ try:
             df_sorted, x=col_pers, y=col_nom, orientation='h',
             text=col_pers, color=col_pers, color_continuous_scale='RdYlGn_r'
         )
-        fig_indiv.update_traces(texttemplate='%{text:.1f}', textposition='outside')
-        fig_indiv.update_layout(height=250, margin=dict(t=10, b=10, l=0, r=0), showlegend=False, coloraxis_showscale=False)
+        # Augmentation de la taille de la police des chiffres (insidetextfont)
+        fig_indiv.update_traces(
+            texttemplate='%{text:.1f}', 
+            textposition='auto',
+            textfont_size=14,
+            insidetextfont_color='white'
+        )
+        fig_indiv.update_layout(
+            height=260, 
+            margin=dict(t=10, b=10, l=0, r=10), 
+            showlegend=False, 
+            coloraxis_showscale=False,
+            yaxis={'tickfont': {'size': 13}} # Noms des établissements plus grands
+        )
         st.plotly_chart(fig_indiv, use_container_width=True)
 
     with col2:
@@ -91,13 +99,13 @@ try:
             totaux.columns = ['Poste', 'Valeur']
             couleurs_perso = ['#2ecc71', '#ff8a80', '#fbc02d', '#3498db', '#f39c12']
             fig_postes = px.pie(totaux, values='Valeur', names='Poste', hole=0.4, color_discrete_sequence=couleurs_perso)
-            fig_postes.update_layout(height=250, margin=dict(t=10, b=10, l=0, r=0))
+            fig_postes.update_layout(height=260, margin=dict(t=10, b=10, l=0, r=0))
             st.plotly_chart(fig_postes, use_container_width=True)
 
-    # --- LIGNE 2 : LE GRAND TABLEAU ---
+    # --- LIGNE 2 : TABLEAU ---
     st.markdown("<p style='font-weight: bold; margin-bottom: 5px;'>📋 Détails par établissement</p>", unsafe_allow_html=True)
-    # Hauteur augmentée pour occuper le reste de l'écran
-    st.dataframe(df, use_container_width=True, height=550, hide_index=True)
+    # Hauteur ajustée à 480px pour voir la dernière ligne
+    st.dataframe(df, use_container_width=True, height=480, hide_index=True)
 
 except Exception as e:
     st.error(f"Erreur : {e}")
