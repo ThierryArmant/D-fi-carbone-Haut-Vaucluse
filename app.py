@@ -57,7 +57,7 @@ try:
 
     st.altair_chart(chart, use_container_width=True)
 
-    st.info("💡 **Seuils :** 🟢 < 2000 kg | 🟡 2000-4000 kg | 🔴 > 4000 kg")
+    st.info("💡 **Seuils :** 🟢 < 10000 kg | 🟡 10000-20000 kg | 🔴 > 20000 kg")
 
     # --- TABLEAU ---
     st.subheader("📋 Détail des résultats")
