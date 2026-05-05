@@ -5,7 +5,7 @@ import plotly.express as px
 # 1. Configuration de la page
 st.set_page_config(page_title="Défi Carbone", layout="wide")
 
-# --- FONCTION POUR LE FOND D'ÉCRAN ---
+# --- FONCTION POUR LE FOND D'ÉCRAN (DÉZOOMÉ) ---
 def set_bg():
     st.markdown(
         f"""
@@ -13,7 +13,10 @@ def set_bg():
         .stApp {{
             background-image: url("https://lh3.googleusercontent.com/d/1KA5uUEwfkuW99zl93_ngwq1dJ115zXrK");
             background-attachment: fixed;
-            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 80%; /* <--- MODIFIE CE % POUR DÉZOOMER (ex: 50% pour dézoomer beaucoup) */
+            background-color: #f0f2f6; /* Couleur de secours pour les bords */
         }}
         
         .main .block-container {{
@@ -38,7 +41,6 @@ sheet_url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso
 try:
     df = pd.read_csv(sheet_url)
     
-    # Recherche de la ligne de titre
     for i in range(len(df)):
         if "Etablissements" in df.iloc[i].values:
             df.columns = df.iloc[i]
@@ -60,23 +62,18 @@ try:
 
     st.success("Données synchronisées !")
 
-    # --- 📊 GRAPHIQUE DU HAUT (MODE DÉROULABLE COMME LE TABLEAU) ---
+    # --- 📊 GRAPHIQUE DU HAUT (MODE DÉROULABLE) ---
     st.subheader("📊 Analyse des émissions par établissement")
-    
-    # On prépare les données : l'établissement devient l'index pour le graphique
     chart_data = df[[col_nom, col_data]].set_index(col_nom)
-    
-    # st.bar_chart crée une boîte fixe avec scroll automatique si besoin
     st.bar_chart(chart_data, height=300, use_container_width=True, color="#e74c3c")
     
     st.info("💡 **Seuils :** 🟢 < 2000 kg | 🟡 2000-4000 kg | 🔴 > 4000 kg")
 
-    # --- 📋 TABLEAU (GAUCHE) ET CAMEMBERT (DROITE) ---
+    # --- 📋 TABLEAU ET CAMEMBERT ---
     col_gauche, col_droite = st.columns([1.8, 1.2])
 
     with col_gauche:
         st.subheader("📋 Détail des résultats")
-        # Affichage du tableau avec barre de défilement
         st.dataframe(df, use_container_width=True, height=350, hide_index=True)
     
     with col_droite:
@@ -90,8 +87,6 @@ try:
             
             totaux = df[cols_valides].sum().reset_index()
             totaux.columns = ['Poste', 'Valeur']
-
-            # Couleurs Vert, Saumon, Jaune, Bleu, Orange
             couleurs_perso = ['#2ecc71', '#ff8a80', '#fbc02d', '#3498db', '#f39c12']
 
             fig_pie = px.pie(
