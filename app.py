@@ -24,15 +24,14 @@ def set_bg():
             margin-top: 20px;
         }}
         
-        /* ZONE DÉROULANTE POUR LE GRAPHIQUE DU HAUT */
+        /* ZONE DÉROULANTE AMÉLIORÉE */
         .scroll-graph {{
-            height: 300px;
-            overflow-y: auto;
-            overflow-x: auto;
+            height: 400px;
+            overflow: auto;
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 8px;
             background-color: white;
-            padding: 10px;
+            padding: 15px;
         }}
         </style>
         """,
@@ -81,20 +80,19 @@ try:
     # --- 📊 GRAPHIQUE DES SCORES DÉROULABLE ---
     st.subheader("📊 Analyse des émissions par établissement")
     
-    # On enferme le graphique dans une "div" scrollable
     st.markdown('<div class="scroll-graph">', unsafe_allow_html=True)
     
     chart = alt.Chart(df).mark_bar().encode(
-        x=alt.X(f"{col_nom}:N", sort='-y', title="Établissements", axis=alt.Axis(labelAngle=-45)),
+        x=alt.X(f"{col_nom}:N", sort='-y', title="Établissements", axis=alt.Axis(labelAngle=-45, labelFontSize=12)),
         y=alt.Y(f"{col_data}:Q", title="Émissions (kg CO2e)"),
         color=alt.Color('color_hex:N', scale=None),
         tooltip=[col_nom, col_data]
     ).properties(
-        width=1200, # Largeur augmentée pour forcer le scroll horizontal si besoin
-        height=280   # Hauteur contenue pour le scroll vertical
+        width=1800, # On force une grande largeur pour activer le scroll horizontal
+        height=320   # On laisse de la place pour les noms en bas
     ).interactive()
 
-    st.altair_chart(chart, use_container_width=False) # False pour respecter la largeur de 1200
+    st.altair_chart(chart, use_container_width=False)
     st.markdown('</div>', unsafe_allow_html=True)
     
     st.info("💡 **Seuils :** 🟢 < 2000 kg | 🟡 2000-4000 kg | 🔴 > 4000 kg")
@@ -104,7 +102,7 @@ try:
 
     with col_gauche:
         st.subheader("📋 Détail des résultats")
-        st.dataframe(df.drop(columns=['color_hex']), use_container_width=True, height=300)
+        st.dataframe(df.drop(columns=['color_hex']), use_container_width=True, height=350)
     
     with col_droite:
         st.subheader("🎯 Répartition Globale")
@@ -126,7 +124,7 @@ try:
             )
             fig_pie.update_traces(textposition='inside', textinfo='percent')
             fig_pie.update_layout(
-                height=300, 
+                height=350, 
                 margin=dict(t=0, b=0, l=0, r=0), 
                 legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.0)
             )
