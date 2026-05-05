@@ -23,6 +23,12 @@ def set_bg():
             border-radius: 15px;
             margin-top: 20px;
         }}
+        /* Style pour rendre le graphique déroulable horizontalement */
+        .scroll-container {{
+            overflow-x: auto;
+            white-space: nowrap;
+            width: 100%;
+        }}
         </style>
         """,
         unsafe_allow_html=True
@@ -58,7 +64,6 @@ try:
     df = df.loc[:, df.columns.notnull()]
     df = df.loc[:, ~df.columns.str.contains('^Unnamed|^nan', na=False)]
 
-    # Couleurs du graphique à barres (Seuils)
     def determiner_couleur(valeur):
         if valeur < 2000: return "#2ecc71" # Vert
         elif valeur <= 4000: return "#f39c12" # Orange
@@ -66,23 +71,32 @@ try:
 
     df['color_hex'] = df[col_data].apply(determiner_couleur)
 
-    # --- GRAPHIQUE DES SCORES (HAUTEUR 500) ---
+    st.success("Données synchronisées !")
+
+    # --- 📊 GRAPHIQUE DES SCORES COMPACT ET DÉROULABLE ---
     st.subheader("📊 Analyse des émissions par établissement")
+    
+    # On place le graphique dans un conteneur HTML pour le défilement
+    st.markdown('<div class="scroll-container">', unsafe_allow_html=True)
+    
     chart = alt.Chart(df).mark_bar().encode(
         x=alt.X(f"{col_nom}:N", sort='-y', title="Établissements", axis=alt.Axis(labelAngle=-45)),
         y=alt.Y(f"{col_data}:Q", title="Émissions (kg CO2e)"),
         color=alt.Color('color_hex:N', scale=None),
         tooltip=[col_nom, col_data]
-    ).properties(height=500).interactive()
+    ).properties(height=350).interactive() # Hauteur réduite pour tout voir d'un coup
 
     st.altair_chart(chart, use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    st.info("💡 **Seuils :** 🟢 < 2000 kg | 🟡 2000-4000 kg | 🔴 > 4000 kg")
 
-    # --- TABLEAU ET CAMEMBERT ---
-    col_gauche, col_droite = st.columns([2, 1])
+    # --- 📋 TABLEAU ET CAMEMBERT SUR LA MÊME LIGNE ---
+    col_gauche, col_droite = st.columns([1.8, 1.2]) # Ajustement des proportions
 
     with col_gauche:
         st.subheader("📋 Détail des résultats")
-        st.dataframe(df.drop(columns=['color_hex']), use_container_width=True, height=400)
+        st.dataframe(df.drop(columns=['color_hex']), use_container_width=True, height=350)
     
     with col_droite:
         st.subheader("🎯 Répartition Globale")
@@ -96,8 +110,7 @@ try:
             totaux = df[cols_valides].sum().reset_index()
             totaux.columns = ['Poste', 'Valeur']
 
-            # --- APPLICATION DE TES COULEURS PRÉFÉRÉES ---
-            couleurs_perso = ['#2ecc71', '#ff8a80', '#fbc02d', '#3498db', '#f39c12'] # Vert, Saumon, Jaune, Bleu, Orange
+            couleurs_perso = ['#2ecc71', '#ff8a80', '#fbc02d', '#3498db', '#f39c12']
 
             fig_pie = px.pie(
                 totaux, 
@@ -108,9 +121,9 @@ try:
             )
             fig_pie.update_traces(textposition='inside', textinfo='percent')
             fig_pie.update_layout(
-                height=400, 
+                height=350, 
                 margin=dict(t=0, b=0, l=0, r=0), 
-                legend=dict(orientation="h", y=-0.2)
+                legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.0)
             )
             st.plotly_chart(fig_pie, use_container_width=True)
 
