@@ -38,6 +38,7 @@ sheet_url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso
 try:
     df = pd.read_csv(sheet_url)
     
+    # Recherche de la ligne de titre
     for i in range(len(df)):
         if "Etablissements" in df.iloc[i].values:
             df.columns = df.iloc[i]
@@ -59,24 +60,23 @@ try:
 
     st.success("Données synchronisées !")
 
-    # --- 📊 GRAPHIQUE DU HAUT (Même comportement que le tableau) ---
+    # --- 📊 GRAPHIQUE DU HAUT (MODE DÉROULABLE COMME LE TABLEAU) ---
     st.subheader("📊 Analyse des émissions par établissement")
     
-    # On prépare les données pour le bar_chart natif de Streamlit
+    # On prépare les données : l'établissement devient l'index pour le graphique
     chart_data = df[[col_nom, col_data]].set_index(col_nom)
     
-    # On utilise st.bar_chart avec une hauteur fixe (comme pour le tableau)
-    # C'est ce qui permet d'avoir le scroll automatique et de virer le vide blanc
+    # st.bar_chart crée une boîte fixe avec scroll automatique si besoin
     st.bar_chart(chart_data, height=300, use_container_width=True, color="#e74c3c")
     
     st.info("💡 **Seuils :** 🟢 < 2000 kg | 🟡 2000-4000 kg | 🔴 > 4000 kg")
 
-    # --- 📋 TABLEAU ET CAMEMBERT ---
+    # --- 📋 TABLEAU (GAUCHE) ET CAMEMBERT (DROITE) ---
     col_gauche, col_droite = st.columns([1.8, 1.2])
 
     with col_gauche:
         st.subheader("📋 Détail des résultats")
-        # Ton tableau qui fonctionne bien
+        # Affichage du tableau avec barre de défilement
         st.dataframe(df, use_container_width=True, height=350, hide_index=True)
     
     with col_droite:
@@ -91,6 +91,7 @@ try:
             totaux = df[cols_valides].sum().reset_index()
             totaux.columns = ['Poste', 'Valeur']
 
+            # Couleurs Vert, Saumon, Jaune, Bleu, Orange
             couleurs_perso = ['#2ecc71', '#ff8a80', '#fbc02d', '#3498db', '#f39c12']
 
             fig_pie = px.pie(
