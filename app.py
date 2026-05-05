@@ -1,67 +1,77 @@
 import streamlit as st
 import pandas as pd
-import altair as alt
+import plotly.express as px
+import plotly.graph_objects as go
 
-st.set_page_config(page_title="Défi Carbone", layout="wide")
-st.title("🌱 Défi Carbone : Réseau Haut Vaucluse")
+# 1. Configuration de la page (Mode Large pour la place)
+st.set_page_config(page_title="Mon Défi Carbone", layout="wide")
 
-# --- CONNEXION ---
-votre_gid = "169103083" 
-sheet_url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid={votre_gid}"
+st.title("🌍 Mon Défi Carbone - Haut Vaucluse")
+
+# 2. Identifiant du Sheets
+sheet_id = "12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M"
+
+# 3. Menu de sélection
+etablissement = st.sidebar.selectbox("Choisir un établissement", ["GIONO", "EXUPERY"])
+
+# 4. URL de lecture directe
+url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={etablissement}"
 
 try:
-    df = pd.read_csv(sheet_url)
+    # Lecture des données
+    df = pd.read_csv(url)
     
-    # Recherche de la ligne de titre
-    for i in range(len(df)):
-        if "Etablissements" in df.iloc[i].values:
-            df.columns = df.iloc[i]
-            df = df.iloc[i+1:].reset_index(drop=True)
-            break
+    # Nettoyage des noms de colonnes (enlève les espaces et met une majuscule)
+    df.columns = [c.strip().capitalize() for c in df.columns]
 
-    # --- NETTOYAGE ---
-    col_nom = "Etablissements"
-    col_data = "Total émissions"
+    # --- MISE EN PAGE (2/3 tableau, 1/3 dashboard) ---
+    col_table, col_dash = st.columns([2, 1])
 
-    df.columns = [str(c).strip() for c in df.columns]
-    if col_data in df.columns:
-        df[col_data] = df[col_data].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True)
-        df[col_data] = pd.to_numeric(df[col_data], errors='coerce').fillna(0)
-    
-    df = df.dropna(subset=[col_nom])
-    df = df.loc[:, df.columns.notnull()]
-    df = df.loc[:, ~df.columns.str.contains('^Unnamed|^nan', na=False)]
+    with col_table:
+        st.subheader(f"📊 Tableau de synthèse : {etablissement}")
+        st.dataframe(df, use_container_width=True, hide_index=True)
 
-    # --- CALCUL DE LA COULEUR DANS LE TABLEAU (Simple et fiable) ---
-    def determiner_couleur(valeur):
-        if valeur < 2000:
-            return "#2ecc71" # Vert
-        elif valeur <= 4000:
-            return "#f39c12" # Orange
+    with col_dash:
+        st.subheader("🎯 Dashboard")
+        
+        # Vérification si les colonnes nécessaires existent
+        if 'Poste' in df.columns and 'Total' in df.columns:
+            # --- LE CAMEMBERT ---
+            fig_pie = px.pie(
+                df, 
+                values='Total', 
+                names='Poste',
+                color_discrete_sequence=px.colors.sequential.RdBu,
+                hole=0.3
+            )
+            fig_pie.update_layout(margin=dict(t=0, b=0, l=0, r=0))
+            st.plotly_chart(fig_pie, use_container_width=True)
+            
+            st.divider()
+            
+            # --- LA JAUGE (FUSÉE) ---
+            st.subheader("🚀 Consommation Totale")
+            total_conso = df['Total'].sum()
+            
+            fig_gauge = go.Figure(go.Indicator(
+                mode = "gauge+number",
+                value = total_conso,
+                title = {'text': "kg CO2e", 'font': {'size': 16}},
+                gauge = {
+                    'axis': {'range': [None, 5000]}, # À ajuster selon tes objectifs
+                    'bar': {'color': "#ef553b"},
+                    'steps': [
+                        {'range': [0, 2000], 'color': "#e8f5e9"},
+                        {'range': [2000, 4000], 'color': "#fff9c4"}
+                    ],
+                }
+            ))
+            fig_gauge.update_layout(height=250, margin=dict(t=20, b=20, l=20, r=20))
+            st.plotly_chart(fig_gauge, use_container_width=True)
         else:
-            return "#e74c3c" # Rouge
+            st.warning("⚠️ Pour voir les graphiques, assure-toi d'avoir les colonnes 'Poste' et 'Total' dans ton Sheets.")
 
-    df['color_hex'] = df[col_data].apply(determiner_couleur)
-
-    st.success("Données synchronisées !")
-
-    # --- GRAPHIQUE SIMPLIFIÉ ---
-    st.subheader("📊 Analyse des émissions par établissement")
-
-    chart = alt.Chart(df).mark_bar().encode(
-        x=alt.X(f"{col_nom}:N", sort='-y', title="Établissements"),
-        y=alt.Y(f"{col_data}:Q", title="Émissions (kg CO2e)"),
-        color=alt.Color('color_hex:N', scale=None), # On utilise directement le code couleur du tableau
-        tooltip=[col_nom, col_data]
-    ).properties(height=450).interactive()
-
-    st.altair_chart(chart, use_container_width=True)
-
-    st.info("💡 **Seuils :** 🟢 < 2000 kg | 🟡 2000-4000 kg | 🔴 > 4000 kg")
-
-    # --- TABLEAU ---
-    st.subheader("📋 Détail des résultats")
-    st.dataframe(df.drop(columns=['color_hex']), use_container_width=True)
-    
 except Exception as e:
-    st.error(f"Erreur technique : {e}")
+    st.error(f"Erreur lors de l'affichage des données : {e}")
+
+st.caption("Projet EPLE Bas Carbone - Actualisation automatique via Google Sheets")
