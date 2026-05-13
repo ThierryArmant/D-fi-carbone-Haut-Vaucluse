@@ -20,8 +20,13 @@ def set_style():
             text-align: center; font-weight: bold; font-size: 20px; color: #1e3d59; margin-bottom: 15px;
         }
         [data-testid="stHeader"] { height: 0px; }
-        .stTabs [data-baseweb="tab"] {
-            font-weight: bold;
+        .stTabs [data-baseweb="tab"] { font-weight: bold; }
+        .anecdote {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-left: 5px solid #2196f3;
+            border-radius: 5px;
+            margin-top: 10px;
         }
         </style>
         """,
@@ -92,46 +97,75 @@ with tab_dashboard:
 
         st.dataframe(df, hide_index=True, use_container_width=True)
 
-# --- ONGLET GLOSSAIRE (LES 5 PÔLES PRÉCIS) ---
+# --- ONGLET GLOSSAIRE AVEC ANECDOTES ---
 with tab_glossaire:
     st.markdown("<h2 style='color: #1e3d59;'>📖 Référentiel des 5 Pôles Carbone</h2>", unsafe_allow_html=True)
     
     g_tabs = st.tabs(["🍎 1. Alimentation", "❄️ 2. Énergie & Clim", "🚌 3. Transports", "🗑️ 4. Déchets", "📦 5. Biens & Conso"])
     
     with g_tabs[0]:
-        st.subheader("Pôle Restauration (ADEME)")
+        st.subheader("Pôle Restauration")
         c1, c2, c3, c4 = st.columns(4)
         c1.metric("Viande Rouge", "7.26 kg", "CO2e/repas")
         c2.metric("Viande Blanche", "1.60 kg", "CO2e/repas")
         c3.metric("Poisson", "2.00 kg", "CO2e/repas")
         c4.metric("Végétarien", "0.50 kg", "CO2e/repas")
-        st.info("L'impact du poisson est une moyenne entre pêche et élevage.")
+        
+        st.markdown("""
+        <div class="anecdote">
+        <b>💡 Le saviez-vous ?</b><br>
+        Manger <b>un seul steak de bœuf</b> émet autant de CO2 que de parcourir <b>32 km en voiture</b>. 
+        À l'inverse, un repas végétarien équivaut à seulement 2 km. Pour compenser un repas "Viande Rouge", il faudrait planter un arbre et le laisser pousser pendant 4 mois !
+        </div>
+        """, unsafe_allow_html=True)
 
     with g_tabs[1]:
-        st.subheader("Pôle Énergie & Fluides (PEBC)")
-        st.write("- **Électricité :** 0.06 kgCO2e / kWh")
-        st.write("- **Gaz Naturel :** 0.227 kgCO2e / kWh")
-        st.write("- **Climatisation (R410A) :** 2088 kgCO2e / kg (Masse de recharge)")
-        st.warning("C'est ici que l'on compte les fuites de gaz frigorigènes des climatisations.")
+        st.subheader("Pôle Énergie & Fluides")
+        st.write("- **Climatisation (R410A) :** 2088 kgCO2e / kg")
+        
+        st.markdown("""
+        <div class="anecdote">
+        <b>❄️ L'anecdote "Glaçante" :</b><br>
+        Si votre climatisation fuit de seulement <b>1 kg de gaz</b>, cela pollue autant que de rouler <b>10 000 km</b> avec une voiture thermique (soit un trajet aller-retour Paris-Pékin) ! 
+        C'est pour cela que l'entretien des machines est crucial.
+        </div>
+        """, unsafe_allow_html=True)
 
     with g_tabs[2]:
-        st.subheader("Pôle Transports (Scolaire & Pro)")
+        st.subheader("Pôle Transports")
         st.write("- **Autocar :** 0.030 kgCO2e / km / élève")
-        st.write("- **Voiture thermique :** 0.218 kgCO2e / km")
-        st.write("- **Vélo / Marche :** 0 kg")
+        
+        st.markdown("""
+        <div class="anecdote">
+        <b>🚌 L'union fait la force :</b><br>
+        Un bus scolaire transporte environ 50 élèves. Si chaque élève venait seul en voiture, on émettrait <b>7 fois plus de CO2</b>. 
+        Venir en bus, c'est comme si 43 voitures disparaissaient instantanément de la route !
+        </div>
+        """, unsafe_allow_html=True)
 
     with g_tabs[3]:
-        st.subheader("Pôle Déchets (ADEME)")
-        st.write("- **Ordures Ménagères (OMR) :** 0.45 kgCO2e / kg")
-        st.write("- **Gaspillage alimentaire (Pain) :** 0.63 kgCO2e / kg")
-        st.write("- **Papier / Carton (Recyclage) :** 0.02 kgCO2e / kg")
-        st.info("Le tri sélectif permet de diviser l'impact des déchets par 20.")
+        st.subheader("Pôle Déchets")
+        st.write("- **Gaspillage Pain :** 0.63 kgCO2e / kg")
+        
+        st.markdown("""
+        <div class="anecdote">
+        <b>🥖 Ne perdez pas une miette :</b><br>
+        Jeter <b>1 kg de pain</b> à la poubelle, c'est l'équivalent en CO2 de laisser une <b>ampoule allumée pendant 60 heures</b>. 
+        Pourquoi ? Parce qu'il a fallu de l'énergie pour cultiver le blé, le moudre, transporter la farine et cuire le pain au four !
+        </div>
+        """, unsafe_allow_html=True)
 
     with g_tabs[4]:
         st.subheader("Pôle Biens & Consommables")
-        st.write("- **Papier A4 :** 1.05 kgCO2e / kg (soit 2.62 kg par ramette)")
-        st.write("- **Ordinateur Portable :** 161 kgCO2e (Fabrication)")
-        st.write("- **Tablette :** 65 kgCO2e (Fabrication)")
+        st.write("- **Ordinateur Portable :** 161 kgCO2e")
+        
+        st.markdown("""
+        <div class="anecdote">
+        <b>💻 L'énergie "grise" :</b><br>
+        Fabriquer <b>un seul ordinateur portable</b> demande d'extraire près de <b>800 kg de matières premières</b>. 
+        Son impact carbone est tel qu'il faudrait l'utiliser pendant <b>25 ans</b> pour que sa consommation électrique dépasse enfin la pollution causée par sa fabrication !
+        </div>
+        """, unsafe_allow_html=True)
 
     st.divider()
-    st.caption("Sources : Base Empreinte ADEME - Mise à jour Mai 2026")
+    st.caption("Sources : Base Empreinte ADEME - Comparaisons pédagogiques 2026")
