@@ -1,11 +1,12 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 
 # 1. Configuration de la page
 st.set_page_config(page_title="Défi Carbone", layout="wide")
 
-# --- STYLE CSS ÉPURÉ (FOND BLANC OPAQUE) ---
+# --- STYLE CSS (FOND BLANC OPAQUE) ---
 def set_bg_and_style():
     st.markdown(
         f"""
@@ -20,7 +21,7 @@ def set_bg_and_style():
         }}
         .main .block-container {{
             background-color: #ffffff; 
-            padding: 1rem 2rem !important;
+            padding: 1.5rem 2rem !important;
             border-radius: 12px;
             margin-top: 10px;
             box-shadow: 0px 10px 30px rgba(0,0,0,0.2);
@@ -52,7 +53,6 @@ try:
     col_pers = "conso carbone  par personne"
     df.columns = [str(c).strip() for c in df.columns]
 
-    # Conversion numérique
     if col_pers in df.columns:
         df[col_pers] = pd.to_numeric(df[col_pers].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
     
@@ -61,46 +61,62 @@ try:
     # --- TITRE ---
     st.markdown("<h2 style='text-align: center; color: #1e3d59; margin-bottom: 10px;'>🌱 Consommation Carbone : Réseau Haut Vaucluse</h2>", unsafe_allow_html=True)
 
-    # --- MISE EN PAGE : 2 COLONNES ---
-    col_gauche, col_droite = st.columns([1.2, 0.8])
+    # --- LIGNE 1 : TABLEAU DE PERFORMANCE ET JAUGE ---
+    col_gauche, col_droite = st.columns([1.1, 0.9])
 
     with col_gauche:
-        st.markdown("**📊 Performance Individuelle (kg CO2e/pers)**")
-        # ICI ON UTILISE LA FORMULE DU TABLEAU DU BAS POUR LE HAUT
-        # On crée une colonne avec des barres visuelles dans le tableau
+        st.markdown("**📊 Classement par Établissement**")
         st.dataframe(
             df[[col_nom, col_pers]].sort_values(by=col_pers, ascending=False),
             column_config={
                 col_nom: "Établissement",
                 col_pers: st.column_config.ProgressColumn(
-                    "Consommation Carbone",
-                    help="Consommation par personne",
+                    "Consommations Carbones",
+                    help="kg CO2e par personne",
                     format="%.1f kg",
                     min_value=0,
-                    max_value=float(df[col_pers].max()),
+                    max_value=float(df[col_pers].max() if not df.empty else 5000),
                 ),
             },
             hide_index=True,
             use_container_width=True,
-            height=350 # Même hauteur que ton camembert
+            height=350 
         )
 
     with col_droite:
-        st.markdown("**🎯 Répartition par Poste (Global)**")
-        postes = ['Electricité', 'Combustible', 'Transport', 'Biens et consommables', 'Alimentation']
-        cols_valides = [c for c in postes if c in df.columns]
-        if cols_valides:
-            temp_df = df[cols_valides].apply(lambda x: pd.to_numeric(x.astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce')).sum().reset_index()
-            temp_df.columns = ['Poste', 'Valeur']
-            fig_pie = px.pie(temp_df, values='Valeur', names='Poste', hole=0.4, 
-                             color_discrete_sequence=['#2ecc71', '#ff8a80', '#fbc02d', '#3498db', '#f39c12'])
-            fig_pie.update_layout(height=350, margin=dict(t=0, b=0, l=0, r=0))
-            st.plotly_chart(fig_pie, use_container_width=True)
+        st.markdown("**🚀 Objectif : Rester sous les 2500 kg**")
+        
+        # Calcul de la moyenne du réseau pour la jauge
+        valeur_moyenne = df[col_pers].mean() if not df.empty else 0
+        
+        fig_gauge = go.Figure(go.Indicator(
+            mode = "gauge+number",
+            value = valeur_moyenne,
+            number = {'suffix': " kg", 'font': {'size': 40}},
+            domain = {'x': [0, 1], 'y': [0, 1]},
+            gauge = {
+                'axis': {'range': [None, 5000], 'tickwidth': 1},
+                'bar': {'color': "#1e3d59"},
+                'steps': [
+                    {'range': [0, 1500], 'color': "#2ecc71"},   # Zone Verte (Top)
+                    {'range': [1500, 2500], 'color': "#fbc02d"}, # Zone Jaune (Attention)
+                    {'range': [2500, 5000], 'color': "#ff8a80"}  # Zone Rouge (Alerte)
+                ],
+                'threshold': {
+                    'line': {'color': "red", 'width': 5},
+                    'thickness': 0.8,
+                    'value': 2500 # Le trait rouge limite
+                }
+            }
+        ))
+        
+        fig_gauge.update_layout(height=350, margin=dict(t=30, b=0, l=30, r=30))
+        st.plotly_chart(fig_gauge, use_container_width=True)
 
-    # --- LE GRAND TABLEAU DU BAS (L'original) ---
+    # --- LIGNE 2 : TABLEAU DÉTAILLÉ ---
     st.markdown("---")
-    st.markdown("**📋 Détails Complets des Emissions**")
+    st.markdown("**📋 Détails Complets (kg CO2e)**")
     st.dataframe(df, use_container_width=True, height=400, hide_index=True)
 
 except Exception as e:
-    st.error(f"Erreur : {e}")
+    st.error(f"Erreur lors de l'analyse : {e}")
