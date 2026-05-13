@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 # 1. Configuration de la page
 st.set_page_config(page_title="Défi Carbone", layout="wide")
 
-# --- STYLE CSS (FOND BLANC OPAQUE & TITRES INTÉGRÉS) ---
+# --- STYLE CSS AJUSTÉ POUR TOUT INCLURE DANS LE BLANC ---
 def set_bg_and_style():
     st.markdown(
         f"""
@@ -18,25 +18,23 @@ def set_bg_and_style():
             background-size: 60%;
             background-color: #f0f2f6;
         }}
-        /* FOND BLANC UNIQUE POUR TOUTE LA ZONE HAUTE */
+        /* LE BLOC BLANC : On ajoute du padding en haut pour accueillir le titre */
         .main .block-container {{
             background-color: #ffffff; 
-            padding: 1rem 2rem !important;
+            padding: 2rem 2rem !important; 
             border-radius: 12px;
-            margin-top: 10px;
+            margin-top: 20px; /* On descend un peu le bloc blanc par rapport au haut de l'écran */
             box-shadow: 0px 10px 30px rgba(0,0,0,0.2);
         }}
-        /* Suppression de l'en-tête Streamlit */
         [data-testid="stHeader"] {{ height: 0px; }}
         
-        /* Style pour les titres à l'intérieur du bloc */
+        /* Titres internes simplifiés sans marges négatives */
         .inner-title {{
             text-align: center;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 18px;
             color: #1e3d59;
-            margin-top: -5px;
-            margin-bottom: 5px;
+            margin-bottom: 15px;
         }}
         </style>
         """,
@@ -52,7 +50,6 @@ sheet_url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso
 try:
     df_raw = pd.read_csv(sheet_url)
     
-    # Détection de la ligne d'entête
     for i in range(len(df_raw)):
         if "Etablissements" in df_raw.iloc[i].values:
             new_cols = df_raw.iloc[i].values
@@ -66,18 +63,16 @@ try:
     col_nom = "Etablissements"
     col_total_brut = "Total émissions" 
     col_pers = "conso carbone  par personne"
-    # Sélection de la colonne B (Effectif)
     col_nb_gens = [c for c in df.columns if 'personnes' in c.lower() or 'effectif' in c.lower()][0]
 
-    # Conversion numérique
     for c in [col_total_brut, col_pers, col_nb_gens]:
         if c in df.columns:
             df[c] = pd.to_numeric(df[c].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
     
     df = df.dropna(subset=[col_nom])
 
-    # --- TITRE DE L'APPLICATION ---
-    st.markdown("<h2 style='text-align: center; color: #1e3d59; margin-top: -10px;'>🌱 Consommation Carbone : Réseau Haut Vaucluse</h2>", unsafe_allow_html=True)
+    # --- TITRE PRINCIPAL (BIEN DANS LE BLANC) ---
+    st.markdown("<h2 style='text-align: center; color: #1e3d59; margin-bottom: 25px;'>🌱 Consommation Carbone : Réseau Haut Vaucluse</h2>", unsafe_allow_html=True)
 
     # --- LIGNE 1 : CLASSEMENT ET JAUGE ---
     col_gauche, col_droite = st.columns([1.1, 0.9])
@@ -103,7 +98,6 @@ try:
     with col_droite:
         st.markdown('<p class="inner-title">🚀 Impact Réel par Personne (Moyenne Réseau)</p>', unsafe_allow_html=True)
         
-        # Calcul précis
         total_emissions_reseau = df[col_total_brut].sum()
         total_personnes_reseau = df[col_nb_gens].sum()
         valeur_jauge = total_emissions_reseau / total_personnes_reseau if total_personnes_reseau > 0 else 0
@@ -133,7 +127,7 @@ try:
         st.plotly_chart(fig_gauge, use_container_width=True)
 
     # --- LIGNE 2 : TABLEAU DÉTAILLÉ ---
-    st.markdown("<p style='font-weight: bold; color: #1e3d59; margin-bottom: 5px;'>📋 Détails Complets</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-weight: bold; color: #1e3d59; margin-top: 20px; margin-bottom: 10px;'>📋 Détails Complets</p>", unsafe_allow_html=True)
     st.dataframe(df, use_container_width=True, height=350, hide_index=True)
 
 except Exception as e:
