@@ -5,7 +5,6 @@ import pandas as pd
 st.set_page_config(page_title="Eco-Score EPLE", layout="wide")
 
 # --- FONCTION DE CHARGEMENT DES DONNÉES ---
-# Remplace l'URL ci-dessous par l'URL de ton Google Sheets (format export=csv)
 SHEET_URL = "https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/gviz/tq?tqx=out:csv&gid=1700157246"
 
 @st.cache_data(ttl=60)
@@ -28,17 +27,16 @@ if page == "📊 Tableau de Bord":
     data = load_data()
     
     if data is not None:
-        # Affichage du tableau de bord (ton code actuel ici)
-        st.dataframe(data.head(10)) # Exemple d'affichage
+        # Ici ton code d'affichage des graphiques et données existant
+        st.dataframe(data.head(10)) 
         
         st.divider()
         
         # --- SECTION ACCÈS FORMULAIRE ---
         st.subheader("📝 Saisie de données")
-        # Le type="password" cache le code à la saisie
         code_saisi = st.text_input("Entrez le code secret pour accéder au formulaire :", type="password")
         
-        if code_saisi == "MONCODE123": # Remplace par ton vrai code
+        if code_saisi == "MONCODE123": # À personnaliser
             st.success("Accès autorisé")
             st.link_button("Ouvrir le Formulaire de Saisie", "Lien_De_Ton_Formulaire_Google")
         elif code_saisi != "":
@@ -48,56 +46,62 @@ if page == "📊 Tableau de Bord":
 elif page == "📖 Glossaire Expert":
     st.title("📖 Référentiel Expert Carbone")
     st.markdown("""
-    Ce glossaire répertorie les données utilisées pour le calcul de l'empreinte carbone. 
-    Il s'appuie sur les bases de données de l'**ADEME**, du **PEBC** et les rapports du **GIEC**.
+    Ce référentiel permet de comprendre comment chaque donnée saisie est transformée en impact carbone. 
+    Les calculs sont basés sur la **Base Empreinte de l'ADEME** et les rapports du **GIEC**.
     """)
 
-    tabs = st.tabs(["🍎 Alimentation", "❄️ Énergie & Clim", "💻 Numérique", "📦 Consommables"])
+    # Ajout des deux nouveaux onglets : Transports et Déchets
+    tabs = st.tabs(["🍎 Alimentation", "❄️ Énergie & Clim", "🚌 Transports", "🗑️ Déchets", "💻 Numérique", "📦 Consommables"])
 
     with tabs[0]:
         st.subheader("Pôle Restauration")
-        
         with st.expander("🥩 Viande Rouge (Bœuf, Veau)"):
             st.write("**Facteur :** 7,26 kgCO2e par repas")
-            st.info("Pourquoi ? Les ruminants produisent du méthane (CH4) lors de la digestion. Ce gaz a un pouvoir réchauffant 28 fois supérieur au CO2.")
-            
+            st.info("Le bœuf émet du méthane (CH4) lors de la digestion, un gaz à effet de serre très puissant.")
         with st.expander("🍗 Viande Blanche (Poulet, Porc)"):
             st.write("**Facteur :** 1,60 kgCO2e par repas")
-            st.info("Pourquoi ? Pas de méthane ici. L'impact vient surtout des cultures (soja, maïs) pour nourrir les animaux.")
-
-        with st.expander("🐟 Poisson"):
-            st.write("**Facteur :** 2,00 kgCO2e par repas")
-            st.info("Pourquoi ? Principalement lié au carburant consommé par les bateaux de pêche.")
-
+            st.info("L'impact vient surtout de la production de l'alimentation des animaux.")
         with st.expander("🥗 Repas Végétarien"):
             st.write("**Facteur :** 0,50 kgCO2e par repas")
-            st.success("C'est le choix le plus performant pour réduire l'empreinte de l'établissement.")
+            st.success("Impact 14 fois inférieur à la viande rouge.")
 
     with tabs[1]:
         st.subheader("Énergie et Fluides")
-        
         with st.expander("❄️ Climatisation (Fluides frigorigènes)"):
-            st.write("**Donnée à chercher :** Masse de gaz rechargée (kg) lors de la maintenance.")
-            st.warning("Attention : On ne parle pas ici de l'électricité, mais des gaz internes. Une fuite de 1kg de fluide peut équivaloir à plusieurs tonnes de CO2 !")
-            
+            st.write("**Donnée :** kg de gaz rechargé lors de l'entretien.")
+            st.warning("Certains gaz de clim ont un impact des milliers de fois supérieur au CO2 s'ils s'échappent.")
         with st.expander("⚡ Électricité"):
             st.write("**Facteur :** 0,06 kgCO2e / kWh")
-            st.info("Mix électrique français : très bas carbone grâce au nucléaire et au renouvelable.")
 
     with tabs[2]:
-        st.subheader("Matériel Informatique")
-        
-        with st.expander("💻 Ordinateurs et Tablettes"):
-            st.write("**Facteur :** Environ 161 kgCO2e par unité (Fabrication)")
-            st.info("Plus de 80% de l'impact d'un ordinateur a lieu AVANT son premier allumage, lors de l'extraction des métaux.")
+        st.subheader("🚌 Pôle Transports")
+        with st.expander("🚍 Autocar (Sorties scolaires)"):
+            st.write("**Donnée :** Kilomètres totaux parcourus par le groupe.")
+            st.write("**Mode de calcul :** On divise l'émission du car par le nombre d'élèves présents.")
+            st.info("Plus l'autocar est rempli, plus l'empreinte carbone par élève diminue.")
+        with st.expander("🚗 Voiture (Trajets domicile-travail)"):
+            st.write("**Facteur moyen :** 0,21 kgCO2e / km")
+            st.info("C'est l'un des postes les plus importants pour le personnel de l'établissement.")
 
     with tabs[3]:
+        st.subheader("🗑️ Pôle Déchets")
+        with st.expander("🚮 Ordures Ménagères (Bac Gris)"):
+            st.write("**Donnée :** Poids total en kg.")
+            st.info("L'impact vient du transport et de l'incinération (ou enfouissement) qui rejette du CO2.")
+        with st.expander("🥖 Gaspillage alimentaire (Pain)"):
+            st.write("**Expertise :** 1 kg de pain jeté = environ 0,6 kgCO2e.")
+            st.warning("Jeter du pain, c'est jeter toute l'énergie utilisée pour cultiver le blé, le moudre et cuire le pain.")
+
+    with tabs[4]:
+        st.subheader("Matériel Informatique")
+        with st.expander("💻 Ordinateurs et Tablettes"):
+            st.write("**Facteur :** 161 kgCO2e par unité (Fabrication)")
+
+    with tabs[5]:
         st.subheader("Fournitures")
-        
         with st.expander("📄 Papier A4"):
-            st.write("**Unité de saisie :** Nombre de ramettes")
-            st.write("**Règle de conversion :** 1 ramette de 500 feuilles = 2,5 kg de papier.")
-            st.info("Le papier recyclé permet de réduire cet impact car il demande moins d'énergie de transformation.")
+            st.write("**Règle :** 1 ramette de 500 feuilles = 2,5 kg de papier.")
+            st.write("**Facteur :** 1,05 kgCO2e / kg")
 
 # Barre de pied de page
 st.sidebar.divider()
