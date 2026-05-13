@@ -5,7 +5,7 @@ import plotly.express as px
 # 1. Configuration de la page
 st.set_page_config(page_title="Défi Carbone", layout="wide")
 
-# --- STYLE ET FOND D'ÉCRAN ---
+# --- STYLE ET FOND D'ÉCRAN OPTIMISÉ ---
 def set_bg_and_style():
     st.markdown(
         f"""
@@ -15,15 +15,17 @@ def set_bg_and_style():
             background-attachment: fixed;
             background-repeat: no-repeat;
             background-position: center;
-            background-size: 75%;
+            background-size: 65%; /* Image plus petite pour ne pas surcharger */
             background-color: #f0f2f6;
         }}
+        /* Fond derrière les tableaux plus opaque pour une lecture parfaite */
         .main .block-container {{
-            background-color: rgba(255, 255, 255, 0.92);
-            padding-top: 1rem !important; 
+            background-color: rgba(255, 255, 255, 0.98); 
+            padding-top: 0.5rem !important; 
             padding-bottom: 0.5rem !important;
-            border-radius: 15px;
+            border-radius: 12px;
             margin-top: 5px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
         }}
         [data-testid="stHeader"] {{ height: 0px; }}
         </style>
@@ -59,39 +61,36 @@ try:
     df = df.dropna(subset=[col_nom])
     df_sorted = df.sort_values(by=col_pers, ascending=True)
 
-    # --- TITRE ---
-    st.markdown("<h2 style='text-align: center; margin-top: 0px; color: #1e3d59;'>🌱 Consommation Carbone : Réseau Haut Vaucluse</h2>", unsafe_allow_html=True)
+    # --- TITRE COMPACT ---
+    st.markdown("<h3 style='text-align: center; margin: 0; color: #1e3d59;'>🌱 Réseau Haut Vaucluse : Consommation Carbone</h3>", unsafe_allow_html=True)
     
-    # --- LIGNE 1 : GRAPHIQUES ---
+    # --- LIGNE 1 : GRAPHIQUES RÉDUITS ---
     col1, col2 = st.columns(2)
 
     with col1:
-        st.markdown("<p style='text-align: center; font-weight: bold; margin-bottom: 0;'>🏆 kg CO2e / personne</p>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; font-weight: bold; font-size: 14px; margin: 0;'>🏆 kg CO2e / personne</p>", unsafe_allow_html=True)
         fig_indiv = px.bar(
             df_sorted, x=col_pers, y=col_nom, orientation='h',
             text=col_pers, color=col_pers, color_continuous_scale='RdYlGn_r'
         )
-        
-        # --- AJUSTEMENTS POUR LE TEXTE AU BOUT DES LIGNES ---
         fig_indiv.update_traces(
             texttemplate='%{text:.1f}', 
-            textposition='outside', # Force le texte au bout de la barre
-            textfont_size=15,       # Taille augmentée pour la lisibilité
-            cliponaxis=False        # Empêche le texte d'être coupé
+            textposition='outside', 
+            textfont_size=13,       
+            cliponaxis=False        
         )
-        
         fig_indiv.update_layout(
-            height=280, 
-            margin=dict(t=10, b=10, l=0, r=50), # Marge à droite augmentée pour le texte
+            height=220, # Hauteur réduite
+            margin=dict(t=5, b=5, l=0, r=40), 
             showlegend=False, 
             coloraxis_showscale=False,
             xaxis={'title': ''},
-            yaxis={'tickfont': {'size': 12}, 'title': ''}
+            yaxis={'tickfont': {'size': 11}, 'title': ''}
         )
         st.plotly_chart(fig_indiv, use_container_width=True)
 
     with col2:
-        st.markdown("<p style='text-align: center; font-weight: bold; margin-bottom: 0;'>🎯 Répartition par Poste</p>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; font-weight: bold; font-size: 14px; margin: 0;'>🎯 Répartition par Poste</p>", unsafe_allow_html=True)
         postes = ['Electricité', 'Combustible', 'Transport', 'Biens et consommables', 'Alimentation']
         cols_valides = [c for c in postes if c in df.columns]
         
@@ -102,12 +101,13 @@ try:
             totaux.columns = ['Poste', 'Valeur']
             couleurs_perso = ['#2ecc71', '#ff8a80', '#fbc02d', '#3498db', '#f39c12']
             fig_postes = px.pie(totaux, values='Valeur', names='Poste', hole=0.4, color_discrete_sequence=couleurs_perso)
-            fig_postes.update_layout(height=280, margin=dict(t=10, b=10, l=0, r=0))
+            fig_postes.update_layout(height=220, margin=dict(t=5, b=5, l=0, r=0)) # Hauteur réduite
             st.plotly_chart(fig_postes, use_container_width=True)
 
-    # --- LIGNE 2 : TABLEAU ---
-    st.markdown("<p style='font-weight: bold; margin-bottom: 5px;'>📋 Détails par établissement</p>", unsafe_allow_html=True)
-    st.dataframe(df, use_container_width=True, height=450, hide_index=True)
+    # --- LIGNE 2 : TABLEAU RÉDUIT ---
+    st.markdown("<p style='font-weight: bold; font-size: 14px; margin: 0;'>📋 Détails par établissement</p>", unsafe_allow_html=True)
+    # Hauteur fixée à 380px pour garantir l'absence de scroll sur la page
+    st.dataframe(df, use_container_width=True, height=380, hide_index=True)
 
 except Exception as e:
     st.error(f"Erreur : {e}")
