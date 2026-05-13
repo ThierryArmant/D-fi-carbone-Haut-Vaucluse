@@ -21,7 +21,7 @@ def set_bg_and_style():
         }}
         .main .block-container {{
             background-color: #ffffff; 
-            padding: 1.5rem 2rem !important;
+            padding: 1rem 2rem !important;
             border-radius: 12px;
             margin-top: 10px;
             box-shadow: 0px 10px 30px rgba(0,0,0,0.2);
@@ -53,21 +53,25 @@ try:
     col_pers = "conso carbone  par personne"
     df.columns = [str(c).strip() for c in df.columns]
 
+    # Conversion numérique stricte pour éviter les bugs de calcul
     if col_pers in df.columns:
         df[col_pers] = pd.to_numeric(df[col_pers].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
     
     df = df.dropna(subset=[col_nom])
+    # On trie pour le classement
+    df_sorted = df.sort_values(by=col_pers, ascending=False)
 
     # --- TITRE ---
     st.markdown("<h2 style='text-align: center; color: #1e3d59; margin-bottom: 10px;'>🌱 Consommation Carbone : Réseau Haut Vaucluse</h2>", unsafe_allow_html=True)
 
-    # --- LIGNE 1 : TABLEAU DE PERFORMANCE ET JAUGE ---
+    # --- LIGNE 1 : CLASSEMENT ET JAUGE ---
     col_gauche, col_droite = st.columns([1.1, 0.9])
 
     with col_gauche:
-        st.markdown("**📊 Classement par Établissement**")
+        st.markdown("**📊 Classement par Établissement (Consommations Individuelles)**")
+        # Le tableau utilise col_pers issue de ton Excel
         st.dataframe(
-            df[[col_nom, col_pers]].sort_values(by=col_pers, ascending=False),
+            df_sorted[[col_nom, col_pers]],
             column_config={
                 col_nom: "Établissement",
                 col_pers: st.column_config.ProgressColumn(
@@ -84,39 +88,43 @@ try:
         )
 
     with col_droite:
-        st.markdown("**🚀 Objectif : Rester sous les 2500 kg**")
+        st.markdown("**🚀 Performance Moyenne du Réseau**")
         
-        # Calcul de la moyenne du réseau pour la jauge
-        valeur_moyenne = df[col_pers].mean() if not df.empty else 0
+        # --- CALCUL DE LA VALEUR POUR LA JAUGE ---
+        # On prend la moyenne exacte des consommations individuelles du tableau de gauche
+        valeur_reseau = df[col_pers].mean() if not df.empty else 0
         
         fig_gauge = go.Figure(go.Indicator(
             mode = "gauge+number",
-            value = valeur_moyenne,
+            value = valeur_reseau,
             number = {'suffix': " kg", 'font': {'size': 40}},
             domain = {'x': [0, 1], 'y': [0, 1]},
             gauge = {
-                'axis': {'range': [None, 5000], 'tickwidth': 1},
+                'axis': {'range': [None, 5000], 'tickwidth': 1, 'tickcolor': "darkblue"},
                 'bar': {'color': "#1e3d59"},
                 'steps': [
-                    {'range': [0, 1500], 'color': "#2ecc71"},   # Zone Verte (Top)
-                    {'range': [1500, 2500], 'color': "#fbc02d"}, # Zone Jaune (Attention)
-                    {'range': [2500, 5000], 'color': "#ff8a80"}  # Zone Rouge (Alerte)
+                    {'range': [0, 1500], 'color': "#2ecc71"},
+                    {'range': [1500, 2500], 'color': "#fbc02d"},
+                    {'range': [2500, 5000], 'color': "#ff8a80"}
                 ],
                 'threshold': {
-                    'line': {'color': "red", 'width': 5},
+                    'line': {'color': "red", 'width': 6},
                     'thickness': 0.8,
-                    'value': 2500 # Le trait rouge limite
+                    'value': 2500 # Ta limite de 2500 kg
                 }
             }
         ))
         
+        # On ajoute une petite annotation pour expliquer la jauge
+        fig_gauge.add_annotation(x=0.5, y=0.1, text="Moyenne individuelle du réseau", showarrow=False, font=dict(size=12, color="grey"))
+
         fig_gauge.update_layout(height=350, margin=dict(t=30, b=0, l=30, r=30))
         st.plotly_chart(fig_gauge, use_container_width=True)
 
     # --- LIGNE 2 : TABLEAU DÉTAILLÉ ---
     st.markdown("---")
-    st.markdown("**📋 Détails Complets (kg CO2e)**")
+    st.markdown("**📋 Détails Complets des Emissions**")
     st.dataframe(df, use_container_width=True, height=400, hide_index=True)
 
 except Exception as e:
-    st.error(f"Erreur lors de l'analyse : {e}")
+    st.error(f"Erreur lors du calcul : {e}")
