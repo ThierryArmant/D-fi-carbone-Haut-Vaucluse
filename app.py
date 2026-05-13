@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 
 # 1. Configuration de la page
@@ -40,6 +39,8 @@ sheet_url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso
 
 try:
     df_raw = pd.read_csv(sheet_url)
+    
+    # Détection de la ligne d'entête
     for i in range(len(df_raw)):
         if "Etablissements" in df_raw.iloc[i].values:
             new_cols = df_raw.iloc[i].values
@@ -48,18 +49,23 @@ try:
             df.columns = cleaned_cols
             break
 
-    df = df.loc[:, ~df.columns.str.contains('vide_')]
-    col_nom = "Etablissements"
-    col_pers = "conso carbone  par personne"
+    # Nettoyage des noms de colonnes
     df.columns = [str(c).strip() for c in df.columns]
+    
+    # --- IDENTIFICATION DES COLONNES CIBLES ---
+    col_nom = "Etablissements"
+    col_total_brut = "Total émissions" # La colonne que tu as désignée
+    col_pers = "conso carbone  par personne"
 
-    # Conversion numérique stricte pour éviter les bugs de calcul
+    # Conversion numérique de la colonne Total
+    if col_total_brut in df.columns:
+        df[col_total_brut] = pd.to_numeric(df[col_total_brut].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
+    
+    # Conversion numérique de la colonne par personne (pour le classement)
     if col_pers in df.columns:
         df[col_pers] = pd.to_numeric(df[col_pers].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
-    
+
     df = df.dropna(subset=[col_nom])
-    # On trie pour le classement
-    df_sorted = df.sort_values(by=col_pers, ascending=False)
 
     # --- TITRE ---
     st.markdown("<h2 style='text-align: center; color: #1e3d59; margin-bottom: 10px;'>🌱 Consommation Carbone : Réseau Haut Vaucluse</h2>", unsafe_allow_html=True)
@@ -68,15 +74,13 @@ try:
     col_gauche, col_droite = st.columns([1.1, 0.9])
 
     with col_gauche:
-        st.markdown("**📊 Classement par Établissement (Consommations Individuelles)**")
-        # Le tableau utilise col_pers issue de ton Excel
+        st.markdown("**📊 Performance par Établissement (Individuel)**")
         st.dataframe(
-            df_sorted[[col_nom, col_pers]],
+            df[[col_nom, col_pers]].sort_values(by=col_pers, ascending=False),
             column_config={
                 col_nom: "Établissement",
                 col_pers: st.column_config.ProgressColumn(
                     "Consommations Carbones",
-                    help="kg CO2e par personne",
                     format="%.1f kg",
                     min_value=0,
                     max_value=float(df[col_pers].max() if not df.empty else 5000),
@@ -88,19 +92,18 @@ try:
         )
 
     with col_droite:
-        st.markdown("**🚀 Performance Moyenne du Réseau**")
+        st.markdown("**🚀 Moyenne Globale du Réseau**")
         
-        # --- CALCUL DE LA VALEUR POUR LA JAUGE ---
-        # On prend la moyenne exacte des consommations individuelles du tableau de gauche
-        valeur_reseau = df[col_pers].mean() if not df.empty else 0
+        # --- CALCUL DE LA JAUGE SUR LE "TOTAL ÉMISSIONS" ---
+        valeur_jauge = df[col_total_brut].mean() if not df.empty else 0
         
         fig_gauge = go.Figure(go.Indicator(
             mode = "gauge+number",
-            value = valeur_reseau,
+            value = valeur_jauge,
             number = {'suffix': " kg", 'font': {'size': 40}},
             domain = {'x': [0, 1], 'y': [0, 1]},
             gauge = {
-                'axis': {'range': [None, 5000], 'tickwidth': 1, 'tickcolor': "darkblue"},
+                'axis': {'range': [None, 5000], 'tickwidth': 1},
                 'bar': {'color': "#1e3d59"},
                 'steps': [
                     {'range': [0, 1500], 'color': "#2ecc71"},
@@ -110,21 +113,20 @@ try:
                 'threshold': {
                     'line': {'color': "red", 'width': 6},
                     'thickness': 0.8,
-                    'value': 2500 # Ta limite de 2500 kg
+                    'value': 2500 # Limite cible
                 }
             }
         ))
         
-        # On ajoute une petite annotation pour expliquer la jauge
-        fig_gauge.add_annotation(x=0.5, y=0.1, text="Moyenne individuelle du réseau", showarrow=False, font=dict(size=12, color="grey"))
+        fig_gauge.add_annotation(x=0.5, y=0.1, text=f"Source : Moyenne de la colonne '{col_total_brut}'", showarrow=False, font=dict(size=10, color="grey"))
 
         fig_gauge.update_layout(height=350, margin=dict(t=30, b=0, l=30, r=30))
         st.plotly_chart(fig_gauge, use_container_width=True)
 
     # --- LIGNE 2 : TABLEAU DÉTAILLÉ ---
     st.markdown("---")
-    st.markdown("**📋 Détails Complets des Emissions**")
+    st.markdown("**📋 Détails Complets (Données brutes issues du Gid 169103083)**")
     st.dataframe(df, use_container_width=True, height=400, hide_index=True)
 
 except Exception as e:
-    st.error(f"Erreur lors du calcul : {e}")
+    st.error(f"Erreur de lecture des données : {e}")
