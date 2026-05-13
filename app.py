@@ -73,7 +73,7 @@ try:
             column_config={
                 col_nom: "Établissement",
                 col_pers: st.column_config.ProgressColumn(
-                    "Intensité Carbone",
+                    "Consommation Carbone",
                     help="Consommation par personne",
                     format="%.1f kg",
                     min_value=0,
