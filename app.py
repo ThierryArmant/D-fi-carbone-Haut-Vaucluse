@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 # 1. Configuration de la page
 st.set_page_config(page_title="Défi Carbone", layout="wide")
 
-# --- STYLE CSS (FOND BLANC OPAQUE) ---
+# --- STYLE CSS (FOND BLANC OPAQUE & TITRES INTÉGRÉS) ---
 def set_bg_and_style():
     st.markdown(
         f"""
@@ -18,6 +18,7 @@ def set_bg_and_style():
             background-size: 60%;
             background-color: #f0f2f6;
         }}
+        /* FOND BLANC UNIQUE POUR TOUTE LA ZONE HAUTE */
         .main .block-container {{
             background-color: #ffffff; 
             padding: 1rem 2rem !important;
@@ -25,7 +26,18 @@ def set_bg_and_style():
             margin-top: 10px;
             box-shadow: 0px 10px 30px rgba(0,0,0,0.2);
         }}
+        /* Suppression de l'en-tête Streamlit */
         [data-testid="stHeader"] {{ height: 0px; }}
+        
+        /* Style pour les titres à l'intérieur du bloc */
+        .inner-title {{
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            color: #1e3d59;
+            margin-top: -5px;
+            margin-bottom: 5px;
+        }}
         </style>
         """,
         unsafe_allow_html=True
@@ -49,32 +61,29 @@ try:
             df.columns = cleaned_cols
             break
 
-    # Nettoyage des noms de colonnes
     df.columns = [str(c).strip() for c in df.columns]
     
-    # --- IDENTIFICATION DES COLONNES ---
     col_nom = "Etablissements"
     col_total_brut = "Total émissions" 
     col_pers = "conso carbone  par personne"
-    # On identifie la colonne B (Nombre de personnes) - souvent nommée 'Nombre de personnes' ou similaire
-    # Si le nom varie, on peut utiliser l'index ou chercher une colonne contenant 'personnes'
+    # Sélection de la colonne B (Effectif)
     col_nb_gens = [c for c in df.columns if 'personnes' in c.lower() or 'effectif' in c.lower()][0]
 
-    # Conversion numérique propre
+    # Conversion numérique
     for c in [col_total_brut, col_pers, col_nb_gens]:
         if c in df.columns:
             df[c] = pd.to_numeric(df[c].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
     
     df = df.dropna(subset=[col_nom])
 
-    # --- TITRE ---
-    st.markdown("<h2 style='text-align: center; color: #1e3d59; margin-bottom: 10px;'>🌱 Consommation Carbone : Réseau Haut Vaucluse</h2>", unsafe_allow_html=True)
+    # --- TITRE DE L'APPLICATION ---
+    st.markdown("<h2 style='text-align: center; color: #1e3d59; margin-top: -10px;'>🌱 Consommation Carbone : Réseau Haut Vaucluse</h2>", unsafe_allow_html=True)
 
     # --- LIGNE 1 : CLASSEMENT ET JAUGE ---
     col_gauche, col_droite = st.columns([1.1, 0.9])
 
     with col_gauche:
-        st.markdown("**📊 Performance par Établissement (Individuel)**")
+        st.markdown('<p class="inner-title">📊 Classement par Établissement (Individuel)</p>', unsafe_allow_html=True)
         st.dataframe(
             df[[col_nom, col_pers]].sort_values(by=col_pers, ascending=False),
             column_config={
@@ -88,23 +97,21 @@ try:
             },
             hide_index=True,
             use_container_width=True,
-            height=350 
+            height=320 
         )
 
     with col_droite:
-        st.markdown("**🚀 Impact Réel par Personne (Moyenne Réseau)**")
+        st.markdown('<p class="inner-title">🚀 Impact Réel par Personne (Moyenne Réseau)</p>', unsafe_allow_html=True)
         
-        # --- CALCUL PRÉCIS DE LA JAUGE ---
-        # Formule : Somme de toutes les émissions / Somme de toutes les personnes
+        # Calcul précis
         total_emissions_reseau = df[col_total_brut].sum()
         total_personnes_reseau = df[col_nb_gens].sum()
-        
         valeur_jauge = total_emissions_reseau / total_personnes_reseau if total_personnes_reseau > 0 else 0
         
         fig_gauge = go.Figure(go.Indicator(
             mode = "gauge+number",
             value = valeur_jauge,
-            number = {'suffix': " kg", 'font': {'size': 40}},
+            number = {'suffix': " kg", 'font': {'size': 38}},
             domain = {'x': [0, 1], 'y': [0, 1]},
             gauge = {
                 'axis': {'range': [None, 5000], 'tickwidth': 1},
@@ -122,12 +129,12 @@ try:
             }
         ))
         
+        fig_gauge.update_layout(height=320, margin=dict(t=20, b=0, l=30, r=30))
         st.plotly_chart(fig_gauge, use_container_width=True)
-        st.caption(f"Calcul : {total_emissions_reseau:,.0f} kg CO2 / {total_personnes_reseau:,.0f} personnes")
 
     # --- LIGNE 2 : TABLEAU DÉTAILLÉ ---
-    st.markdown("---")
-    st.dataframe(df, use_container_width=True, height=400, hide_index=True)
+    st.markdown("<p style='font-weight: bold; color: #1e3d59; margin-bottom: 5px;'>📋 Détails Complets</p>", unsafe_allow_html=True)
+    st.dataframe(df, use_container_width=True, height=350, hide_index=True)
 
 except Exception as e:
-    st.error(f"Erreur de calcul : {e}")
+    st.error(f"Erreur d'affichage : {e}")
