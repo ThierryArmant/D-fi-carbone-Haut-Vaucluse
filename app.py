@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 # 1. Configuration de la page
 st.set_page_config(page_title="Défi Carbone", layout="wide")
 
-# --- STYLE CSS AJUSTÉ POUR TOUT INCLURE DANS LE BLANC ---
+# --- STYLE CSS ---
 def set_bg_and_style():
     st.markdown(
         f"""
@@ -18,17 +18,15 @@ def set_bg_and_style():
             background-size: 60%;
             background-color: #f0f2f6;
         }}
-        /* LE BLOC BLANC : On ajoute du padding en haut pour accueillir le titre */
         .main .block-container {{
             background-color: #ffffff; 
             padding: 2rem 2rem !important; 
             border-radius: 12px;
-            margin-top: 20px; /* On descend un peu le bloc blanc par rapport au haut de l'écran */
+            margin-top: 20px;
             box-shadow: 0px 10px 30px rgba(0,0,0,0.2);
         }}
         [data-testid="stHeader"] {{ height: 0px; }}
         
-        /* Titres internes simplifiés sans marges négatives */
         .inner-title {{
             text-align: center;
             font-weight: bold;
@@ -71,7 +69,7 @@ try:
     
     df = df.dropna(subset=[col_nom])
 
-    # --- TITRE PRINCIPAL (BIEN DANS LE BLANC) ---
+    # --- TITRE PRINCIPAL ---
     st.markdown("<h2 style='text-align: center; color: #1e3d59; margin-bottom: 25px;'>🌱 Consommation Carbone : Réseau Haut Vaucluse</h2>", unsafe_allow_html=True)
 
     # --- LIGNE 1 : CLASSEMENT ET JAUGE ---
@@ -126,8 +124,19 @@ try:
         fig_gauge.update_layout(height=320, margin=dict(t=20, b=0, l=30, r=30))
         st.plotly_chart(fig_gauge, use_container_width=True)
 
-    # --- LIGNE 2 : TABLEAU DÉTAILLÉ ---
-    st.markdown("<p style='font-weight: bold; color: #1e3d59; margin-top: 20px; margin-bottom: 10px;'>📋 Détails Complets</p>", unsafe_allow_html=True)
+    # --- SECTION SAISIE ET DÉTAILS ---
+    st.markdown("---")
+    
+    col_txt, col_btn = st.columns([1.4, 0.6])
+    
+    with col_txt:
+        st.markdown("<p style='font-weight: bold; color: #1e3d59; font-size: 18px; margin-top: 5px;'>📋 Détails Complets des Emissions</p>", unsafe_allow_html=True)
+    
+    with col_btn:
+        # Lien vers ton Google Sheets ou Formulaire (à personnaliser)
+        url_modification = "https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/edit"
+        st.link_button("📝 Modifier / Saisir mes données", url_modification, use_container_width=True)
+
     st.dataframe(df, use_container_width=True, height=350, hide_index=True)
 
 except Exception as e:
