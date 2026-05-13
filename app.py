@@ -70,7 +70,7 @@ def load_data():
 df = load_data()
 
 # 5. NAVIGATION PAR ONGLETS
-tab_dashboard, tab_glossaire = st.tabs(["📊 Tableau de Bord", "📖 Référentiel Expert (5 Pôles)"])
+tab_dashboard, tab_glossaire = st.tabs(["📊 Tableau de Bord", "📖 Référentiel consommations carbone (5 Pôles)"])
 
 # --- ONGLET DASHBOARD ---
 with tab_dashboard:
