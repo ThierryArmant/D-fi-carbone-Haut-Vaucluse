@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 # 1. CONFIGURATION DE LA PAGE
 st.set_page_config(page_title="Défi Carbone - Haut Vaucluse", layout="wide")
 
-# 2. STYLE CSS (TON BANDEAU DISCRET INTÉGRÉ)
+# 2. STYLE CSS (BANDEAU DISCRET + FOND BLANC OPAQUE)
 def set_bg_and_style():
     st.markdown(
         f"""
@@ -24,11 +24,13 @@ def set_bg_and_style():
             border-radius: 12px;
             margin-top: 10px;
         }}
+        /* Style du bandeau de mise à jour réduit */
         [data-testid="stExpanderSummary"] {{
             background-color: white !important;
             border: 1px solid #e0e0e0 !important;
             border-radius: 8px !important;
             min-height: 40px !important;
+            padding: 0px 10px !important;
         }}
         [data-testid="stExpanderSummary"] p {{
             font-size: 14px !important;
@@ -57,15 +59,15 @@ set_bg_and_style()
 votre_gid = "169103083" 
 url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid={votre_gid}"
 
-# 4. CHARGEMENT DES DONNÉES (SÉCURISÉ)
+# 4. CHARGEMENT DES DONNÉES
 @st.cache_data(ttl=60)
 def load_data():
     try:
         raw = pd.read_csv(url, header=None)
         for i, row in raw.iterrows():
-            if "Etablissements" in [str(x).strip() for x in row.values]:
+            row_str = [str(x).strip() for x in row.values]
+            if "Etablissements" in row_str:
                 data = raw.iloc[i+1:].copy()
-                # Nettoyage des noms de colonnes (doublons/vides)
                 new_cols = []
                 for j, val in enumerate(row.values):
                     c_name = str(val).strip() if pd.notnull(val) else f"Col_{j}"
@@ -73,43 +75,69 @@ def load_data():
                 data.columns = new_cols
                 return data.loc[:, ~data.columns.duplicated()].reset_index(drop=True)
     except Exception as e:
-        st.error(f"Erreur de connexion : {e}")
+        st.error(f"Erreur de connexion Sheets : {e}")
     return pd.DataFrame()
 
-# 5. EXECUTION ET AFFICHAGE
+# 5. EXECUTION
 df = load_data()
 
 if not df.empty:
-    # Nettoyage rapide des chiffres
-    for col in ["Total émissions", "conso carbone  par personne", "Effectif total"]:
+    # Nettoyage des colonnes numériques
+    cols_to_fix = ["Total émissions", "conso carbone  par personne", "Effectif total"]
+    for col in cols_to_fix:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
 
     st.markdown("<h2 style='text-align: center; color: #1e3d59;'>🌱 Réseau Haut Vaucluse</h2>", unsafe_allow_html=True)
 
-    # Dashboard
-    c1, c2 = st.columns([1, 1])
-    with c1:
-        st.markdown('<p class="inner-title">📊 Classement</p>', unsafe_allow_html=True)
-        st.dataframe(df[["Etablissements", "conso carbone  par personne"]].sort_values("conso carbone  par personne", ascending=False), hide_index=True, use_container_width=True)
+    # --- LIGNE 1 : CLASSEMENT ET RETOUR DE LA JAUGE ---
+    col1, col2 = st.columns([1, 1])
     
-    with c2:
-        st.markdown('<p class="inner-title">🚀 Moyenne Réseau</p>', unsafe_allow_html=True)
+    with col1:
+        st.markdown('<p class="inner-title">📊 Classement (kg/pers)</p>', unsafe_allow_html=True)
+        if "Etablissements" in df.columns:
+            st.dataframe(df[["Etablissements", "conso carbone  par personne"]].sort_values("conso carbone  par personne", ascending=False), hide_index=True, use_container_width=True, height=350)
+    
+    with col2:
+        st.markdown('<p class="inner-title">🚀 Moyenne Réelle du Réseau</p>', unsafe_allow_html=True)
         total_co2 = df["Total émissions"].sum()
         total_pop = df["Effectif total"].sum()
         moyenne = total_co2 / total_pop if total_pop > 0 else 0
-        st.metric("Consommation moyenne", f"{int(moyenne)} kg / pers")
+        
+        # LA JAUGE PLOTLY REVIENT ICI
+        fig = go.Figure(go.Indicator(
+            mode = "gauge+number",
+            value = moyenne,
+            number = {'suffix': " kg", 'font': {'size': 35}},
+            gauge = {
+                'axis': {'range': [None, 5000]},
+                'bar': {'color': "#1e3d59"},
+                'steps': [
+                    {'range': [0, 1500], 'color': "#2ecc71"},
+                    {'range': [1500, 2500], 'color': "#fbc02d"},
+                    {'range': [2500, 5000], 'color': "#ff8a80"}
+                ],
+                'threshold': {'line': {'color': "red", 'width': 5}, 'value': 2500}
+            }
+        ))
+        fig.update_layout(height=350, margin=dict(t=20, b=0, l=30, r=30))
+        st.plotly_chart(fig, use_container_width=True)
 
-    # BANDEAU DE MISE À JOUR (DISCRET)
-    st.write("")
+    # --- LIGNE 2 : BANDEAU MISE À JOUR ---
     with st.expander("📝 Mettre à jour les données"):
-        pwd = st.text_input("Code établissement :", type="password")
+        c_p1, c_p2 = st.columns([1, 1])
+        with c_p1:
+            pwd = st.text_input("Code établissement :", type="password", key="pwd_input")
+        with c_p2:
+            st.write("Accès au formulaire de saisie pour l'année en cours.")
+            
         if pwd == "CARBONE2026":
-            st.link_button("🚀 Ouvrir le formulaire de saisie", "https://docs.google.com/forms/d/e/1FAIpQLSe6QOMdXWJPYHsbMkq41IyzM7Rc9izcqsFpZhQzWiaqygyykQ/viewform", use_container_width=True)
+            st.success("Code valide")
+            st.link_button("🚀 Ouvrir le formulaire", "https://docs.google.com/forms/d/e/1FAIpQLSe6QOMdXWJPYHsbMkq41IyzM7Rc9izcqsFpZhQzWiaqygyykQ/viewform", use_container_width=True)
 
-    # Tableau détaillé
-    st.write("### 📋 Détails complets")
+    # --- LIGNE 3 : TABLEAU DÉTAILLÉ ---
+    st.markdown("<p style='font-weight: bold; color: #1e3d59;'>📋 Détails complets</p>", unsafe_allow_html=True)
     st.dataframe(df, hide_index=True, use_container_width=True)
 
 else:
-    st.warning("⚠️ Impossible de charger les données. Vérifiez que le partage du Google Sheets est activé sur 'Tous les utilisateurs disposant du lien'.")
+    st.warning("⚠️ Aucune donnée trouvée. Vérifiez l'onglet Bilan et le partage du fichier.")
