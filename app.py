@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 # 1. CONFIGURATION DE LA PAGE
 st.set_page_config(page_title="Défi Carbone - Haut Vaucluse", page_icon="🌱", layout="wide")
 
-# 2. STYLE CSS
+# 2. STYLE CSS (Lisibilité et design des encadrés)
 def set_style():
     st.markdown(
         """
@@ -21,6 +21,8 @@ def set_style():
         }
         [data-testid="stHeader"] { height: 0px; }
         .stTabs [data-baseweb="tab"] { font-weight: bold; }
+        
+        /* Style des anecdotes (Bleu) */
         .anecdote {
             background-color: #e3f2fd;
             padding: 15px;
@@ -29,6 +31,7 @@ def set_style():
             margin-top: 10px;
             margin-bottom: 10px;
         }
+        /* Style de la méthode (Vert) */
         .methode {
             background-color: #f1f8e9;
             padding: 10px;
@@ -97,7 +100,7 @@ with tab_dashboard:
                 st.link_button("🚀 Ouvrir le formulaire", "https://docs.google.com/forms/d/e/1FAIpQLSe6QOMdXWJPYHsbMkq41IyzM7Rc9izcqsFpZhQzWiaqygyykQ/viewform")
         st.dataframe(df, hide_index=True, use_container_width=True)
 
-# --- ONGLET GLOSSAIRE ---
+# --- ONGLET GLOSSAIRE (Avec Anecdotes & Méthodes) ---
 with tab_glossaire:
     st.markdown("<h2 style='color: #1e3d59;'>📖 Référentiel des 5 Pôles Carbone</h2>", unsafe_allow_html=True)
     
@@ -110,56 +113,61 @@ with tab_glossaire:
         c2.metric("Viande Blanche", "1.60 kg", "CO2e/repas")
         c3.metric("Poisson", "2.00 kg", "CO2e/repas")
         c4.metric("Végétarien", "0.50 kg", "CO2e/repas")
+        st.markdown('<div class="methode"><b>📝 Méthode :</b> On multiplie le nombre de repas servis par l\'empreinte de production des ingrédients.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="anecdote"><b>💡 Le saviez-vous ?</b> Manger 1 seul steak de bœuf émet autant de CO2 que de parcourir 32 km en voiture ! À l\'inverse, un repas végétarien équivaut à seulement 2 km.</div>', unsafe_allow_html=True)
 
     with g_tabs[1]:
         st.subheader("Pôle Énergie & Fluides")
         st.write("- **Électricité :** 0.06 kgCO2e / kWh")
         st.write("- **Gaz Naturel :** 0.227 kgCO2e / kWh")
         st.write("- **Climatisation (R410A) :** 2088 kgCO2e / kg")
+        st.markdown('<div class="methode"><b>📝 Méthode :</b> Consommation réelle des compteurs. Pour la clim, on mesure la recharge de gaz (1kg rajouté = 1kg de fuite polluante).</div>', unsafe_allow_html=True)
+        st.markdown('<div class="anecdote"><b>❄️ L\'anecdote glaçante :</b> 1 kg de fuite de clim = 10 000 km en voiture (un aller-retour Paris-Pékin) ! L\'entretien est vital.</div>', unsafe_allow_html=True)
 
     with g_tabs[2]:
         st.subheader("Pôle Transports")
-        st.write("- **Autocar :** 0.030 kgCO2e / km / élève")
+        st.write("- **Autocar Scolaire :** 0.030 kgCO2e / km / élève")
+        st.write("- **Voiture thermique :** 0.218 kgCO2e / km")
+        st.markdown('<div class="methode"><b>📝 Méthode :</b> Distance parcourue x facteur d\'émission / nombre de passagers.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="anecdote"><b>🚌 Union :</b> Venir en bus scolaire permet de retirer virtuellement 43 voitures de la route.</div>', unsafe_allow_html=True)
 
     with g_tabs[3]:
         st.subheader("Pôle Déchets Alimentaires")
         c_d1, c_d2 = st.columns(2)
         with c_d1:
             st.metric("Assiette jetée (moyenne)", "1.20 kg", "CO2e / kg jeté")
-            st.write("> *Comprend la perte de production + transport + déchets.*")
         with c_d2:
             st.metric("Gaspillage Pain", "0.63 kg", "CO2e / kg jeté")
-
-        st.markdown("""
-        <div class="methode">
-        <b>📝 Méthode :</b> On pèse les restes en fin de repas. Le facteur de 1,20 kg CO2e est une moyenne ADEME pour les repas scolaires. 
-        Il est plus élevé que le pain seul car l'assiette contient souvent des protéines (viande, poisson) dont la production a coûté cher à la planète.
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown("""
-        <div class="anecdote">
-        <b>🍽️ L'assiette fantôme :</b><br>
-        Jeter <b>1 kg d'assiettes pleines</b> (environ 4 à 5 assiettes gaspillées) émet autant de CO2 que de fabriquer <b>6 bouteilles en plastique</b> ou de recharger votre smartphone <b>150 fois</b> ! 
-        Gaspiller une assiette, c'est comme si le cuisinier travaillait pour rien, et que le camion de livraison avait roulé pour rien.
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown('<div class="methode"><b>📝 Méthode :</b> Pesée des restes. L\'assiette est lourde en carbone car elle contient des produits transformés (viande, sauces) qui ont déjà coûté cher à produire.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="anecdote"><b>🍽️ L\'assiette fantôme :</b> Jeter 1 kg d\'assiettes pleines émet autant que de fabriquer 6 bouteilles en plastique ou de recharger un smartphone 150 fois !</div>', unsafe_allow_html=True)
 
     with g_tabs[4]:
         st.subheader("Pôle Biens & Consommables")
         col_b1, col_b2 = st.columns(2)
         with col_b1:
-            st.write("**Papier et Impression :**")
-            st.write("- **Achat : Ramette A4 :** 2.62 kgCO2e")
-            st.write("- **Déchet Papier (non trié) :** 0.45 kgCO2e / kg")
-            st.write("- **Déchet Papier (recyclé) :** 0.02 kgCO2e / kg")
+            st.write("**Papier et Fin de vie :**")
+            st.write("- **Ramette A4 neuve :** 2.62 kgCO2e")
+            st.write("- **Papier jeté (poubelle grise) :** 0.45 kgCO2e / kg")
+            st.write("- **Papier trié (recyclage) :** 0.02 kgCO2e / kg")
         with col_b2:
-            st.write("**Équipements :**")
+            st.write("**Équipements (Fabrication) :**")
             st.write("- **Photocopieur :** 850 kgCO2e")
-            st.write("- **Vidéoprojecteur :** 94 kgCO2e")
             st.write("- **Ordinateur Portable :** 161 kgCO2e")
+            st.write("- **Vidéoprojecteur :** 94 kgCO2e")
         
-        st.markdown('<div class="anecdote"><b>📄 Rappel :</b> Recycler le papier divise son impact par 20 !</div>', unsafe_allow_html=True)
+        st.markdown("""
+        <div class="methode">
+        <b>📝 Méthode ADEME :</b><br>
+        On mesure la <b>FABRICATION</b> (énergie grise) pour le matériel durable. 80% de l'impact d'un ordi a lieu avant sa première utilisation ! Pour le papier, on cumule l'achat et le mode de traitement (tri ou non).
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="anecdote">
+        <b>📄 Forêt de papier :</b> 1000 ramettes/an = une forêt de 10 arbres consommée. Trier le papier divise son impact par 20 !<br>
+        <b>📹 Focus Vidéo :</b> Fabriquer un projecteur émet autant que 750 brosses à dents. L'éteindre économise l'énergie de 20 smartphones par heure.
+        </div>
+        """, unsafe_allow_html=True)
 
     st.divider()
-    st.caption("Sources : Méthodologie ADEME / GIEC - Mise à jour Mai 2026")
+    st.caption("Sources : Méthodologie ADEME / GIEC / PEBC - Mise à jour Mai 2026")
