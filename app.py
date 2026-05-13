@@ -52,19 +52,19 @@ try:
     # Nettoyage des noms de colonnes
     df.columns = [str(c).strip() for c in df.columns]
     
-    # --- IDENTIFICATION DES COLONNES CIBLES ---
+    # --- IDENTIFICATION DES COLONNES ---
     col_nom = "Etablissements"
-    col_total_brut = "Total émissions" # La colonne que tu as désignée
+    col_total_brut = "Total émissions" 
     col_pers = "conso carbone  par personne"
+    # On identifie la colonne B (Nombre de personnes) - souvent nommée 'Nombre de personnes' ou similaire
+    # Si le nom varie, on peut utiliser l'index ou chercher une colonne contenant 'personnes'
+    col_nb_gens = [c for c in df.columns if 'personnes' in c.lower() or 'effectif' in c.lower()][0]
 
-    # Conversion numérique de la colonne Total
-    if col_total_brut in df.columns:
-        df[col_total_brut] = pd.to_numeric(df[col_total_brut].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
+    # Conversion numérique propre
+    for c in [col_total_brut, col_pers, col_nb_gens]:
+        if c in df.columns:
+            df[c] = pd.to_numeric(df[c].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
     
-    # Conversion numérique de la colonne par personne (pour le classement)
-    if col_pers in df.columns:
-        df[col_pers] = pd.to_numeric(df[col_pers].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
-
     df = df.dropna(subset=[col_nom])
 
     # --- TITRE ---
@@ -92,10 +92,14 @@ try:
         )
 
     with col_droite:
-        st.markdown("**🚀 Moyenne Globale du Réseau**")
+        st.markdown("**🚀 Impact Réel par Personne (Moyenne Réseau)**")
         
-        # --- CALCUL DE LA JAUGE SUR LE "TOTAL ÉMISSIONS" ---
-        valeur_jauge = df[col_total_brut].mean() if not df.empty else 0
+        # --- CALCUL PRÉCIS DE LA JAUGE ---
+        # Formule : Somme de toutes les émissions / Somme de toutes les personnes
+        total_emissions_reseau = df[col_total_brut].sum()
+        total_personnes_reseau = df[col_nb_gens].sum()
+        
+        valeur_jauge = total_emissions_reseau / total_personnes_reseau if total_personnes_reseau > 0 else 0
         
         fig_gauge = go.Figure(go.Indicator(
             mode = "gauge+number",
@@ -113,20 +117,17 @@ try:
                 'threshold': {
                     'line': {'color': "red", 'width': 6},
                     'thickness': 0.8,
-                    'value': 2500 # Limite cible
+                    'value': 2500 
                 }
             }
         ))
         
-        fig_gauge.add_annotation(x=0.5, y=0.1, text=f"Source : Moyenne de la colonne '{col_total_brut}'", showarrow=False, font=dict(size=10, color="grey"))
-
-        fig_gauge.update_layout(height=350, margin=dict(t=30, b=0, l=30, r=30))
         st.plotly_chart(fig_gauge, use_container_width=True)
+        st.caption(f"Calcul : {total_emissions_reseau:,.0f} kg CO2 / {total_personnes_reseau:,.0f} personnes")
 
     # --- LIGNE 2 : TABLEAU DÉTAILLÉ ---
     st.markdown("---")
-    st.markdown("**📋 Détails Complets (Données brutes issues du Gid 169103083)**")
     st.dataframe(df, use_container_width=True, height=400, hide_index=True)
 
 except Exception as e:
-    st.error(f"Erreur de lecture des données : {e}")
+    st.error(f"Erreur de calcul : {e}")
