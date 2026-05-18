@@ -1,3 +1,7 @@
+import streamlit as st
+
+st.markdown(
+    """
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -79,3 +83,6 @@
 
 </body>
 </html>
+""",
+    unsafe_allow_html=True
+)
