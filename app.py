@@ -1,15 +1,3 @@
-import streamlit as st
-
-# 1. Configuration de la page Streamlit pour occuper tout l'écran
-st.set_page_config(
-    page_title="Hub IA - EPS Aix-Marseille",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
-
-# 2. Injection du code HTML et CSS complet dans l'application Streamlit
-st.markdown(
-    """
     <!DOCTYPE html>
     <html lang="fr">
     <head>
@@ -51,11 +39,6 @@ st.markdown(
             .chat-section { flex: 1; background: white; }
             iframe { width: 100%; height: 100%; border: none; }
             footer { text-align: center; padding: 0.5rem; font-size: 0.75rem; color: #5d6d7e; }
-            
-            /* Masquer les éléments natifs de Streamlit superflus (header, footer de Streamlit) */
-            #MainMenu, viewerBadge, footer, header { visibility: hidden; display: none !important; }
-            .stApp { background: transparent; }
-            
             @media (max-width: 1000px) {
                 .hub-container { grid-template-columns: 1fr; overflow-y: auto; }
                 .bot-card { height: 500px; }
@@ -64,7 +47,6 @@ st.markdown(
         </style>
     </head>
     <body>
-
         <header>
             <img src="logo%20AM.png" alt="Logo" class="logo-academie">
             <div class="titles">
@@ -93,7 +75,6 @@ st.markdown(
         <footer>
             &copy; 2026 - Académie d'Aix-Marseille
         </footer>
-
     </body>
     </html>
     """,
