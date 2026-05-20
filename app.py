@@ -3,24 +3,15 @@ import streamlit as st
 # 1. Configuration de la page en mode plein écran
 st.set_page_config(page_title="Hub IA - Défi Carbone", layout="wide")
 
-# 2. Gestion du mot de passe
-if "authenticated" not in st.session_state:
-    st.session_state["authenticated"] = False
+# 2. Formulaire de connexion direct
+st.title("🔒 Accès Sécurisé - Défi Carbone")
+password_input = st.text_input("Veuillez saisir le mot de passe :", type="password")
 
-if not st.session_state["authenticated"]:
-    st.title("🔒 Accès Sécurisé - Défi Carbone")
-    password_input = st.text_input("Veuillez saisir le mot de passe :", type="password")
+# On vérifie directement si le mot de passe saisi est le bon
+if password_input == "CARBONE2026":
+    st.success("Mot de passe correct ! Chargement de votre espace...")
     
-    if st.button("Valider"):
-        if password_input == "CARBONE2026":
-            st.session_state["authenticated"] = True
-            st.success("Accès autorisé ! Chargement...")
-            st.rerun()
-        else:
-            st.error("Mot de passe incorrect.")
-            
-else:
-    # 3. Affichage de l'application avec ton Google Sheet intégré
+    # 3. Affichage de l'application (Ton HTML complet avec le Google Sheet valide)
     st.markdown("""
     <!DOCTYPE html>
     <html lang="fr">
@@ -103,3 +94,6 @@ else:
     </body>
     </html>
     """, unsafe_allow_html=True)
+
+elif password_input != "":
+    st.error("Mot de passe incorrect. Veuillez réessayer.")
