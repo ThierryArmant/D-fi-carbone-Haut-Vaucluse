@@ -47,18 +47,21 @@ def set_style():
 
 set_style()
 
-# 3. VARIABLES DE CONNEXION (Lien de publication officiel)
+# 3. VARIABLES DE CONNEXION (Ton nouveau lien de publication officiel)
 url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCa-ml7NJO07Wb09U6ULv4HmHzzKABue1XVeZ7rkW-13vQKm_EjwblGiumu9N1A8X5G2HfpJUX-VPU/pub?gid=717694895&single=true&output=csv"
 
-# 4. CHARGEMENT DIRECT DES DONNÉES
+# 4. CHARGEMENT DES DONNÉES (Ta logique d'origine pour repérer "Etablissements")
 @st.cache_data(ttl=60)
 def load_data():
     try:
-        # On charge directement le CSV en considérant la première ligne comme les en-têtes
-        data = pd.read_csv(url)
-        # Nettoyage des espaces dans les noms de colonnes
-        data.columns = [str(c).strip() for c in data.columns]
-        return data
+        raw = pd.read_csv(url, header=None)
+        for i, row in raw.iterrows():
+            row_str = [str(x).strip() for x in row.values]
+            if "Etablissements" in row_str:
+                data = raw.iloc[i+1:].copy()
+                new_cols = [str(val).strip() if pd.notnull(val) else f"Col_{j}" for j, val in enumerate(row.values)]
+                data.columns = new_cols
+                return data.loc[:, ~data.columns.duplicated()].reset_index(drop=True)
     except Exception as e:
         st.error(f"Erreur de connexion Sheets : {e}")
     return pd.DataFrame()
@@ -71,32 +74,21 @@ tab_dashboard, tab_glossaire = st.tabs(["📊 Tableau de Bord", "📖 Référent
 # --- ONGLET DASHBOARD ---
 with tab_dashboard:
     if not df.empty:
-        # On cherche les colonnes même s'il y a des petites variations d'espaces
-        col_etab = [c for c in df.columns if "Etablissement" in c or "Établissement" in c]
-        col_total = [c for c in df.columns if "Total" in c]
-        col_conso = [c for c in df.columns if "conso" in c or "par personne" in c]
-        col_eff = [c for c in df.columns if "Effectif" in c]
-
-        # Nettoyage et conversion des colonnes numériques si elles existent
-        for c in df.columns:
-            if c in col_total + col_conso + col_eff:
-                df[c] = pd.to_numeric(df[c].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
+        cols_to_fix = ["Total émissions", "conso carbone  par personne", "Effectif total"]
+        for col in cols_to_fix:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
         
         st.markdown("<h1 style='text-align: center; color: #1e3d59;'>🌱 Réseau Haut Vaucluse</h1>", unsafe_allow_html=True)
         
         col1, col2 = st.columns([1, 1])
         with col1:
             st.markdown('<p class="inner-title">📊 Classement des Établissements</p>', unsafe_allow_html=True)
-            if col_etab and col_conso:
-                st.dataframe(df[[col_etab[0], col_conso[0]]].sort_values(col_conso[0], ascending=False), hide_index=True, use_container_width=True, height=380)
-            else:
-                st.info("Colonnes d'affichage manquantes ou introuvables.")
+            if "Etablissements" in df.columns:
+                st.dataframe(df[["Etablissements", "conso carbone  par personne"]].sort_values("conso carbone  par personne", ascending=False), hide_index=True, use_container_width=True, height=380)
         with col2:
             st.markdown('<p class="inner-title">🚀 Moyenne du Réseau (kg/pers)</p>', unsafe_allow_html=True)
-            if col_total and col_eff and df[col_eff[0]].sum() > 0:
-                moyenne = df[col_total[0]].sum() / df[col_eff[0]].sum()
-            else:
-                moyenne = 0
+            moyenne = df["Total émissions"].sum() / df["Effectif total"].sum() if df["Effectif total"].sum() > 0 else 0
             fig = go.Figure(go.Indicator(mode = "gauge+number", value = moyenne, number = {'suffix': " kg"}, gauge = {'axis': {'range': [None, 5000]}, 'bar': {'color': "#1e3d59"}, 'steps': [{'range': [0, 1500], 'color': "#d4edda"}, {'range': [1500, 2500], 'color': "#fff3cd"}, {'range': [2500, 5000], 'color': "#f8d7da"}], 'threshold': {'line': {'color': "red", 'width': 4}, 'value': 2500}}))
             fig.update_layout(height=380, margin=dict(t=30, b=0, l=40, r=40))
             st.plotly_chart(fig, use_container_width=True)
