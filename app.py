@@ -1,34 +1,33 @@
 import streamlit as st
 
 # 1. Configuration de la page en mode plein écran
-st.set_page_config(page_title="Hub IA - EPS", layout="wide")
+st.set_page_config(page_title="Hub IA - Défi Carbone", layout="wide")
 
-# 2. Gestion de la sécurité / Mot de passe
+# 2. Gestion du mot de passe
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
-# Si l'utilisateur n'est pas encore connecté, on affiche l'écran de verrouillage
 if not st.session_state["authenticated"]:
-    st.title("🔒 Accès Sécurisé - Hub IA")
-    password_input = st.text_input("Veuillez saisir le mot de passe pour accéder à la page :", type="password")
+    st.title("🔒 Accès Sécurisé - Défi Carbone")
+    password_input = st.text_input("Veuillez saisir le mot de passe :", type="password")
     
     if st.button("Valider"):
         if password_input == "CARBONE2026":
             st.session_state["authenticated"] = True
-            st.success("Accès autorisé ! Chargement de la page...")
+            st.success("Accès autorisé ! Chargement...")
             st.rerun()
         else:
             st.error("Mot de passe incorrect.")
             
-# 3. Si le mot de passe est correct, on affiche ton précieux code HTML
 else:
+    # 3. Affichage de l'application avec ton Google Sheet intégré
     st.markdown("""
     <!DOCTYPE html>
     <html lang="fr">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Hub IA - EPS Aix-Marseille</title>
+        <title>Défi Carbone - Collège</title>
         <style>
             :root { --am-blue: #002060; }
             body {
@@ -42,8 +41,7 @@ else:
                 padding: 0.5rem 1.5rem; display: flex; align-items: center;
                 justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 10;
             }
-            .logo-academie { height: 60px; background: white; padding: 5px; border-radius: 4px; }
-            .logo-eps { height: 60px; border-radius: 50%; border: 2px solid white; }
+            .logo-box { height: 60px; background: white; padding: 5px; border-radius: 4px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; }
             .titles { text-align: center; flex-grow: 1; }
             h1 { margin: 0; font-size: 1.4rem; }
             .subtitle { opacity: 0.9; margin: 0; font-size: 0.8rem; }
@@ -74,12 +72,12 @@ else:
     <body>
 
         <header>
-            <img src="logo%20AM.png" alt="Logo" class="logo-academie">
+            <div class="logo-box">♻️</div>
             <div class="titles">
-                <h1>Hub IA - EPS Aix-Marseille</h1>
-                <p class="subtitle">Espace Ressources & Assistance</p>
+                <h1>Hub IA - Défi Carbone Cantine</h1>
+                <p class="subtitle">Espace Ressources & Suivi ODD 12</p>
             </div>
-            <img src="capture_decran_2025-09-08_191648.png" alt="Logo EPS" class="logo-eps">
+            <div class="logo-box">🏫</div>
         </header>
 
         <div class="hub-container">
@@ -91,15 +89,15 @@ else:
             </div>
 
             <div class="bot-card">
-                <div class="bot-header">🔍 Recherche Ressources & Site EPS</div>
+                <div class="bot-header">📊 Tableau des Pesées & Données Cantine</div>
                 <div class="chat-section">
-                    <iframe src="https://www.chatbase.co/chatbot-iframe/zbzrnrmae7vcb06n24uhvddky9tfix71"></iframe>
+                    <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSCa-ml7NJO07Wb09U6ULv4HmHzzKABue1XVeZ7rkW-13vQKm_EjwblGiumu9N1A8X5G2HfpJUX-VPU/pubhtml?gid=717694895&amp;single=true"></iframe>
                 </div>
             </div>
         </div>
 
         <footer>
-            &copy; 2026 - Académie d'Aix-Marseille
+            &copy; 2026 - Académie d'Aix-Marseille - Collège Haut-Vaucluse
         </footer>
 
     </body>
