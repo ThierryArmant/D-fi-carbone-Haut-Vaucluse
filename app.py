@@ -47,11 +47,11 @@ def set_style():
 
 set_style()
 
-# 3. VARIABLES DE CONNEXION GOOGLE SHEETS (GID configuré sur ton onglet spécifique)
+# 3. VARIABLES DE CONNEXION (Ton code exact avec le bon GID)
 votre_gid = "717694895" 
 url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid={votre_gid}"
 
-# 4. CHARGEMENT DES DONNÉES
+# 4. CHARGEMENT DES DONNÉES (Ta logique d'origine intacte)
 @st.cache_data(ttl=60)
 def load_data():
     try:
@@ -94,15 +94,11 @@ with tab_dashboard:
             fig.update_layout(height=380, margin=dict(t=30, b=0, l=40, r=40))
             st.plotly_chart(fig, use_container_width=True)
         
-        with st.expander("🔐 Saisie des Pesées & Mises à jour"):
-            pwd = st.text_input("Code secret administrateur :", type="password", key="main_pwd")
+        with st.expander("🔐 Mise à jour des données"):
+            pwd = st.text_input("Code secret :", type="password", key="main_pwd")
             if pwd == "CARBONE2026":
-                st.success("Code correct !")
-                st.link_button("🚀 Ouvrir le formulaire d'enregistrement", "https://docs.google.com/forms/d/e/1FAIpQLSe6QOMdXWJPYHsbMkq41IyzM7Rc9izcqsFpZhQzWiaqygyykQ/viewform")
-            elif pwd != "":
-                st.error("Code incorrect.")
-                
-        st.markdown('<p class="inner-title">📋 Historique complet des données</p>', unsafe_allow_html=True)
+                st.link_button("🚀 Ouvrir le formulaire", "https://docs.google.com/forms/d/e/1FAIpQLSe6QOMdXWJPYHsbMkq41IyzM7Rc9izcqsFpZhQzWiaqygyykQ/viewform")
+        
         st.dataframe(df, hide_index=True, use_container_width=True)
 
 # --- ONGLET GLOSSAIRE (Avec Anecdotes & Méthodes) ---
@@ -143,7 +139,7 @@ with tab_glossaire:
             st.metric("Assiette jetée (moyenne)", "1.20 kg", "CO2e / kg jeté")
         with c_d2:
             st.metric("Gaspillage Pain", "0.63 kg", "CO2e / kg jeté")
-        st.markdown('<div class="methode"><b>📝 Méthode :</b> Pesée des restes. L\'assiette is lourde en carbone car elle contient des produits transformés (viande, sauces) qui ont déjà coûté cher à produire.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="methode"><b>📝 Méthode :</b> Pesée des restes. L\'assiette est lourde en carbone car elle contient des produits transformés (viande, sauces) qui ont déjà coûté cher à produire.</div>', unsafe_allow_html=True)
         st.markdown('<div class="anecdote"><b>🍽️ L\'assiette fantôme :</b> Jeter 1 kg d\'assiettes pleines émet autant que de fabriquer 6 bouteilles en plastique ou de recharger un smartphone 150 fois !</div>', unsafe_allow_html=True)
 
     with g_tabs[4]:
