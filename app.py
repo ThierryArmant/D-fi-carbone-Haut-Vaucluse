@@ -47,7 +47,7 @@ def set_style():
 
 set_style()
 
-# 3. VARIABLES DE CONNEXION
+# 3. VARIABLES DE CONNEXION GOOGLE SHEETS
 votre_gid = "169103083" 
 url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid={votre_gid}"
 
@@ -94,10 +94,16 @@ with tab_dashboard:
             fig.update_layout(height=380, margin=dict(t=30, b=0, l=40, r=40))
             st.plotly_chart(fig, use_container_width=True)
         
-        with st.expander("🔐 Mise à jour des données"):
-            pwd = st.text_input("Code secret :", type="password", key="main_pwd")
+        # Section Sécurisée pour l'accès au formulaire de saisie
+        with st.expander("🔐 Saisie des Pesées & Mises à jour"):
+            pwd = st.text_input("Code secret administrateur :", type="password", key="main_pwd")
             if pwd == "CARBONE2026":
-                st.link_button("🚀 Ouvrir le formulaire", "https://docs.google.com/forms/d/e/1FAIpQLSe6QOMdXWJPYHsbMkq41IyzM7Rc9izcqsFpZhQzWiaqygyykQ/viewform")
+                st.success("Code correct !")
+                st.link_button("🚀 Ouvrir le formulaire d'enregistrement", "https://docs.google.com/forms/d/e/1FAIpQLSe6QOMdXWJPYHsbMkq41IyzM7Rc9izcqsFpZhQzWiaqygyykQ/viewform")
+            elif pwd != "":
+                st.error("Code incorrect.")
+                
+        st.markdown('<p class="inner-title">📋 Historique complet des données</p>', unsafe_allow_html=True)
         st.dataframe(df, hide_index=True, use_container_width=True)
 
 # --- ONGLET GLOSSAIRE (Avec Anecdotes & Méthodes) ---
