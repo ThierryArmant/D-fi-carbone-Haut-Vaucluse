@@ -48,7 +48,7 @@ def set_style():
 set_style()
 
 # 3. VARIABLES DE CONNEXION
-votre_gid = "169103083" 
+votre_gid = "717694895" 
 url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid={votre_gid}"
 
 # 4. CHARGEMENT DES DONNÉES
