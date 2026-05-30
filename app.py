@@ -63,6 +63,7 @@ def load_data():
                 new_cols = [str(val).strip() if pd.notnull(val) else f"Col_{j}" for j, val in enumerate(row.values)]
                 data.columns = new_cols
                 return data.loc[:, ~data.columns.duplicated()].reset_index(drop=True)
+        return pd.DataFrame()
     except Exception as e:
         st.error(f"Erreur de connexion Sheets : {e}")
     return pd.DataFrame()
@@ -82,13 +83,11 @@ with tab_dashboard:
         
         # --- BLOC DE CALCUL AUTOMATIQUE ET AGRÉGATION ---
         if "Etablissements" in df.columns:
-            # On regroupe par établissement pour additionner les émissions de toutes leurs saisies
             df_grouped = df.groupby("Etablissements").agg({
                 "Total émissions": "sum",
-                "Effectif total": "max"  # On garde l'effectif réel de l'établissement sans le dupliquer
+                "Effectif total": "max"
             }).reset_index()
             
-            # Formule pour recalculer dynamiquement le ratio carbone global par personne
             df_grouped["conso carbone  par personne"] = df_grouped.apply(
                 lambda r: r["Total émissions"] / r["Effectif total"] if r["Effectif total"] > 0 else 0, axis=1
             )
@@ -101,7 +100,7 @@ with tab_dashboard:
         with col1:
             st.markdown('<p class="inner-title">📊 Classement des Établissements</p>', unsafe_allow_html=True)
             if "Etablissements" in df_grouped.columns:
-                st.dataframe(df_grouped[["Etablissements", "conso carbone  par personne"]].sort_values("conso carbone  par personne", ascending=False), hide_index=True, use_container_width=True, height=380)
+                st.dataframe(df_grouped[["Etablissements", "conso carbone  par personne"]].sort_values("conso carbone  par personne", ascending=False), hide_index=True, width="stretch", height=380)
         with col2:
             st.markdown('<p class="inner-title">🚀 Moyenne du Réseau (kg/pers)</p>', unsafe_allow_html=True)
             moyenne = df_grouped["Total émissions"].sum() / df_grouped["Effectif total"].sum() if df_grouped["Effectif total"].sum() > 0 else 0
@@ -115,7 +114,7 @@ with tab_dashboard:
                 st.link_button("🚀 Ouvrir le formulaire", "https://docs.google.com/forms/d/e/1FAIpQLSe6QOMdXWJPYHsbMkq41IyzM7Rc9izcqsFpZhQzWiaqygyykQ/viewform")
         
         st.markdown('<p class="inner-title">📋 Liste Complète des Saisies Brutes</p>', unsafe_allow_html=True)
-        st.dataframe(df, hide_index=True, use_container_width=True)
+        st.dataframe(df, hide_index=True, width="stretch")
 
 # --- ONGLET GLOSSAIRE (Avec Anecdotes & Méthodes) ---
 with tab_glossaire:
