@@ -132,7 +132,17 @@ with tab_dashboard:
 
         st.markdown("<h1 style='text-align: center; color: #38bdf8;'>🌱 Réseau Haut Vaucluse</h1>", unsafe_allow_html=True)
         
-        # --- BLOC DU HAUT : CLASSEMENT ET JAUGE GLOBALE ---
+        # --- 🛠️ NOUVEL EMPLACEMENT : ACCÈS FORMULAIRE TOUT EN HAUT ---
+        with st.expander("🔐 ESPACE ENSEIGNANTS : Saisie de nouvelles données", expanded=False):
+            st.markdown("<p style='color: #cbd5e1; margin-bottom: 5px;'>Entrez le code secret pour déverrouiller l'accès direct au formulaire Google Forms de votre établissement.</p>", unsafe_allow_html=True)
+            pwd = st.text_input("Code secret de déploiement :", type="password", key="main_pwd")
+            if pwd == "CARBONE2026":
+                st.success("Accès autorisé ! Cliquez sur le bouton ci-dessous :")
+                st.link_button("🚀 Ouvrir le formulaire de saisie mensuelle", "https://docs.google.com/forms/d/e/1FAIpQLSe6QOMdXWJPYHsbMkq41IyzM7Rc9izcqsFpZhQzWiaqygyykQ/viewform", use_container_width=True)
+        
+        st.markdown("<br>", unsafe_allow_html=True) # Petit espace visuel douillet
+
+        # --- BLOC : CLASSEMENT ET JAUGE GLOBALE ---
         col1, col2 = st.columns([1, 1])
         with col1:
             st.markdown('<p class="inner-title">📊 Classement des Établissements (kg/personne)</p>', unsafe_allow_html=True)
@@ -192,7 +202,7 @@ with tab_dashboard:
                 total_dechets = dech_p + dech_a + dech_pl
 
                 # Biens & Consommables
-                pap_val = school_data.get("Papier", 0)
+                pap_val = school_data.get("Paper", 0) if "Paper" in df.columns else school_data.get("Papier", 0)
                 plas_val = school_data.get("Plastique", 0)
                 cart_val = school_data.get("Carton", 0)
                 ordi_val = school_data.get("Ordinateur à écran plat", 0)
@@ -201,7 +211,7 @@ with tab_dashboard:
                 vid_val = school_data.get("Vidéo projecteur", 0)
                 total_biens = pap_val + plas_val + cart_val + ordi_val + imp_val + phot_val + vid_val
 
-                # Rendu des barres colorées adaptées au mode sombre
+                # Rendu des barres colorées
                 draw_custom_bar("❄️ Énergie & Bâtiments", total_energie, total_school_emissions, "#22c55e")
                 with st.expander("Détails du poste Énergie"):
                     draw_custom_bar("• Électricité française", elec_val, total_energie, "#4ade80", is_sub=True)
@@ -244,12 +254,7 @@ with tab_dashboard:
 
         st.divider()
         
-        # --- BLOC DU BAS : TABLEAU BRUT ---
-        with st.expander("🔐 Saisie de nouvelles données"):
-            pwd = st.text_input("Code secret :", type="password", key="main_pwd")
-            if pwd == "CARBONE2026":
-                st.link_button("🚀 Ouvrir le formulaire", "https://docs.google.com/forms/d/e/1FAIpQLSe6QOMdXWJPYHsbMkq41IyzM7Rc9izcqsFpZhQzWiaqygyykQ/viewform")
-        
+        # --- BLOC DU BAS : TABLEAU CENTRALISÉ ---
         st.markdown('<p class="inner-title">📋 Synthèse Globale des Établissements (Données Centralisées)</p>', unsafe_allow_html=True)
         st.dataframe(df, hide_index=True, width="stretch")
 
@@ -262,7 +267,6 @@ with tab_glossaire:
     
     with g_tabs[0]:
         st.subheader("🍎 Pôle Alimentation (L'impact de mon plateau)")
-        
         st.markdown("""
         <div class="anecdote">
         <b>Si tu prends l'option VIANDE ROUGE (Bœuf) :</b><br>
@@ -272,7 +276,6 @@ with tab_glossaire:
         • L'empreinte de fabrication de <b>300 canettes de soda</b> en aluminium.
         </div>
         """, unsafe_allow_html=True)
-        
         st.markdown("""
         <div class="methode">
         <b>💡 Le réflexe malin :</b> En choisissant l'option <b>Poisson</b> (2 kg) ou <b>Viande Blanche</b> (1,6 kg), tu divises l'impact par 3. Si tu choisis le repas <b>Végétarien</b> (0,5 kg), c'est comme si tu ne lançais ton jeu vidéo préféré que pendant quelques heures. L'effort est énorme !
@@ -281,7 +284,6 @@ with tab_glossaire:
 
     with g_tabs[1]:
         st.subheader("❄️ Pôle Énergie (L'électricité et le chauffage du collège)")
-        
         st.markdown("""
         <div class="anecdote">
         <b>Pour comprendre l'Électricité (1 kWh = 0,06 kg CO2e) :</b><br>
@@ -291,64 +293,12 @@ with tab_glossaire:
         • Recharger ton smartphone de 0% à 100% tous les soirs pendant <b>2 ANS</b> !
         </div>
         """, unsafe_allow_html=True)
-        
         st.markdown("""
         <div class="anecdote" style="background-color: #991b1b; border-left-color: #ef4444;">
         <b>⚠️ Le piège du Chauffage (Gaz et Fioul) :</b><br>
-        Le gaz et le fioul polluence <b>4 à 5 fois plus</b> que l'électricité chez nous. <br>
-        Ouvrir les fenêtres de la classe en plein hiver alors que le chauffage tourne à fond pendant 1 hour, c'est jeter en l'air l'équivalent carbone de <b>2 paires de jeans neufs</b> en pur gaspillage d'énergie.
+        Le gaz et le fioul polluent <b>4 à 5 fois plus</b> que l'électricité chez nous. <br>
+        Ouvrir les fenêtres de la classe en plein hiver alors que le chauffage tourne à fond pendant 1 heure, c'est jeter en l'air l'équivalent carbone de <b>2 paires de jeans neufs</b> en pur gaspillage d'énergie.
         </div>
         """, unsafe_allow_html=True)
 
-    with g_tabs[2]:
-        st.subheader("🚌 Pôle Transports (Mes déplacements)")
-        
-        st.markdown("""
-        <div class="anecdote">
-        <b>La Voiture de la famille (1 km = 0,26 kg CO2e) :</b><br>
-        Faire un petit trajet de 4 km en voiture thermique pour venir au collège émet 1 kg de CO2. C'est autant que :<br>
-        • Fabriquer <b>15 BOUTEILLES EN PLASTIQUE</b> de 1,5L.<br>
-        • Envoyer <b>250 SNAPS</b> avec de grosses vidéos.
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("""
-        <div class="methode">
-        <b>🚌 Pourquoi le Bus scolaire gagne le match ?</b><br>
-        Quand tu partages un autocar avec 50 camarades pour une sortie scolaire, ta part de pollution par kilomètre devient minuscule. C'est comme si tu venais au collège en <b>trottinette électrique</b> !
-        </div>
-        """, unsafe_allow_html=True)
-
-    with g_tabs[3]:
-        st.subheader("🗑️ Pôle Déchets (Ce qu'on jette à la poubelle)")
-        
-        st.markdown("""
-        <div class="anecdote">
-        <b>Le Gaspillage Alimentaire (1 kg de nourriture jeté = 1,2 kg CO2e) :</b><br>
-        Quand on jette de la nourriture à la cantine, on jette l'énergie qu'il a fallu pour faire pousser les légumes ou élever les animaux. <br>
-        • Jeter <b>2 kg de nourriture</b> (l'équivalent de quelques plateaux mal finis), c'est polluer autant que de fabriquer <b>1 HAMBURGER AU BŒUF COMPLET</b> pour le mettre directement à la poubelle.<br>
-        • Si une table de copains gaspille 5 kg de pain et de restes ce midi, c'est l'équivalent carbone de fabriquer <b>un T-SHIRT NEUF</b> et de le découper en morceaux sans jamais l'avoir porté.
-        </div>
-        """, unsafe_allow_html=True)
-
-    with g_tabs[4]:
-        st.subheader("📦 Pôle Biens & Consommables (Le matériel du collège)")
-        
-        st.markdown("""
-        <div class="anecdote">
-        <b>L'Énergie Grise (Le poids caché de la fabrication) :</b><br>
-        Un appareil électronique pollue énormément au moment où on le fabrique à l'usine, bien avant d'arriver dans notre classe.<br>
-        • Acheter <b>1 ORDINATEUR PORTABLE</b> de classe (161 kg CO2e) = Fabriquer <b>7 PAIRES DE JEANS</b> neufs.<br>
-        • Installer <b>1 GRAND ÉCRAN PLAT</b> dans une salle (1 283 kg CO2e) = Acheter <b>55 PAIRES DE JEANS</b> ou faire <b>5 000 km en scooter</b> !<br>
-        • Consommer <b>1 000 ramettes de papier A4</b> au collège dans l'année = Couper une forêt de <b>10 ARBRES ADULTES</b>.
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("""
-        <div class="methode">
-        <b>🔧 L'éco-geste ultime :</b> Prendre soin du matériel (tables, chaises, ordis, projecteurs) pour qu'ils durent 2 ans de plus, c'est le meilleur moyen de faire chuter le score carbone de ton établissement !
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.divider()
-    st.caption("Sources des équivalents ados : Base Empreinte ADEME / Simulateur National 'Nos Gestes Climat' - Mai 2026")
+    with g_tabs
