@@ -301,4 +301,4 @@ with tab_glossaire:
         </div>
         """, unsafe_allow_html=True)
 
-    with g_tabs
+    with g_tabs[1]
