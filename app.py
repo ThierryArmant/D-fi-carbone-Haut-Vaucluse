@@ -54,6 +54,8 @@ url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-Nmpln
 # 4. CHARGEMENT DES DONNÉES
 @st.cache_data(ttl=60)
 def load_data():
+    st.subheader("🕵️ Test de contrôle : Voici ce que l'application lit EN CE MOMENT :")
+st.write(df)
     try:
         raw = pd.read_csv(url, header=None)
         for i, row in raw.iterrows():
