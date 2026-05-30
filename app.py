@@ -48,8 +48,8 @@ def load_data():
         raw = pd.read_csv(url, header=None)
         for i, row in raw.iterrows():
             row_str = [str(x).strip() for x in row.values]
-            # Détection stricte de ton en-tête de colonne
-            if "Etablissements" in row_str:
+            # Détection de ton en-tête de colonne
+            if any("etablissement" in x.lower() for x in row_str):
                 data = raw.iloc[i+1:].copy()
                 new_cols = [str(val).strip() if pd.notnull(val) else f"Col_{j}" for j, val in enumerate(row.values)]
                 data.columns = new_cols
@@ -60,33 +60,50 @@ def load_data():
 
 df = load_data()
 
+# NETTOYAGE DE SÉCURITÉ DES COLONNES (Supprime les sauts de ligne et espaces invisibles \xa0)
+if not df.empty:
+    df.columns = [str(c).replace('\xa0', ' ').replace('\n', ' ').strip() for c in df.columns]
+    df.columns = [" ".join(c.split()) for c in df.columns]
+
 # 5. NAVIGATION PAR ONGLETS
 tab_dashboard, tab_glossaire = st.tabs(["📊 Tableau de Bord", "📖 Référentiel consommations carbone (5 Pôles)"])
 
 # --- ONGLET DASHBOARD ---
 with tab_dashboard:
     if not df.empty:
-        # Noms de colonnes STRICTS calqués sur ton fichier Google Sheets
+        # Cibles théoriques
         col_etab = "Etablissements"
         col_total = "Total émissions"
         col_eff = "Effectif total"
         col_conso = "conso carbone par personne"
+
+        # RELIANCE DE SÉCURITÉ : Si l'orthographe exacte échoue, on cherche par mot-clé
+        if col_etab not in df.columns: 
+            col_etab = df.columns[0]
+        if col_total not in df.columns: 
+            col_total = [c for c in df.columns if "total" in c.lower() and "émis" in c.lower()][0] if any("total" in c.lower() and "émis" in c.lower() for c in df.columns) else df.columns[7]
+        if col_eff not in df.columns: 
+            col_eff = [c for c in df.columns if "eff" in c.lower()][0] if any("eff" in c.lower() for c in df.columns) else df.columns[1]
+        if col_conso not in df.columns: 
+            col_conso = [c for c in df.columns if "conso" in c.lower() or "personne" in c.lower()][0] if any("conso" in c.lower() or "personne" in c.lower() for c in df.columns) else df.columns[8]
 
         # Nettoyage et conversion numérique des colonnes de scores
         for col in [col_total, col_eff, col_conso]:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
         
-        # On ne garde que les lignes où un établissement est saisi et actif (score > 0)
-        df_active = df[(df[col_etab].astype(str).str.strip() != "") & (df[col_conso] > 0)].copy()
+        # Filtrage sécurisé (Vérifie la présence réelle des clés pour parer tout KeyError)
+        if col_etab in df.columns and col_conso in df.columns:
+            df_active = df[(df[col_etab].astype(str).str.strip() != "") & (df[col_conso] > 0)].copy()
+        else:
+            df_active = df.copy()
 
         st.markdown("<h1 style='text-align: center; color: #1e3d59;'>🌱 Réseau Haut Vaucluse</h1>", unsafe_allow_html=True)
         
         col1, col2 = st.columns([1, 1])
         with col1:
             st.markdown('<p class="inner-title">📊 Classement des Établissements (kg/personne)</p>', unsafe_allow_html=True)
-            if col_etab in df_active.columns and col_conso in df_active.columns:
-                # Tri décroissant direct basé sur le ratio (colonne I) de ton Sheets
+            if not df_active.empty and col_etab in df_active.columns and col_conso in df_active.columns:
                 df_ranking = df_active[[col_etab, col_conso]].sort_values(col_conso, ascending=False)
                 st.dataframe(df_ranking, hide_index=True, width="stretch", height=380)
             else:
@@ -94,10 +111,10 @@ with tab_dashboard:
                 
         with col2:
             st.markdown('<p class="inner-title">🚀 Moyenne du Réseau (kg/pers)</p>', unsafe_allow_html=True)
-            if not df_active.empty and df_active[col_eff].sum() > 0:
+            if not df_active.empty and col_total in df_active.columns and col_eff in df_active.columns and df_active[col_eff].sum() > 0:
                 moyenne = df_active[col_total].sum() / df_active[col_eff].sum()
             else:
-                moyenne = 0
+                moyenne = df_active[col_conso].mean() if col_conso in df_active.columns else 0
 
             fig = go.Figure(go.Indicator(mode = "gauge+number", value = moyenne, number = {'suffix': " kg"}, gauge = {'axis': {'range': [None, 2000]}, 'bar': {'color': "#1e3d59"}, 'steps': [{'range': [0, 500], 'color': "#d4edda"}, {'range': [500, 1000], 'color': "#fff3cd"}, {'range': [1000, 2000], 'color': "#f8d7da"}], 'threshold': {'line': {'color': "red", 'width': 4}, 'value': 1000}}))
             fig.update_layout(height=380, margin=dict(t=30, b=0, l=40, r=40))
@@ -129,7 +146,6 @@ with tab_glossaire:
         st.subheader("Pôle Énergie & Fluides")
         st.write("- **Électricité :** 0.06 kgCO2e / kWh")
         st.write("- **Gaz Naturel :** 0.227 kgCO2e / kWh")
-        st.markdown('<div class="methode"><b>📝 Méthode :</b> Consommation réelle des compteurs.</div>', unsafe_allow_html=True)
 
     with g_tabs[2]:
         st.subheader("Pôle Transports")
