@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 # 1. CONFIGURATION DE LA PAGE
 st.set_page_config(page_title="Défi Carbone - Haut Vaucluse", page_icon="🌱", layout="wide")
 
-# 2. STYLE CSS (Lisibilité et design des encadrés)
+# 2. STYLE CSS (Pour calquer le design épuré des barres et des blocs)
 def set_style():
     st.markdown(
         """
@@ -22,13 +22,18 @@ def set_style():
         [data-testid="stHeader"] { height: 0px; }
         .stTabs [data-baseweb="tab"] { font-weight: bold; }
         
-        /* Style des anecdotes (Bleu) */
-        .anecdote {
-            background-color: #e3f2fd; padding: 15px; border-left: 5px solid #2196f3; border-radius: 5px; margin: 10px 0;
+        /* Styles des barres de progression personnalisées */
+        .pole-header {
+            display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1em; margin-bottom: 5px; margin-top: 5px;
         }
-        /* Style de la méthode (Vert) */
-        .methode {
-            background-color: #f1f8e9; padding: 10px; border-left: 5px solid #8bc34a; border-radius: 5px; font-size: 0.9em; margin-top: 10px;
+        .sub-pole-header {
+            display: flex; justify-content: space-between; font-size: 0.95em; color: #555; margin-bottom: 3px; margin-top: 8px;
+        }
+        .bar-container {
+            background-color: #e9ecef; border-radius: 6px; height: 16px; width: 100%; margin-bottom: 15px; overflow: hidden;
+        }
+        .sub-bar-container {
+            background-color: #f1f3f5; border-radius: 4px; height: 10px; width: 100%; margin-bottom: 10px; overflow: hidden;
         }
         </style>
         """,
@@ -37,7 +42,24 @@ def set_style():
 
 set_style()
 
-# 3. VARIABLES DE CONNEXION (Ton onglet Bilan Carbone)
+# Fonction utilitaire pour dessiner les barres de progression en HTML
+def draw_custom_bar(label, value_kg, total_kg, color, is_sub=False):
+    pct = (value_kg / total_kg * 100) if total_kg > 0 else 0
+    # Formatage intelligent : affiche en Tonnes si >= 1000 kg, sinon en kg
+    display_weight = f"{value_kg/1000:.2f} tonne" if value_kg >= 1000 else f"{value_kg:.1f} kg"
+    
+    if not is_sub:
+        st.markdown(f"""
+            <div class="pole-header"><span>{label}</span><span>{display_weight} - {pct:.1f} %</span></div>
+            <div class="bar-container"><div style="background-color: {color}; height: 100%; width: {pct}%;"></div></div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown(f"""
+            <div class="sub-pole-header"><span>{label}</span><span>{display_weight} - {pct:.1f} %</span></div>
+            <div class="sub-bar-container"><div style="background-color: {color}; height: 100%; width: {pct}%;"></div></div>
+        """, unsafe_allow_html=True)
+
+# 3. VARIABLES DE CONNEXION
 votre_gid = "169103083" 
 url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid={votre_gid}"
 
@@ -48,7 +70,6 @@ def load_data():
         raw = pd.read_csv(url, header=None)
         for i, row in raw.iterrows():
             row_str = [str(x).strip() for x in row.values]
-            # Détection de ton en-tête de colonne
             if any("etablissement" in x.lower() for x in row_str):
                 data = raw.iloc[i+1:].copy()
                 new_cols = [str(val).strip() if pd.notnull(val) else f"Col_{j}" for j, val in enumerate(row.values)]
@@ -60,7 +81,7 @@ def load_data():
 
 df = load_data()
 
-# NETTOYAGE DE SÉCURITÉ DES COLONNES (Supprime les sauts de ligne et espaces invisibles \xa0)
+# Nettoyage global des colonnes
 if not df.empty:
     df.columns = [str(c).replace('\xa0', ' ').replace('\n', ' ').strip() for c in df.columns]
     df.columns = [" ".join(c.split()) for c in df.columns]
@@ -68,58 +89,146 @@ if not df.empty:
 # 5. NAVIGATION PAR ONGLETS
 tab_dashboard, tab_glossaire = st.tabs(["📊 Tableau de Bord", "📖 Référentiel consommations carbone (5 Pôles)"])
 
-# --- ONGLET DASHBOARD ---
 with tab_dashboard:
     if not df.empty:
-        # Cibles théoriques
-        col_etab = "Etablissements"
-        col_total = "Total émissions"
-        col_eff = "Effectif total"
-        col_conso = "conso carbone par personne"
+        # Noms des colonnes cibles
+        col_etab = "Etablissements" if "Etablissements" in df.columns else df.columns[0]
+        col_total = "Total émissions" if "Total émissions" in df.columns else df.columns[7]
+        col_eff = "Effectif total" if "Effectif total" in df.columns else df.columns[1]
+        col_conso = "conso carbone par personne" if "conso carbone par personne" in df.columns else df.columns[8]
 
-        # RELIANCE DE SÉCURITÉ : Si l'orthographe exacte échoue, on cherche par mot-clé
-        if col_etab not in df.columns: 
-            col_etab = df.columns[0]
-        if col_total not in df.columns: 
-            col_total = [c for c in df.columns if "total" in c.lower() and "émis" in c.lower()][0] if any("total" in c.lower() and "émis" in c.lower() for c in df.columns) else df.columns[7]
-        if col_eff not in df.columns: 
-            col_eff = [c for c in df.columns if "eff" in c.lower()][0] if any("eff" in c.lower() for c in df.columns) else df.columns[1]
-        if col_conso not in df.columns: 
-            col_conso = [c for c in df.columns if "conso" in c.lower() or "personne" in c.lower()][0] if any("conso" in c.lower() or "personne" in c.lower() for c in df.columns) else df.columns[8]
-
-        # Nettoyage et conversion numérique des colonnes de scores
-        for col in [col_total, col_eff, col_conso]:
-            if col in df.columns:
-                df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
+        # Conversion numérique de TOUTES les colonnes de données pour les calculs graphiques
+        cols_to_convert = [c for c in df.columns if c != col_etab]
+        for col in cols_to_convert:
+            df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
         
-        # Filtrage sécurisé (Vérifie la présence réelle des clés pour parer tout KeyError)
-        if col_etab in df.columns and col_conso in df.columns:
-            df_active = df[(df[col_etab].astype(str).str.strip() != "") & (df[col_conso] > 0)].copy()
-        else:
-            df_active = df.copy()
+        # Filtrage des lignes actives
+        df_active = df[(df[col_etab].astype(str).str.strip() != "") & (df[col_conso] > 0)].copy()
 
         st.markdown("<h1 style='text-align: center; color: #1e3d59;'>🌱 Réseau Haut Vaucluse</h1>", unsafe_allow_html=True)
         
+        # --- BLOC DU HAUT : CLASSEMENT ET JAUGE GLOBALE ---
         col1, col2 = st.columns([1, 1])
         with col1:
             st.markdown('<p class="inner-title">📊 Classement des Établissements (kg/personne)</p>', unsafe_allow_html=True)
-            if not df_active.empty and col_etab in df_active.columns and col_conso in df_active.columns:
+            if not df_active.empty:
                 df_ranking = df_active[[col_etab, col_conso]].sort_values(col_conso, ascending=False)
                 st.dataframe(df_ranking, hide_index=True, width="stretch", height=380)
             else:
-                st.info("En attente de données calculées dans le tableur...")
+                st.info("En attente de données calculées...")
                 
         with col2:
             st.markdown('<p class="inner-title">🚀 Moyenne du Réseau (kg/pers)</p>', unsafe_allow_html=True)
-            if not df_active.empty and col_total in df_active.columns and col_eff in df_active.columns and df_active[col_eff].sum() > 0:
+            if not df_active.empty and df_active[col_eff].sum() > 0:
                 moyenne = df_active[col_total].sum() / df_active[col_eff].sum()
             else:
-                moyenne = df_active[col_conso].mean() if col_conso in df_active.columns else 0
+                moyenne = 0
 
             fig = go.Figure(go.Indicator(mode = "gauge+number", value = moyenne, number = {'suffix': " kg"}, gauge = {'axis': {'range': [None, 2000]}, 'bar': {'color': "#1e3d59"}, 'steps': [{'range': [0, 500], 'color': "#d4edda"}, {'range': [500, 1000], 'color': "#fff3cd"}, {'range': [1000, 2000], 'color': "#f8d7da"}], 'threshold': {'line': {'color': "red", 'width': 4}, 'value': 1000}}))
             fig.update_layout(height=380, margin=dict(t=30, b=0, l=40, r=40))
             st.plotly_chart(fig, use_container_width=True)
         
+        st.divider()
+
+        # --- NOUVEAU BLOC DU MILIEU : LE BILAN GRAPHIQUE DÉTAILLÉ (Style Nos Gestes Climat) ---
+        st.markdown('<p class="inner-title">🔍 Analyse détaillée par Établissement</p>', unsafe_allow_html=True)
+        
+        if not df_active.empty:
+            # Menu déroulant pour choisir l'établissement à analyser
+            selected_school = st.selectbox("Sélectionnez un établissement pour explorer ses statistiques :", df_active[col_etab].unique())
+            
+            # Extraction de la ligne de l'établissement choisi
+            school_data = df_active[df_active[col_etab] == selected_school].iloc[0]
+            total_school_emissions = school_data[col_total]
+            
+            if total_school_emissions > 0:
+                # 1. Définition des sous-composants basés STRICTEMENT sur les colonnes de calcul de ton Sheets
+                # Pôle Énergie
+                elec_val = school_data.get("Electricité française", 0)
+                fioul_val = school_data.get("Fioul", 0)
+                gaz_val = school_data.get("Gaz Naturel", 0)
+                total_energie = elec_val + fioul_val + gaz_val
+
+                # Pôle Transports
+                voit_val = school_data.get("Voiture à essence", 0)
+                bus_v_val = school_data.get("Autobus (ville)", 0)
+                bus_s_val = school_data.get("Autobus (sortie scolaire)", 0)
+                total_transport = voit_val + bus_v_val + bus_s_val
+
+                # Pôle Alimentation
+                rep_m = school_data.get("Repas moyen", 0)
+                rep_v = school_data.get("Repas végétarien", 0)
+                rep_r = school_data.get("Repas viande rouge", 0)
+                rep_b = school_data.get("Repas viande blanche", 0)
+                rep_p = school_data.get("Repas POISSON", 0)
+                total_alimentation = rep_m + rep_v + rep_r + rep_b + rep_p
+
+                # Pôle Déchets
+                dech_p = school_data.get("Déchets Papier", 0)
+                dech_a = school_data.get("Déchets alimentaire", 0)
+                dech_pl = school_data.get("Déchets plastique", 0)
+                total_dechets = dech_p + dech_a + dech_pl
+
+                # Pôle Biens & Consommables
+                pap_val = school_data.get("Papier", 0)
+                plas_val = school_data.get("Plastique", 0)
+                cart_val = school_data.get("Carton", 0)
+                ordi_val = school_data.get("Ordinateur à écran plat", 0)
+                imp_val = school_data.get("Imprimante", 0)
+                phot_val = school_data.get("Photocopieurs", 0)
+                vid_val = school_data.get("Vidéo projecteur", 0)
+                total_biens = pap_val + plas_val + cart_val + ordi_val + imp_val + phot_val + vid_val
+
+                # 2. Rendu Graphique des Menus Déroulants (Expanders)
+                
+                # --- ÉNERGIE & LOGEMENT ---
+                draw_custom_bar("❄️ Énergie & Bâtiments", total_energie, total_school_emissions, "#2b8a3e")
+                with st.expander("Détails du poste Énergie"):
+                    draw_custom_bar("• Électricité française", elec_val, total_energie, "#40c057", is_sub=True)
+                    draw_custom_bar("• Gaz Naturel", gaz_val, total_energie, "#40c057", is_sub=True)
+                    draw_custom_bar("• Fioul de chauffage", fioul_val, total_energie, "#40c057", is_sub=True)
+
+                # --- ALIMENTATION ---
+                draw_custom_bar("🍎 Alimentation & Cantine", total_alimentation, total_school_emissions, "#e67e22")
+                with st.expander("Détails du poste Alimentation"):
+                    draw_custom_bar("• Repas avec Viande Rouge", rep_r, total_alimentation, "#f39c12", is_sub=True)
+                    draw_custom_bar("• Repas avec Poisson", rep_p, total_alimentation, "#f39c12", is_sub=True)
+                    draw_custom_bar("• Repas avec Viande Blanche", rep_b, total_alimentation, "#f39c12", is_sub=True)
+                    draw_custom_bar("• Repas Standard Moyen", rep_m, total_alimentation, "#f39c12", is_sub=True)
+                    draw_custom_bar("• Repas Végétarien", rep_v, total_alimentation, "#f39c12", is_sub=True)
+
+                # --- TRANSPORTS ---
+                draw_custom_bar("🚌 Déplacements & Transports", total_transport, total_school_emissions, "#228be6")
+                with st.expander("Détails du poste Transports"):
+                    draw_custom_bar("• Trajets en Voiture thermique", voit_val, total_transport, "#339af0", is_sub=True)
+                    draw_custom_bar("• Autobus (sorties scolaires)", bus_s_val, total_transport, "#339af0", is_sub=True)
+                    draw_custom_bar("• Autobus (lignes régulières / ville)", bus_v_val, total_transport, "#339af0", is_sub=True)
+
+                # --- BIENS & MATÉRIEL ---
+                draw_custom_bar("📦 Biens, Consommables & Équipements", total_biens, total_school_emissions, "#9c36b5")
+                with st.expander("Détails du poste Équipements & Consommables"):
+                    draw_custom_bar("• Photocopieurs (Empreinte de fabrication)", phot_val, total_biens, "#be4bdb", is_sub=True)
+                    draw_custom_bar("• Ordinateurs portables / écrans plats", ordi_val, total_biens, "#be4bdb", is_sub=True)
+                    draw_custom_bar("• Ramettes de papier consommées", pap_val, total_biens, "#be4bdb", is_sub=True)
+                    draw_custom_bar("• Vidéoprojecteurs", vid_val, total_biens, "#be4bdb", is_sub=True)
+                    draw_custom_bar("• Plastiques d'emballage", plas_val, total_biens, "#be4bdb", is_sub=True)
+                    draw_custom_bar("• Imprimantes laser", imp_val, total_biens, "#be4bdb", is_sub=True)
+                    draw_custom_bar("• Emballages Carton", cart_val, total_biens, "#be4bdb", is_sub=True)
+
+                # --- DÉCHETS ---
+                draw_custom_bar("🗑️ Gestion des Déchets", total_dechets, total_school_emissions, "#7950f2")
+                with st.expander("Détails du poste Déchets"):
+                    draw_custom_bar("• Gaspillage alimentaire (restes de cantine)", dech_a, total_dechets, "#94d82d", is_sub=True)
+                    draw_custom_bar("• Déchets plastiques non recyclés", dech_pl, total_dechets, "#94d82d", is_sub=True)
+                    draw_custom_bar("• Déchets Papier jetés", dech_p, total_dechets, "#94d82d", is_sub=True)
+            else:
+                st.warning("Cet établissement n'a pas encore de données carbone calculées.")
+        else:
+            st.info("Aucune donnée disponible pour l'analyse par établissement.")
+
+        st.divider()
+        
+        # --- BLOC DU BAS : TABLEAU BRUT ---
         with st.expander("🔐 Saisie de nouvelles données"):
             pwd = st.text_input("Code secret :", type="password", key="main_pwd")
             if pwd == "CARBONE2026":
@@ -140,7 +249,6 @@ with tab_glossaire:
         c2.metric("Viande Blanche", "1.60 kg", "CO2e/repas")
         c3.metric("Poisson", "2.00 kg", "CO2e/repas")
         c4.metric("Végétarien", "0.50 kg", "CO2e/repas")
-        st.markdown('<div class="methode"><b>📝 Méthode :</b> Nombre de repas x empreinte de production.</div>', unsafe_allow_html=True)
 
     with g_tabs[1]:
         st.subheader("Pôle Énergie & Fluides")
