@@ -47,23 +47,24 @@ def set_style():
 
 set_style()
 
-# 3. VARIABLES DE CONNEXION
+# 3. VARIABLES DE CONNEXION (Vérifie bien que ce GID est celui de l'onglet "Bilan Carbone")
 votre_gid = "169103083" 
 url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid={votre_gid}"
 
-# 4. CHARGEMENT DES DONNÉES (Recherche intelligente de la ligne d'en-tête)
+# 4. CHARGEMENT DES DONNÉES (Sécurisé pour le Bilan Carbone uniquement)
 @st.cache_data(ttl=60)
 def load_data():
     try:
         raw = pd.read_csv(url, header=None)
         for i, row in raw.iterrows():
             row_str = [str(x).strip().lower() for x in row.values]
-            # On cherche la ligne qui contient l'un des mots-clés d'en-tête
-            if any(k in row_str for k in ["etablissements", "horodateur", "sélectionnez votre établissement"]):
+            # Sécurité : On cherche STRICTEMENT l'en-tête de la feuille Bilan Carbone
+            if "etablissements" in row_str:
                 data = raw.iloc[i+1:].copy()
                 new_cols = [str(val).strip() if pd.notnull(val) else f"Col_{j}" for j, val in enumerate(row.values)]
                 data.columns = new_cols
                 return data.loc[:, ~data.columns.duplicated()].reset_index(drop=True)
+        st.warning("Attention : Impossible de trouver la colonne 'Etablissements'. Vérifie le GID de ton onglet Bilan Carbone.")
     except Exception as e:
         st.error(f"Erreur de connexion Sheets : {e}")
     return pd.DataFrame()
@@ -76,59 +77,47 @@ tab_dashboard, tab_glossaire = st.tabs(["📊 Tableau de Bord", "📖 Référent
 # --- ONGLET DASHBOARD ---
 with tab_dashboard:
     if not df.empty:
-        # Détection dynamique des colonnes pour s'adapter aux deux versions du Sheets
-        col_etab = [c for c in df.columns if "etab" in c.lower() or "Étab" in c][0] if any("etab" in c.lower() or "Étab" in c for c in df.columns) else df.columns[1]
+        # Détection dynamique et nettoyage des colonnes de ton Sheets
+        col_etab = [c for c in df.columns if "etab" in c.lower() or "Étab" in c][0] if any("etab" in c.lower() or "Étab" in c for c in df.columns) else df.columns[0]
         col_total = [c for c in df.columns if "total" in c.lower() or "émission" in c.lower()][0] if any("total" in c.lower() or "émission" in c.lower() for c in df.columns) else "Total émissions"
         col_eff = [c for c in df.columns if "effectif" in c.lower() or "nombre" in c.lower()][0] if any("effectif" in c.lower() or "nombre" in c.lower() for c in df.columns) else "Effectif total"
-        col_conso = [c for c in df.columns if "conso" in c.lower() and "personne" in c.lower()][0] if any("conso" in c.lower() and "personne" in c.lower() for c in df.columns) else "conso carbone  par personne"
+        col_conso = [c for c in df.columns if "conso" in c.lower() and "personne" in c.lower()][0] if any("conso" in c.lower() and "personne" in c.lower() for c in df.columns) else "conso carbone par personne"
 
-        # Nettoyage et conversion numérique des colonnes clés
+        # Nettoyage des valeurs de calcul (virgules en points, suppression des textes)
         for col in [col_total, col_eff, col_conso]:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
         
-        # --- CALCUL AUTOMATIQUE ET AGRÉGATION DYNAMIQUE ---
-        if col_etab in df.columns:
-            agg_dict = {}
-            if col_total in df.columns: agg_dict[col_total] = "sum"
-            if col_eff in df.columns: agg_dict[col_eff] = "max" # L'effectif réel de l'école n'est pas cumulé
-            
-            if agg_dict:
-                df_grouped = df.groupby(col_etab).agg(agg_dict).reset_index()
-                # Calcul instantané du ratio carbone par personne fusionné
-                df_grouped[col_conso] = df_grouped.apply(
-                    lambda r: r[col_total] / r[col_eff] if r[col_eff] > 0 else 0, axis=1
-                )
-            else:
-                df_grouped = df.copy()
-        else:
-            df_grouped = df.copy()
+        # On filtre pour enlever les lignes vides ou de test qui n'ont pas de nom d'établissement
+        df_clean = df[df[col_etab].astype(str).str.strip() != ""].copy()
 
         st.markdown("<h1 style='text-align: center; color: #1e3d59;'>🌱 Réseau Haut Vaucluse</h1>", unsafe_allow_html=True)
         
         col1, col2 = st.columns([1, 1])
         with col1:
             st.markdown('<p class="inner-title">📊 Classement des Établissements</p>', unsafe_allow_html=True)
-            if col_etab in df_grouped.columns and col_conso in df_grouped.columns:
-                st.dataframe(df_grouped[[col_etab, col_conso]].sort_values(col_conso, ascending=False), hide_index=True, width="stretch", height=380)
+            if col_etab in df_clean.columns and col_conso in df_clean.columns:
+                # Tri décroissant direct basé sur les calculs de ta colonne I du Sheets
+                df_ranking = df_clean[[col_etab, col_conso]].sort_values(col_conso, ascending=False)
+                st.dataframe(df_ranking, hide_index=True, width="stretch", height=380)
+                
         with col2:
             st.markdown('<p class="inner-title">🚀 Moyenne du Réseau (kg/pers)</p>', unsafe_allow_html=True)
-            
-            if col_total in df_grouped.columns and col_eff in df_grouped.columns and df_grouped[col_eff].sum() > 0:
-                moyenne = df_grouped[col_total].sum() / df_grouped[col_eff].sum()
+            if col_total in df_clean.columns and col_eff in df_clean.columns and df_clean[col_eff].sum() > 0:
+                moyenne = df_clean[col_total].sum() / df_clean[col_eff].sum()
             else:
-                moyenne = 0
+                moyenne = df_clean[col_conso].mean() if col_conso in df_clean.columns else 0
 
             fig = go.Figure(go.Indicator(mode = "gauge+number", value = moyenne, number = {'suffix': " kg"}, gauge = {'axis': {'range': [None, 5000]}, 'bar': {'color': "#1e3d59"}, 'steps': [{'range': [0, 1500], 'color': "#d4edda"}, {'range': [1500, 2500], 'color': "#fff3cd"}, {'range': [2500, 5000], 'color': "#f8d7da"}], 'threshold': {'line': {'color': "red", 'width': 4}, 'value': 2500}}))
             fig.update_layout(height=380, margin=dict(t=30, b=0, l=40, r=40))
             st.plotly_chart(fig, use_container_width=True)
         
-        with st.expander("🔐 Mise à jour des données"):
+        with st.expander("🔐 Saisie de nouvelles données"):
             pwd = st.text_input("Code secret :", type="password", key="main_pwd")
             if pwd == "CARBONE2026":
                 st.link_button("🚀 Ouvrir le formulaire", "https://docs.google.com/forms/d/e/1FAIpQLSe6QOMdXWJPYHsbMkq41IyzM7Rc9izcqsFpZhQzWiaqygyykQ/viewform")
         
-        st.markdown('<p class="inner-title">📋 Liste Complète des Saisies Brutes</p>', unsafe_allow_html=True)
+        st.markdown('<p class="inner-title">📋 Liste Complète des Établissements (Données Centralisées)</p>', unsafe_allow_html=True)
         st.dataframe(df, hide_index=True, width="stretch")
 
 # --- ONGLET GLOSSAIRE (Avec Anecdotes & Méthodes) ---
