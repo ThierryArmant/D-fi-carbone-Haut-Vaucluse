@@ -54,8 +54,6 @@ url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-Nmpln
 # 4. CHARGEMENT DES DONNÉES
 @st.cache_data(ttl=60)
 def load_data():
-    st.subheader("🕵️ Test de contrôle : Voici ce que l'application lit EN CE MOMENT :")
-    st.write(df)
     try:
         raw = pd.read_csv(url, header=None)
         for i, row in raw.iterrows():
@@ -90,7 +88,7 @@ with tab_dashboard:
                 "Effectif total": "max"  # On garde l'effectif réel de l'établissement sans le dupliquer
             }).reset_index()
             
-            # Formule pour recalculer dynamiquement le ratio carbone global par personne de l'établissement
+            # Formule pour recalculer dynamiquement le ratio carbone global par personne
             df_grouped["conso carbone  par personne"] = df_grouped.apply(
                 lambda r: r["Total émissions"] / r["Effectif total"] if r["Effectif total"] > 0 else 0, axis=1
             )
