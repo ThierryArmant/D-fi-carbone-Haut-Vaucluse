@@ -80,16 +80,31 @@ with tab_dashboard:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
         
+        # --- BLOC DE CALCUL AUTOMATIQUE ET AGRÉGATION ---
+        if "Etablissements" in df.columns:
+            # On regroupe par établissement pour additionner les émissions de toutes leurs saisies
+            df_grouped = df.groupby("Etablissements").agg({
+                "Total émissions": "sum",
+                "Effectif total": "max"  # On garde l'effectif réel de l'établissement sans le dupliquer
+            }).reset_index()
+            
+            # Formule pour recalculer dynamiquement le ratio carbone global par personne de l'établissement
+            df_grouped["conso carbone  par personne"] = df_grouped.apply(
+                lambda r: r["Total émissions"] / r["Effectif total"] if r["Effectif total"] > 0 else 0, axis=1
+            )
+        else:
+            df_grouped = df.copy()
+        
         st.markdown("<h1 style='text-align: center; color: #1e3d59;'>🌱 Réseau Haut Vaucluse</h1>", unsafe_allow_html=True)
         
         col1, col2 = st.columns([1, 1])
         with col1:
             st.markdown('<p class="inner-title">📊 Classement des Établissements</p>', unsafe_allow_html=True)
-            if "Etablissements" in df.columns:
-                st.dataframe(df[["Etablissements", "conso carbone  par personne"]].sort_values("conso carbone  par personne", ascending=False), hide_index=True, use_container_width=True, height=380)
+            if "Etablissements" in df_grouped.columns:
+                st.dataframe(df_grouped[["Etablissements", "conso carbone  par personne"]].sort_values("conso carbone  par personne", ascending=False), hide_index=True, use_container_width=True, height=380)
         with col2:
             st.markdown('<p class="inner-title">🚀 Moyenne du Réseau (kg/pers)</p>', unsafe_allow_html=True)
-            moyenne = df["Total émissions"].sum() / df["Effectif total"].sum() if df["Effectif total"].sum() > 0 else 0
+            moyenne = df_grouped["Total émissions"].sum() / df_grouped["Effectif total"].sum() if df_grouped["Effectif total"].sum() > 0 else 0
             fig = go.Figure(go.Indicator(mode = "gauge+number", value = moyenne, number = {'suffix': " kg"}, gauge = {'axis': {'range': [None, 5000]}, 'bar': {'color': "#1e3d59"}, 'steps': [{'range': [0, 1500], 'color': "#d4edda"}, {'range': [1500, 2500], 'color': "#fff3cd"}, {'range': [2500, 5000], 'color': "#f8d7da"}], 'threshold': {'line': {'color': "red", 'width': 4}, 'value': 2500}}))
             fig.update_layout(height=380, margin=dict(t=30, b=0, l=40, r=40))
             st.plotly_chart(fig, use_container_width=True)
@@ -98,6 +113,8 @@ with tab_dashboard:
             pwd = st.text_input("Code secret :", type="password", key="main_pwd")
             if pwd == "CARBONE2026":
                 st.link_button("🚀 Ouvrir le formulaire", "https://docs.google.com/forms/d/e/1FAIpQLSe6QOMdXWJPYHsbMkq41IyzM7Rc9izcqsFpZhQzWiaqygyykQ/viewform")
+        
+        st.markdown('<p class="inner-title">📋 Liste Complète des Saisies Brutes</p>', unsafe_allow_html=True)
         st.dataframe(df, hide_index=True, use_container_width=True)
 
 # --- ONGLET GLOSSAIRE (Avec Anecdotes & Méthodes) ---
