@@ -51,19 +51,14 @@ set_style()
 votre_gid = "169103083" 
 url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid={votre_gid}"
 
-# 4. CHARGEMENT DES DONNÉES
+# 4. CHARGEMENT DES DONNÉES (Direct et robuste pour Form_Responses)
 @st.cache_data(ttl=60)
 def load_data():
     try:
-        raw = pd.read_csv(url, header=None)
-        for i, row in raw.iterrows():
-            row_str = [str(x).strip() for x in row.values]
-            if "Etablissements" in row_str:
-                data = raw.iloc[i+1:].copy()
-                new_cols = [str(val).strip() if pd.notnull(val) else f"Col_{j}" for j, val in enumerate(row.values)]
-                data.columns = new_cols
-                return data.loc[:, ~data.columns.duplicated()].reset_index(drop=True)
-        return pd.DataFrame()
+        # Lecture directe du CSV des réponses au formulaire
+        data = pd.read_csv(url)
+        data.columns = data.columns.str.strip()
+        return data
     except Exception as e:
         st.error(f"Erreur de connexion Sheets : {e}")
     return pd.DataFrame()
@@ -76,35 +71,65 @@ tab_dashboard, tab_glossaire = st.tabs(["📊 Tableau de Bord", "📖 Référent
 # --- ONGLET DASHBOARD ---
 with tab_dashboard:
     if not df.empty:
-        cols_to_fix = ["Total émissions", "conso carbone  par personne", "Effectif total"]
-        for col in cols_to_fix:
-            if col in df.columns:
+        # --- RECHERCHE ET ADAPTATION AUTOMATIQUE DES COLONNES ---
+        # Détecte la colonne établissement (qu'elle s'appelle 'Etablissements' ou 'Sélectionnez votre établissement')
+        col_etab = [c for c in df.columns if "etab" in c.lower() or "Étab" in c][0] if any("etab" in c.lower() or "Étab" in c for c in df.columns) else df.columns[1]
+        
+        # Détection des autres colonnes clés par mots-clés
+        col_total = [c for c in df.columns if "total" in c.lower() or "émission" in c.lower()][0] if any("total" in c.lower() or "émission" in c.lower() for c in df.columns) else None
+        col_eff = [c for c in df.columns if "effectif" in c.lower() or "nombre" in c.lower()][0] if any("effectif" in c.lower() or "nombre" in c.lower() for c in df.columns) else None
+        col_conso = [c for c in df.columns if "conso" in c.lower() and "personne" in c.lower()][0] if any("conso" in c.lower() and "personne" in c.lower() for c in df.columns) else None
+
+        # Nettoyage automatique de toutes les colonnes numériques du formulaire
+        for col in df.columns:
+            if col != col_etab and col != "Horodateur" and col != "Colonne 2":
                 df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
         
-        # --- BLOC DE CALCUL AUTOMATIQUE ET AGRÉGATION ---
-        if "Etablissements" in df.columns:
-            df_grouped = df.groupby("Etablissements").agg({
-                "Total émissions": "sum",
-                "Effectif total": "max"
-            }).reset_index()
+        # --- CALCUL AUTOMATIQUE ET AGRÉGATION DYNAMIQUE ---
+        # On prépare les règles de calcul pour le regroupement
+        rules = {}
+        for col in df.columns:
+            if col != col_etab and col != "Horodateur" and col != "Colonne 2":
+                if col_eff and col == col_eff:
+                    rules[col] = "max"  # On prend l'effectif max de l'établissement (on ne l'additionne pas entre les lignes !)
+                else:
+                    rules[col] = "sum"  # On additionne automatiquement toutes les consommations saisies !
+
+        # Regroupement automatique par établissement
+        if rules:
+            df_grouped = df.groupby(col_etab).agg(rules).reset_index()
             
-            df_grouped["conso carbone  par personne"] = df_grouped.apply(
-                lambda r: r["Total émissions"] / r["Effectif total"] if r["Effectif total"] > 0 else 0, axis=1
-            )
+            # Si les colonnes de calcul global existent, on recalcule le ratio par personne en direct
+            if col_total and col_eff:
+                df_grouped[col_conso if col_conso else "conso carbone  par personne"] = df_grouped.apply(
+                    lambda r: r[col_total] / r[col_eff] if r[col_eff] > 0 else 0, axis=1
+                )
+                final_conso_col = col_conso if col_conso else "conso carbone  par personne"
+            else:
+                # Si le fichier est brut, on prend la première colonne numérique disponible pour le classement
+                final_conso_col = list(rules.keys())[0]
         else:
             df_grouped = df.copy()
-        
+            final_conso_col = df.columns[2]
+
         st.markdown("<h1 style='text-align: center; color: #1e3d59;'>🌱 Réseau Haut Vaucluse</h1>", unsafe_allow_html=True)
         
         col1, col2 = st.columns([1, 1])
         with col1:
             st.markdown('<p class="inner-title">📊 Classement des Établissements</p>', unsafe_allow_html=True)
-            if "Etablissements" in df_grouped.columns:
-                st.dataframe(df_grouped[["Etablissements", "conso carbone  par personne"]].sort_values("conso carbone  par personne", ascending=False), hide_index=True, width="stretch", height=380)
+            st.dataframe(df_grouped[[col_etab, final_conso_col]].sort_values(final_conso_col, ascending=False), hide_index=True, width="stretch", height=380)
         with col2:
-            st.markdown('<p class="inner-title">🚀 Moyenne du Réseau (kg/pers)</p>', unsafe_allow_html=True)
-            moyenne = df_grouped["Total émissions"].sum() / df_grouped["Effectif total"].sum() if df_grouped["Effectif total"].sum() > 0 else 0
-            fig = go.Figure(go.Indicator(mode = "gauge+number", value = moyenne, number = {'suffix': " kg"}, gauge = {'axis': {'range': [None, 5000]}, 'bar': {'color': "#1e3d59"}, 'steps': [{'range': [0, 1500], 'color': "#d4edda"}, {'range': [1500, 2500], 'color': "#fff3cd"}, {'range': [2500, 5000], 'color': "#f8d7da"}], 'threshold': {'line': {'color': "red", 'width': 4}, 'value': 2500}}))
+            st.markdown('<p class="inner-title">🚀 Moyenne du Réseau</p>', unsafe_allow_html=True)
+            
+            # Calcul de la moyenne globale du réseau
+            if col_total in df_grouped.columns and col_eff in df_grouped.columns:
+                moyenne = df_grouped[col_total].sum() / df_grouped[col_eff].sum() if df_grouped[col_eff].sum() > 0 else 0
+                suffixe = " kg/pers"
+            else:
+                moyenne = df_grouped[final_conso_col].mean()
+                suffixe = " u."
+
+            fig = go.Figure(go.Indicator(mode = "gauge+number", value = moyenne, number = {'suffix': suffixe}, gauge = {'axis': {'range': [None, 5000]}, 'bar': {'color': "#1e3d59"}, 'steps': [{'range': [0, 1500], 'color': "#d4edda"}, {'range': [1500, 2500], 'color': "#fff3cd"}, {'range': [2500, 5000], 'color': "#f8d7da"}], 'threshold': {'line': {'color': "red", 'width': 4}, 'value': 2500}}))
             fig.update_layout(height=380, margin=dict(t=30, b=0, l=40, r=40))
             st.plotly_chart(fig, use_container_width=True)
         
@@ -113,7 +138,7 @@ with tab_dashboard:
             if pwd == "CARBONE2026":
                 st.link_button("🚀 Ouvrir le formulaire", "https://docs.google.com/forms/d/e/1FAIpQLSe6QOMdXWJPYHsbMkq41IyzM7Rc9izcqsFpZhQzWiaqygyykQ/viewform")
         
-        st.markdown('<p class="inner-title">📋 Liste Complète des Saisies Brutes</p>', unsafe_allow_html=True)
+        st.markdown('<p class="inner-title">📋 Liste Complète des Saisies Brutes (Formulaire)</p>', unsafe_allow_html=True)
         st.dataframe(df, hide_index=True, width="stretch")
 
 # --- ONGLET GLOSSAIRE (Avec Anecdotes & Méthodes) ---
