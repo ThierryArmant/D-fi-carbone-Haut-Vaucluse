@@ -5,12 +5,12 @@ import plotly.graph_objects as go
 # 1. CONFIGURATION DE LA PAGE
 st.set_page_config(page_title="Défi Carbone - Haut Vaucluse", page_icon="🌱", layout="wide")
 
-# 2. STYLE CSS (Mode Sombre / Reposant avec Onglets en boutons et Cartes en relief 3D)
+# 2. STYLE CSS (Mode Sombre / Reposant avec Onglets en boutons et Blocs 3D contrastés)
 def set_style():
     st.markdown(
         """
         <style>
-        /* Fond global de l'application */
+        /* Fond global de l'application (Gris-noir très doux) */
         .stApp { background-color: #0f172a; color: #f1f5f9; }
         
         /* Conteneur principal */
@@ -52,23 +52,23 @@ def set_style():
         div[role="tabpanel"] { border: none !important; }
         div[data-baseweb="tab-border"] { display: none !important; }
         
-        /* --- 💎 EFFET DE RELIEF TRIDIMENSIONNEL POUR LES DEUX COLONNES --- */
-        /* Colonne de Gauche (Établissement sélectionné) : Teinte bleutée */
+        /* --- 💎 DESIGN DES BLOCS EN RELIEF ET À TRÈS FORT CONTRASTE --- */
+        /* Table de Gauche (Établissement sélectionné) : Fond bleu-gris plus clair + Contour Cyan */
         div[data-testid="column"]:has(.card-mid-left) {
-            background-color: #233044 !important;
+            background-color: #2a354f !important;
             padding: 25px !important;
             border-radius: 16px !important;
-            border: 1px solid #334561 !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4) !important;
+            border: 2px solid #38bdf8 !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.4) !important;
         }
         
-        /* Colonne de Droite (Cumul global du réseau) : Teinte ardoise sombre */
+        /* Table de Droite (Cumul global du réseau) : Fond ardoise acier distinct + Contour Gris-Serré */
         div[data-testid="column"]:has(.card-mid-right) {
-            background-color: #141c29 !important;
+            background-color: #1c2333 !important;
             padding: 25px !important;
             border-radius: 16px !important;
-            border: 1px solid #202b3d !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4) !important;
+            border: 2px solid #475569 !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.4) !important;
         }
         
         /* Titres des sections */
@@ -77,7 +77,7 @@ def set_style():
         }
         [data-testid="stHeader"] { height: 0px; }
         
-        /* Blocs anecdotes et méthodes */
+        /* Blocs explicatifs */
         .anecdote { background-color: #1e3a8a; padding: 15px; border-left: 5px solid #3b82f6; border-radius: 5px; margin: 10px 0; color: #eff6ff; }
         .methode { background-color: #14532d; padding: 10px; border-left: 5px solid #22c55e; border-radius: 5px; font-size: 0.9em; margin-top: 10px; color: #f0fdf4; }
         
@@ -147,7 +147,7 @@ with tab_dashboard:
         col_eff = "Effectif total" if "Effectif total" in df.columns else df.columns[1]
         col_conso = "conso carbone par personne" if "conso carbone par personne" in df.columns else df.columns[8]
 
-        # Conversion numérique des scores
+        # Conversion numérique
         cols_to_convert = [c for c in df.columns if c != col_etab]
         for col in cols_to_convert:
             df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
@@ -156,7 +156,7 @@ with tab_dashboard:
 
         st.markdown("<h1 style='text-align: center; color: #38bdf8;'>🌱 Réseau Haut Vaucluse</h1>", unsafe_allow_html=True)
         
-        # --- ESPACE ENSEIGNANTS : ACCÈS FORMULAIRE TOUT EN HAUT ---
+        # --- ESPACE ENSEIGNANTS : ACCÈS FORMULAIRE ---
         with st.expander("🔐 ESPACE ENSEIGNANTS : Saisie de nouvelles données", expanded=False):
             pwd = st.text_input("Code secret de déploiement :", type="password", key="main_pwd")
             if pwd == "CARBONE2026":
@@ -165,7 +165,7 @@ with tab_dashboard:
         
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # --- 1️⃣ BLOC DU HAUT INDÉPLACEABLE : CLASSEMENT ET JAUGE GLOBALE ---
+        # --- 1️⃣ BLOC DU HAUT : CLASSEMENT ET JAUGE GLOBALE (CONSERVÉS) ---
         col_top1, col_top2 = st.columns([1, 1])
         with col_top1:
             st.markdown('<p class="inner-title">📊 Classement des Établissements (kg/personne)</p>', unsafe_allow_html=True)
@@ -188,28 +188,24 @@ with tab_dashboard:
         
         st.divider()
 
-        # --- 2️⃣ BLOC DU MILIEU : LE DOUBLE TABLEAU DE CÔTE À CÔTE ---
-        st.markdown('<h2 style="text-align: center; color: #38bdf8;">🔍 Analyse Comparative des Pôles de Consommation</h2>', unsafe_allow_html=True)
+        # --- 2️⃣ BLOC DU MILIEU : LE FACE-À-FACE CONFIGURÉ DE MANIÈRE ÉTANCHE ---
+        st.markdown('<h2 style="text-align: center; color: #38bdf8; margin-bottom: 25px;">🔍 Analyse Comparative des Pôles de Consommation</h2>', unsafe_allow_html=True)
         
         if not df_active.empty:
-            # Menu déroulant unique placé au centre pour piloter le tableau de gauche
-            selected_school = st.selectbox("Sélectionnez un établissement pour explorer ses statistiques :", df_active[col_etab].unique())
-            st.markdown("<br>", unsafe_allow_html=True)
-            
-            # Création des deux colonnes côte à côte
             col_mid1, col_mid2 = st.columns([1, 1])
             
-            # --- 🅰️ CÔTÉ GAUCHE : L'ÉTABLISSEMENT UNIQUE (EX: ÉCOLE CURIE) ---
+            # --- 🅰️ TABLEAU GAUCHE : SÉLECTION INTERNE + STATS DE L'ÉCOLE ---
             with col_mid1:
-                # Injection du marqueur CSS pour forcer le relief et le fond bleu ardoise
                 st.markdown('<div class="card-mid-left"></div>', unsafe_allow_html=True)
-                st.markdown(f'<p class="inner-title" style="color: #ffffff; text-align: left; margin-bottom: 25px;">🏫 Détail : {selected_school}</p>', unsafe_allow_html=True)
+                
+                # Le menu déroulant est mis ICI, à gauche, confiné dans sa boîte pour ne pas déborder !
+                selected_school = st.selectbox("Sélectionnez votre établissement :", df_active[col_etab].unique(), key="left_school_selector")
+                st.markdown(f'<p class="inner-title" style="color: #ffffff; text-align: left; margin-top: 15px; margin-bottom: 20px;">🏫 Détail : {selected_school}</p>', unsafe_allow_html=True)
                 
                 school_data = df_active[df_active[col_etab] == selected_school].iloc[0]
                 tot_sch = school_data[col_total]
                 
                 if tot_sch > 0:
-                    # Extraction sécurisée des colonnes individuelles
                     e_elec = school_data.get("Electricité française", 0)
                     e_fioul = school_data.get("Fioul", 0)
                     e_gaz = school_data.get("Gaz Naturel", 0)
@@ -241,57 +237,52 @@ with tab_dashboard:
                     d_pl = school_data.get("Déchets plastique", 0)
                     sch_dechets = d_p + d_a + d_pl
 
-                    # Rendu des 5 barres horizontales
+                    # Affichage des barres
                     draw_custom_bar("❄️ Énergie & Bâtiments", sch_energie, tot_sch, "#22c55e")
-                    with st.expander("Détails du poste Énergie"):
+                    with st.expander("Détails Énergie de l'établissement"):
                         draw_custom_bar("• Électricité française", e_elec, sch_energie, "#4ade80", is_sub=True)
                         draw_custom_bar("• Gaz Naturel", e_gaz, sch_energie, "#4ade80", is_sub=True)
                         draw_custom_bar("• Fioul de chauffage", e_fioul, sch_energie, "#4ade80", is_sub=True)
 
                     draw_custom_bar("🍎 Alimentation & Cantine", sch_alimentation, tot_sch, "#f97316")
-                    with st.expander("Détails du poste Alimentation"):
-                        draw_custom_bar("• Repas avec Viande Rouge", a_r, sch_alimentation, "#fb923c", is_sub=True)
-                        draw_custom_bar("• Repas avec Poisson", a_p, sch_alimentation, "#fb923c", is_sub=True)
-                        draw_custom_bar("• Repas avec Viande Blanche", a_b, sch_alimentation, "#fb923c", is_sub=True)
+                    with st.expander("Détails Restauration de l'établissement"):
+                        draw_custom_bar("• Repas Viande Rouge", a_r, sch_alimentation, "#fb923c", is_sub=True)
+                        draw_custom_bar("• Repas Poisson", a_p, sch_alimentation, "#fb923c", is_sub=True)
+                        draw_custom_bar("• Repas Viande Blanche", a_b, sch_alimentation, "#fb923c", is_sub=True)
                         draw_custom_bar("• Repas Standard Moyen", a_m, sch_alimentation, "#fb923c", is_sub=True)
                         draw_custom_bar("• Repas Végétarien", a_v, sch_alimentation, "#fb923c", is_sub=True)
 
                     draw_custom_bar("🚌 Déplacements & Transports", sch_transport, tot_sch, "#3b82f6")
-                    with st.expander("Détails du poste Transports"):
-                        draw_custom_bar("• Trajets en Voiture thermique", t_voit, sch_transport, "#60a5fa", is_sub=True)
-                        draw_custom_bar("• Autobus (sorties scolaires)", t_bus_s, sch_transport, "#60a5fa", is_sub=True)
-                        draw_custom_bar("• Autobus (lignes de ville)", t_bus_v, sch_transport, "#60a5fa", is_sub=True)
+                    with st.expander("Détails Transports de l'établissement"):
+                        draw_custom_bar("• Voiture thermique individuelle", t_voit, sch_transport, "#60a5fa", is_sub=True)
+                        draw_custom_bar("• Autobus / Autocar (sorties)", t_bus_s, sch_transport, "#60a5fa", is_sub=True)
 
                     draw_custom_bar("📦 Biens, Consommables & Équipements", sch_biens, tot_sch, "#a855f7")
-                    with st.expander("Détails du poste Équipements"):
-                        draw_custom_bar("• Photocopieurs (Fabrication)", b_phot, sch_biens, "#c084fc", is_sub=True)
-                        draw_custom_bar("• Ordinateurs portables / écrans", b_ord, sch_biens, "#c084fc", is_sub=True)
-                        draw_custom_bar("• Ramettes de papier consommées", b_pap, sch_biens, "#c084fc", is_sub=True)
+                    with st.expander("Détails Équipements de l'établissement"):
+                        draw_custom_bar("• Photocopieurs d'établissement", b_phot, sch_biens, "#c084fc", is_sub=True)
+                        draw_custom_bar("• Ordinateurs & Écrans", b_ord, sch_biens, "#c084fc", is_sub=True)
+                        draw_custom_bar("• Ramettes de papier", b_pap, sch_biens, "#c084fc", is_sub=True)
 
                     draw_custom_bar("🗑️ Gestion des Déchets", sch_dechets, tot_sch, "#6366f1")
-                    with st.expander("Détails du poste Déchets"):
-                        draw_custom_bar("• Gaspillage alimentaire cantine", d_a, sch_dechets, "#818cf8", is_sub=True)
+                    with st.expander("Détails Déchets de l'établissement"):
+                        draw_custom_bar("• Gaspillage assiette cantine", d_a, sch_dechets, "#818cf8", is_sub=True)
                         draw_custom_bar("• Déchets plastiques jetés", d_pl, sch_dechets, "#818cf8", is_sub=True)
                 else:
-                    st.warning("Cet établissement n'a pas encore de données carbone calculées.")
+                    st.warning("Aucune donnée enregistrée pour cette école.")
 
-            # --- 🅱️ CÔTÉ DROIT : LE TOTAL CUMULÉ DE TOUT LE RÉSEAU ---
+            # --- 🆂 TABLEAU DROIT : SOURCES CUMULÉES DE TOUT LE RÉSEAU (SANS LISTE D'ÉCOLES) ---
             with col_mid2:
-                # Injection du marqueur CSS pour forcer le relief et le fond noir ardoise profond
                 st.markdown('<div class="card-mid-right"></div>', unsafe_allow_html=True)
-                st.markdown('<p class="inner-title" style="color: #38bdf8; text-align: left; margin-bottom: 25px;">🌍 Global : Secteurs d\'impact du Réseau</p>', unsafe_allow_html=True)
+                st.markdown('<p class="inner-title" style="color: #38bdf8; text-align: left; margin-bottom: 58px;">🌍 Global : Secteurs d\'impact du Réseau</p>', unsafe_allow_html=True)
                 
-                # Fonction de sécurité pour sommer proprement les colonnes du Sheets
                 def safe_sum(col_name):
                     if col_name in df_active.columns:
                         return df_active[col_name].sum()
-                    match = [c for c in df_active.columns if c.lower() == col_name.lower()]
-                    return df_active[match[0]].sum() if match else 0
+                    return 0
 
                 tot_net = df_active[col_total].sum()
                 
                 if tot_net > 0:
-                    # Calculs cumulés de tous les pôles du réseau
                     net_elec = safe_sum("Electricité française")
                     net_fioul = safe_sum("Fioul")
                     net_gaz = safe_sum("Gaz Naturel")
@@ -324,32 +315,32 @@ with tab_dashboard:
                     net_d_pl = safe_sum("Déchets plastique")
                     net_dechets = net_d_p + net_d_a + net_d_pl
 
-                    # Rendu des 5 barres cumulées du réseau
+                    # Barres cumulatives globales
                     draw_custom_bar("❄️ Énergie & Bâtiments (Total Réseau)", net_energie, tot_net, "#22c55e")
                     with st.expander("Détails Énergie du Réseau"):
-                        draw_custom_bar("• Électricité française totale", net_elec, net_energie, "#4ade80", is_sub=True)
-                        draw_custom_bar("• Gaz Naturel total", net_gaz, net_energie, "#4ade80", is_sub=True)
-                        draw_custom_bar("• Fioul de chauffage total", net_fioul, net_energie, "#4ade80", is_sub=True)
+                        draw_custom_bar("• Électricité globale", net_elec, net_energie, "#4ade80", is_sub=True)
+                        draw_custom_bar("• Gaz Naturel global", net_gaz, net_energie, "#4ade80", is_sub=True)
+                        draw_custom_bar("• Fioul global", net_fioul, net_energie, "#4ade80", is_sub=True)
 
                     draw_custom_bar("🍎 Alimentation & Cantine (Total Réseau)", net_alimentation, tot_net, "#f97316")
-                    with st.expander("Détails Cantine du Réseau"):
-                        draw_custom_bar("• Viande Rouge globale", net_a_r, net_alimentation, "#fb923c", is_sub=True)
-                        draw_custom_bar("• Poisson global", net_a_p, net_alimentation, "#fb923c", is_sub=True)
-                        draw_custom_bar("• Viande Blanche globale", net_a_b, net_alimentation, "#fb923c", is_sub=True)
+                    with st.expander("Détails Restauration du Réseau"):
+                        draw_custom_bar("• Viande Rouge cumulée", net_a_r, net_alimentation, "#fb923c", is_sub=True)
+                        draw_custom_bar("• Poisson cumulé", net_a_p, net_alimentation, "#fb923c", is_sub=True)
+                        draw_custom_bar("• Viande Blanche cumulée", net_a_b, net_alimentation, "#fb923c", is_sub=True)
 
                     draw_custom_bar("🚌 Déplacements & Transports (Total Réseau)", net_transport, tot_net, "#3b82f6")
                     with st.expander("Détails Transports du Réseau"):
                         draw_custom_bar("• Voitures particulières", net_t_voit, net_transport, "#60a5fa", is_sub=True)
-                        draw_custom_bar("• Autobus (sorties scolaires)", net_t_bus_s, net_transport, "#60a5fa", is_sub=True)
+                        draw_custom_bar("• Bus et cars scolaires", net_t_bus_s, net_transport, "#60a5fa", is_sub=True)
 
                     draw_custom_bar("📦 Biens, Consommables & Équipements (Total Réseau)", net_biens, tot_net, "#a855f7")
                     with st.expander("Détails Équipements du Réseau"):
-                        draw_custom_bar("• Parc Photocopieurs (Fabrication)", net_b_phot, net_biens, "#c084fc", is_sub=True)
-                        draw_custom_bar("• Total Ordinateurs & Écrans", net_b_ord, net_biens, "#c084fc", is_sub=True)
+                        draw_custom_bar("• Fabrication Photocopieurs", net_b_phot, net_biens, "#c084fc", is_sub=True)
+                        draw_custom_bar("• Total Ordinateurs", net_b_ord, net_biens, "#c084fc", is_sub=True)
 
                     draw_custom_bar("🗑️ Gestion des Déchets (Total Réseau)", net_dechets, tot_net, "#6366f1")
                     with st.expander("Détails Déchets du Réseau"):
-                        draw_custom_bar("• Restes alimentaires jetés", net_d_a, net_dechets, "#818cf8", is_sub=True)
+                        draw_custom_bar("• Total Restes alimentaires", net_d_a, net_dechets, "#818cf8", is_sub=True)
                         draw_custom_bar("• Plastiques non recyclés", net_d_pl, net_dechets, "#818cf8", is_sub=True)
                 else:
                     st.info("Aucune donnée agrégée disponible.")
@@ -358,7 +349,7 @@ with tab_dashboard:
 
         st.divider()
         
-        # --- 3️⃣ BLOC DU BAS : SYNTÈSE DES DONNÉES BRUTES ---
+        # --- 3️⃣ BLOC DU BAS : SYNTHÈSE DES DONNÉES BRUTES ---
         st.markdown('<p class="inner-title">📋 Synthèse Globale des Établissements (Données Centralisées)</p>', unsafe_allow_html=True)
         st.dataframe(df, hide_index=True, width="stretch")
 
