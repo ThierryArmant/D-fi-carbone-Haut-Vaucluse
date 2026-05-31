@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 # 1. CONFIGURATION DE LA PAGE
 st.set_page_config(page_title="Défi Carbone - Haut Vaucluse", page_icon="🌱", layout="wide")
 
-# 2. STYLE CSS (Mode Sombre / Ultra-Compact et Épuré)
+# 2. STYLE CSS (Mode Sombre / Ultra-Compact avec boutons universels et cadres contrastés)
 def set_style():
     st.markdown(
         """
@@ -13,7 +13,7 @@ def set_style():
         /* Compression globale des interlignes et textes */
         .stApp { background-color: #0f172a; color: #f1f5f9; line-height: 1.25 !important; }
         
-        /* Conteneur principal compressé au maximum */
+        /* Conteneur principal */
         .main .block-container {
             background-color: #1e293b;
             padding: 0.8rem 1.5rem !important;
@@ -21,13 +21,14 @@ def set_style():
             color: #f1f5f9;
         }
         
-        /* --- ONGLET COMPACTS STYLE BOUTONS --- */
+        /* --- 🎛️ TOUS LES ONGLETS TRANSFORMÉS EN BOUTONS VISIBLES --- */
         div[data-baseweb="tab-list"] {
-            gap: 8px !important;
+            gap: 10px !important;
             background-color: transparent !important;
             margin-bottom: 12px !important;
         }
-        div[data-baseweb="tab"] {
+        /* Ciblage large sans restriction de balise pour contrer les mises à jour Streamlit */
+        [data-baseweb="tab"] {
             background-color: #334155 !important;
             border-radius: 8px !important;
             padding: 8px 18px !important;
@@ -37,61 +38,59 @@ def set_style():
             height: auto !important;
             font-weight: bold !important;
             font-size: 14px !important;
+            margin-right: 4px !important;
         }
-        div[data-baseweb="tab"]:hover {
+        [data-baseweb="tab"]:hover {
             background-color: #475569 !important;
-            border-color: #38bdf8 !important;
+            border-color: #22d3ee !important;
             color: #ffffff !important;
             cursor: pointer !important;
         }
-        div[data-baseweb="tab"][aria-selected="true"] {
-            background-color: #38bdf8 !important;
-            color: #0f172a !important;
-            border-color: #38bdf8 !important;
-            box-shadow: 0 2px 8px rgba(56, 189, 248, 0.3) !important;
+        [data-baseweb="tab"][aria-selected="true"] {
+            background-color: #22d3ee !important; /* Turquoise */
+            color: #0f172a !important; /* Texte noir profond pour ressortir */
+            border-color: #22d3ee !important;
+            box-shadow: 0 4px 12px rgba(34, 211, 238, 0.4) !important;
         }
-        div[data-baseweb="tab-border"] { display: none !important; }
+        [data-baseweb="tab-border"] { display: none !important; }
         div[role="tabpanel"] { border: none !important; }
         
-        /* --- TUILES EN RELIEF COMPACTES --- */
-        div[data-testid="stBorderedContainer"] {
+        /* --- 💎 CELLULES EN RELIEF AVEC BORDURES DE COULEURS DISTINCTES --- */
+        div[data-testid*="column"]:has(.card-mid-left),
+        div[class*="stVerticalBlock"]:has(.card-mid-left) {
+            background-color: #1e293b !important;
+            border: 2px solid #22d3ee !important; /* Cadre Turquoise */
+            padding: 14px 18px !important;
             border-radius: 12px !important;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4) !important;
+            box-shadow: 0 15px 20px -5px rgba(0, 0, 0, 0.5) !important;
         }
-        /* Table Gauche (Établissement sélectionné) */
-        div[data-testid="stBorderedContainer"]:has(.card-mid-left) {
-            background-color: #233044 !important;
-            border: 2px solid #38bdf8 !important;
+        
+        div[data-testid*="column"]:has(.card-mid-right),
+        div[class*="stVerticalBlock"]:has(.card-mid-right) {
+            background-color: #111827 !important;
+            border: 2px solid #475569 !important; /* Cadre Acier Mat */
             padding: 14px 18px !important;
-        }
-        /* Table Droite (Cumul global) */
-        div[data-testid="stBorderedContainer"]:has(.card-mid-right) {
-            background-color: #141c29 !important;
-            border: 2px solid #475569 !important;
-            padding: 14px 18px !important;
+            border-radius: 12px !important;
+            box-shadow: 0 15px 20px -5px rgba(0, 0, 0, 0.5) !important;
         }
         
         /* Réduction des titres et de leurs marges */
         .inner-title {
             text-align: center; font-weight: bold; font-size: 16px; color: #38bdf8; margin-bottom: 6px;
         }
-        h1 { font-size: 24px !important; margin-top: 0px !important; margin-bottom: 8px !important; padding: 0 !important; }
+        h1 { font-size: 24px !important; margin-top: 0px !important; margin-bottom: 8px !important; }
         h2 { font-size: 18px !important; margin-top: 4px !important; margin-bottom: 8px !important; }
         [data-testid="stHeader"] { height: 0px; }
         
-        /* Blocs explicatifs compressés */
+        /* Blocs explicatifs */
         .anecdote { background-color: #1e3a8a; padding: 10px 14px; border-left: 4px solid #3b82f6; border-radius: 4px; margin: 6px 0; color: #eff6ff; font-size: 13px; }
         .methode { background-color: #14532d; padding: 8px 12px; border-left: 4px solid #22c55e; border-radius: 4px; font-size: 12px; margin-top: 6px; color: #f0fdf4; }
         
-        /* Barres de progression d'émissions affinées */
+        /* Barres de progression affinées */
         .pole-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; margin-bottom: 3px; margin-top: 3px; color: #f1f5f9; }
         .sub-pole-header { display: flex; justify-content: space-between; font-size: 12px; color: #cbd5e1; margin-bottom: 2px; margin-top: 4px; }
         .bar-container { background-color: #475569; border-radius: 4px; height: 11px; width: 100%; margin-bottom: 8px; overflow: hidden; }
         .sub-bar-container { background-color: #334155; border-radius: 3px; height: 7px; width: 100%; margin-bottom: 6px; overflow: hidden; }
-        
-        /* Streamlit Expander (hauteur de ligne et padding internes serrés) */
-        .stBlock { margin-bottom: 4px !important; }
-        .stElementContainer { margin-bottom: 4px !important; }
         </style>
         """,
         unsafe_allow_html=True
@@ -169,7 +168,7 @@ with tab_dashboard:
             if pwd == "CARBONE2026":
                 st.link_button("🚀 Ouvrir le formulaire Google Forms", "https://docs.google.com/forms/d/e/1FAIpQLSe6QOMdXWJPYHsbMkq41IyzM7Rc9izcqsFpZhQzWiaqygyykQ/viewform", use_container_width=True)
 
-        # --- 1️⃣ BLOC DU HAUT RACCOURCI COMPACT ---
+        # --- 1️⃣ BLOC DU HAUT COMPACT ---
         col_top1, col_top2 = st.columns([1, 1])
         with col_top1:
             st.markdown('<p class="inner-title">📊 Classement des Établissements (kg/personne)</p>', unsafe_allow_html=True)
@@ -192,17 +191,19 @@ with tab_dashboard:
         
         st.divider()
 
-        # --- 2️⃣ BLOC DU MILIEU : DOUBLE TUILLE COMPACTE ---
+        # --- 2️⃣ BLOC DU MILIEU : DOUBLE TUILE COMPACTE EN FILTRAGE ÉTANCHE ---
         st.markdown('<h2 style="text-align: center; color: #38bdf8;">🔍 Analyse Comparative des Pôles</h2>', unsafe_allow_html=True)
         
         if not df_active.empty:
             col_mid1, col_mid2 = st.columns([1, 1])
             
+            # --- 🅰️ TABLEAU GAUCHE (INDIVIDUEL) ---
             with col_mid1:
-                with st.container(border=True):
+                with st.container():
                     st.markdown('<div class="card-mid-left"></div>', unsafe_allow_html=True)
-                    selected_school = st.selectbox("Établissement auditée :", df_active[col_etab].unique(), key="left_school_selector")
-                    st.markdown(f'<p class="inner-title" style="color: #ffffff; text-align: left; margin-top: 5px; margin-bottom: 10px;">🏫 Détail : {selected_school}</p>', unsafe_allow_html=True)
+                    selected_school = st.selectbox("Établissement audité :", df_active[col_etab].unique(), key="left_school_selector")
+                    # Titre passé en Turquoise dynamique (#22d3ee)
+                    st.markdown(f'<p class="inner-title" style="color: #22d3ee; text-align: left; margin-top: 5px; margin-bottom: 10px; font-size: 18px; font-weight: bold;">🏫 Établissement Audité : {selected_school}</p>', unsafe_allow_html=True)
                     
                     school_data = df_active[df_active[col_etab] == selected_school].iloc[0]
                     tot_sch = school_data[col_total]
@@ -258,7 +259,7 @@ with tab_dashboard:
                             draw_custom_bar("• Voiture individuelle", t_voit, sch_transport, "#60a5fa", is_sub=True)
                             draw_custom_bar("• Bus / Autocar (sorties)", t_bus_s, sch_transport, "#60a5fa", is_sub=True)
 
-                        draw_custom_bar("📦 Matériel & Équipements", sch_biens, tot_sch, "#a855f7")
+                        draw_custom_bar("📦 Biens, Consommables & Équipements", sch_biens, tot_sch, "#a855f7")
                         with st.expander("Détails Équipements"):
                             draw_custom_bar("• Photocopieurs (Fab)", b_phot, sch_biens, "#c084fc", is_sub=True)
                             draw_custom_bar("• Ordinateurs & Écrans", b_ord, sch_biens, "#c084fc", is_sub=True)
@@ -268,11 +269,14 @@ with tab_dashboard:
                         with st.expander("Détails Déchets"):
                             draw_custom_bar("• Gaspillage cantine", d_a, sch_dechets, "#818cf8", is_sub=True)
                             draw_custom_bar("• Déchets plastiques", d_pl, sch_dechets, "#818cf8", is_sub=True)
+                    else:
+                        st.warning("Cet établissement n'a pas encore de données.")
 
+            # --- 🆂 TABLEAU DROIT (CUMULÉ) ---
             with col_mid2:
-                with st.container(border=True):
+                with st.container():
                     st.markdown('<div class="card-mid-right"></div>', unsafe_allow_html=True)
-                    st.markdown('<p class="inner-title" style="color: #38bdf8; text-align: left; margin-bottom: 45px;">🌍 Global : Secteurs d\'impact du Réseau</p>', unsafe_allow_html=True)
+                    st.markdown('<p class="inner-title" style="color: #cbd5e1; text-align: left; margin-bottom: 45px; font-size: 18px; font-weight: bold;">🌍 Global : Secteurs d\'impact du Réseau</p>', unsafe_allow_html=True)
                     
                     def safe_sum(col_name):
                         if col_name in df_active.columns:
@@ -314,31 +318,33 @@ with tab_dashboard:
                         net_d_pl = safe_sum("Déchets plastique")
                         net_dechets = net_d_p + net_d_a + net_d_pl
 
-                        draw_custom_bar("❄️ Énergie & Bâtiments (Réseau)", net_energie, tot_net, "#22c55e")
+                        draw_custom_bar("❄️ Énergie & Bâtiments (Total Réseau)", net_energie, tot_net, "#22c55e")
                         with st.expander("Détails Énergie (Réseau)"):
                             draw_custom_bar("• Électricité globale", net_elec, net_energie, "#4ade80", is_sub=True)
                             draw_custom_bar("• Gaz Naturel global", net_gaz, net_energie, "#4ade80", is_sub=True)
                             draw_custom_bar("• Fioul global", net_fioul, net_energie, "#4ade80", is_sub=True)
 
-                        draw_custom_bar("🍎 Alimentation & Cantine (Réseau)", net_alimentation, tot_net, "#f97316")
+                        draw_custom_bar("🍎 Alimentation & Cantine (Total Réseau)", net_alimentation, tot_net, "#f97316")
                         with st.expander("Détails Restauration (Réseau)"):
                             draw_custom_bar("• Viande Rouge cumulée", net_a_r, net_alimentation, "#fb923c", is_sub=True)
                             draw_custom_bar("• Poisson cumulé", net_a_p, net_alimentation, "#fb923c", is_sub=True)
 
-                        draw_custom_bar("🚌 Déplacements & Transports (Réseau)", net_transport, tot_net, "#3b82f6")
+                        draw_custom_bar("🚌 Déplacements & Transports (Total Réseau)", net_transport, tot_net, "#3b82f6")
                         with st.expander("Détails Transports (Réseau)"):
                             draw_custom_bar("• Voitures particulières", net_t_voit, net_transport, "#60a5fa", is_sub=True)
                             draw_custom_bar("• Bus et cars scolaires", net_t_bus_s, net_transport, "#60a5fa", is_sub=True)
 
-                        draw_custom_bar("📦 Biens & Équipements (Réseau)", net_biens, tot_net, "#a855f7")
+                        draw_custom_bar("📦 Biens & Équipements (Total Réseau)", net_biens, tot_net, "#a855f7")
                         with st.expander("Détails Équipements (Réseau)"):
                             draw_custom_bar("• Fabrication Photocopieurs", net_b_phot, net_biens, "#c084fc", is_sub=True)
                             draw_custom_bar("• Total Ordinateurs", net_b_ord, net_biens, "#c084fc", is_sub=True)
 
-                        draw_custom_bar("🗑️ Gestion des Déchets (Réseau)", net_dechets, tot_net, "#6366f1")
+                        draw_custom_bar("🗑️ Gestion des Déchets (Total Réseau)", net_dechets, tot_net, "#6366f1")
                         with st.expander("Détails Déchets (Réseau)"):
                             draw_custom_bar("• Restes alimentaires", net_d_a, net_dechets, "#818cf8", is_sub=True)
                             draw_custom_bar("• Plastiques non recyclés", net_d_pl, net_dechets, "#818cf8", is_sub=True)
+                    else:
+                        st.info("Aucune donnée agrégée disponible.")
 
         st.divider()
         st.markdown('<p class="inner-title">📋 Synthèse Globale des Établissements</p>', unsafe_allow_html=True)
