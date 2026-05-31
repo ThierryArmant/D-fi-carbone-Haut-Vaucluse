@@ -10,34 +10,25 @@ def set_style():
     st.markdown(
         """
         <style>
-        /* Fond global de l'application (Gris-noir très doux) */
+        /* Fond global de l'application (FOND BLEU PARTOUT) */
         .stApp { background-color: #0f172a; color: #f1f5f9; }
         
-        /* Conteneur principal (Gris ardoise reposant) */
+        /* Conteneur principal (Garde le même fond bleu pour la continuité) */
         .main .block-container {
-            background-color: #161e2f;
+            background-color: #0f172a;
             padding: 2rem 3rem !important;
             border-radius: 8px;
             color: #f1f5f9;
         }
         
-        /* --- STYLE DES CONTENEURS SÉPARÉS (TRAVAIL SUR LES CONTRASTES) --- */
-        /* Conteneur de Gauche : Base Individuelle (Accentué et lumineux) */
-        div[data-testid="stVerticalBlockBorderWrapper"]:has(.marker-indiv) {
-            background-color: #1e293b !important; /* Fond plus clair */
-            border: 2px solid #38bdf8 !important; /* Bordure cyan vif pour l'interaction */
-            padding: 25px !important;
-            border-radius: 12px !important;
-            box-shadow: 0 10px 20px -5px rgba(56, 189, 248, 0.15);
-        }
-        
-        /* Conteneur de Droite : Base Générale (Sombre et neutre) */
+        /* --- STYLE DES DEUX TABLEAUX (MÊME COULEUR DISTINCTE DU FOND GÉNÉRAL) --- */
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.marker-indiv),
         div[data-testid="stVerticalBlockBorderWrapper"]:has(.marker-global) {
-            background-color: #0b0f19 !important; /* Fond très sombre / noir mat */
-            border: 2px solid #475569 !important; /* Bordure grise discrète pour la référence */
+            background-color: #1f2937 !important; /* Gris Anthracite distinct pour les deux tableaux */
+            border: 2px solid #475569 !important; /* Bordure grise identique et propre */
             padding: 25px !important;
             border-radius: 12px !important;
-            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
         }
         
         /* --- STYLE DES ONGLETS EN BOUTONS --- */
@@ -270,10 +261,10 @@ with tab_dashboard:
             # --- CÔTÉ GAUCHE : BASE INDIVIDUELLE ---
             with col_gauche:
                 with st.container(border=True): 
-                    # Injection du marqueur HTML pour cibler ce conteneur en CSS
+                    # Marqueur HTML pour injecter le style unifié via CSS
                     st.markdown("<span class='marker-indiv'></span>", unsafe_allow_html=True)
                     
-                    # Le selectbox reste confiné strictement à la largeur du tableau individuel
+                    # Le selectbox reste confiné strictement à la largeur du tableau de gauche
                     selected_school = st.selectbox("Sélectionnez un établissement pour explorer ses statistiques :", df_active[col_etab].unique())
                     
                     # Extraction des données spécifiques
@@ -356,10 +347,10 @@ with tab_dashboard:
             # --- CÔTÉ DROIT : BASE GÉNÉRALE ---
             with col_droite:
                 with st.container(border=True):
-                    # Injection du marqueur HTML pour cibler ce conteneur en CSS
+                    # Marqueur HTML pour appliquer la même couleur que le tableau de gauche
                     st.markdown("<span class='marker-global'></span>", unsafe_allow_html=True)
                     
-                    # Alignement de hauteur avec le selectbox de gauche
+                    # Alignement propre de hauteur
                     st.markdown("<p style='margin-bottom: 12px; color: #cbd5e1; font-size: 14px;'>Comparatif global inter-établissements</p>", unsafe_allow_html=True)
                     st.markdown("### 🌍 Base Générale <span style='color: #38bdf8;'>(Total Réseau)</span>", unsafe_allow_html=True)
                     st.write("---")
