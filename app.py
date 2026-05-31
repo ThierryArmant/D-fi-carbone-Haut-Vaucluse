@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 # 1. CONFIGURATION DE LA PAGE
 st.set_page_config(page_title="Défi Carbone - Haut Vaucluse", page_icon="🌱", layout="wide")
 
-# 2. STYLE CSS (Mode Sombre / Reposant avec Onglets transformés en Boutons)
+# 2. STYLE CSS (Mode Sombre / Reposant avec Onglets en boutons et Tableaux en relief)
 def set_style():
     st.markdown(
         """
@@ -13,7 +13,7 @@ def set_style():
         /* Fond global de l'application (Gris-noir très doux) */
         .stApp { background-color: #0f172a; color: #f1f5f9; }
         
-        /* Conteneur principal (Gris ardoise reposant) */
+        /* Conteneur principal (Gris ardoise de fond) */
         .main .block-container {
             background-color: #1e293b;
             padding: 2rem 3rem !important;
@@ -22,14 +22,11 @@ def set_style():
         }
         
         /* --- STYLE DES ONGLETS EN BOUTONS --- */
-        /* Alignement et espacement de la liste des onglets */
         div[data-baseweb="tab-list"] {
             gap: 12px;
             background-color: transparent;
             margin-bottom: 25px;
         }
-        
-        /* Le bouton d'onglet par défaut (Inactif) */
         div[data-baseweb="tab"] {
             background-color: #334155 !important;
             border-radius: 12px !important;
@@ -39,16 +36,12 @@ def set_style():
             transition: all 0.3s ease !important;
             height: auto !important;
         }
-        
-        /* Effet au survol des boutons */
         div[data-baseweb="tab"]:hover {
             background-color: #475569 !important;
             border-color: #38bdf8 !important;
             color: #ffffff !important;
             cursor: pointer;
         }
-        
-        /* Style du bouton sélectionné (Actif - Bleu électrique vibrant) */
         div[data-baseweb="tab"][aria-selected="true"] {
             background-color: #38bdf8 !important;
             color: #0f172a !important;
@@ -56,10 +49,27 @@ def set_style():
             font-weight: bold !important;
             box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
         }
-        
-        /* Nettoyage des bordures par défaut de Streamlit */
         div[role="tabpanel"] { border: none !important; }
         div[data-baseweb="tab-border"] { display: none !important; }
+        
+        /* --- 💎 EFFET DE RELIEF POUR LES DEUX TABLEAUX CÔTE À CÔTE --- */
+        /* Carte de Gauche (Classement) : Teinte bleutée et relief prononcé */
+        div[data-testid="column"]:has(.marker-classement) {
+            background-color: #233044 !important;
+            padding: 25px !important;
+            border-radius: 16px !important;
+            border: 1px solid #334561 !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4) !important;
+        }
+        
+        /* Carte de Droite (Jauge moyenne) : Teinte ardoise sombre pour dissocier */
+        div[data-testid="column"]:has(.marker-jauge) {
+            background-color: #182232 !important;
+            padding: 25px !important;
+            border-radius: 16px !important;
+            border: 1px solid #243147 !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4) !important;
+        }
         
         /* Titres des sections (Bleu ciel doux) */
         .inner-title {
@@ -69,38 +79,18 @@ def set_style():
         
         /* Style des anecdotes adaptées au fond sombre (Bleu nuit) */
         .anecdote {
-            background-color: #1e3a8a;
-            padding: 15px;
-            border-left: 5px solid #3b82f6;
-            border-radius: 5px;
-            margin-top: 10px;
-            margin-bottom: 10px;
-            color: #eff6ff;
+            background-color: #1e3a8a; padding: 15px; border-left: 5px solid #3b82f6; border-radius: 5px; margin: 10px 0; color: #eff6ff;
         }
         /* Style de la méthode adaptée au fond sombre (Vert forêt) */
         .methode {
-            background-color: #14532d;
-            padding: 10px;
-            border-left: 5px solid #22c55e;
-            border-radius: 5px;
-            font-size: 0.9em;
-            margin-top: 10px;
-            color: #f0fdf4;
+            background-color: #14532d; padding: 10px; border-left: 5px solid #22c55e; border-radius: 5px; font-size: 0.9em; margin-top: 10px; color: #f0fdf4;
         }
         
         /* Styles des barres de progression adaptées au fond sombre */
-        .pole-header {
-            display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1em; margin-bottom: 5px; margin-top: 5px; color: #f1f5f9;
-        }
-        .sub-pole-header {
-            display: flex; justify-content: space-between; font-size: 0.95em; color: #cbd5e1; margin-bottom: 3px; margin-top: 8px;
-        }
-        .bar-container {
-            background-color: #475569; border-radius: 6px; height: 16px; width: 100%; margin-bottom: 15px; overflow: hidden;
-        }
-        .sub-bar-container {
-            background-color: #334155; border-radius: 4px; height: 10px; width: 100%; margin-bottom: 10px; overflow: hidden;
-        }
+        .pole-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1em; margin-bottom: 5px; margin-top: 5px; color: #f1f5f9; }
+        .sub-pole-header { display: flex; justify-content: space-between; font-size: 0.95em; color: #cbd5e1; margin-bottom: 3px; margin-top: 8px; }
+        .bar-container { background-color: #475569; border-radius: 6px; height: 16px; width: 100%; margin-bottom: 15px; overflow: hidden; }
+        .sub-bar-container { background-color: #334155; border-radius: 4px; height: 10px; width: 100%; margin-bottom: 10px; overflow: hidden; }
         </style>
         """,
         unsafe_allow_html=True
@@ -183,17 +173,21 @@ with tab_dashboard:
         
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # --- BLOC : CLASSEMENT ET JAUGE GLOBALE ---
+        # --- BLOC : CLASSEMENT ET JAUGE GLOBALE (AVEC INJECTION DES MARQUEURS CSS) ---
         col1, col2 = st.columns([1, 1])
         with col1:
+            # Injection du marqueur pour activer le fond personnalisé et le relief sur cette colonne
+            st.markdown('<div class="marker-classement"></div>', unsafe_allow_html=True)
             st.markdown('<p class="inner-title">📊 Classement des Établissements (kg/personne)</p>', unsafe_allow_html=True)
             if not df_active.empty:
                 df_ranking = df_active[[col_etab, col_conso]].sort_values(col_conso, ascending=False)
-                st.dataframe(df_ranking, hide_index=True, width="stretch", height=380)
+                st.dataframe(df_ranking, hide_index=True, width="stretch", height=330)
             else:
                 st.info("En attente de données calculées...")
                 
         with col2:
+            # Injection du marqueur pour activer l'autre fond et le relief sur la jauge
+            st.markdown('<div class="marker-jauge"></div>', unsafe_allow_html=True)
             st.markdown('<p class="inner-title">🚀 Moyenne du Réseau (kg/pers)</p>', unsafe_allow_html=True)
             if not df_active.empty and df_active[col_eff].sum() > 0:
                 moyenne = df_active[col_total].sum() / df_active[col_eff].sum()
@@ -201,7 +195,7 @@ with tab_dashboard:
                 moyenne = 0
 
             fig = go.Figure(go.Indicator(mode = "gauge+number", value = moyenne, number = {'suffix': " kg", 'font': {'color': '#f1f5f9'}}, gauge = {'axis': {'range': [None, 2000], 'tickfont': {'color': '#f1f5f9'}}, 'bar': {'color': "#38bdf8"}, 'steps': [{'range': [0, 500], 'color': "#1e3a8a"}, {'range': [500, 1000], 'color': "#b45309"}, {'range': [1000, 2000], 'color': "#991b1b"}], 'threshold': {'line': {'color': "red", 'width': 4}, 'value': 1000}}))
-            fig.update_layout(height=380, margin=dict(t=30, b=0, l=40, r=40), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+            fig.update_layout(height=330, margin=dict(t=30, b=0, l=40, r=40), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
             st.plotly_chart(fig, use_container_width=True)
         
         st.divider()
