@@ -10,25 +10,15 @@ def set_style():
     st.markdown(
         """
         <style>
-        /* Fond global de l'application (FOND BLEU PARTOUT) */
+        /* Fond global de l'application (Gris-noir très doux) */
         .stApp { background-color: #0f172a; color: #f1f5f9; }
         
-        /* Conteneur principal (Garde le même fond bleu pour la continuité) */
+        /* Conteneur principal (Gris ardoise reposant) */
         .main .block-container {
-            background-color: #0f172a;
+            background-color: #1e293b;
             padding: 2rem 3rem !important;
             border-radius: 8px;
             color: #f1f5f9;
-        }
-        
-        /* --- STYLE DES DEUX TABLEAUX (MÊME COULEUR DISTINCTE DU FOND GÉNÉRAL) --- */
-        div[data-testid="stVerticalBlockBorderWrapper"]:has(.marker-indiv),
-        div[data-testid="stVerticalBlockBorderWrapper"]:has(.marker-global) {
-            background-color: #1f2937 !important; /* Gris Anthracite distinct pour les deux tableaux */
-            border: 2px solid #475569 !important; /* Bordure grise identique et propre */
-            padding: 25px !important;
-            border-radius: 12px !important;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
         }
         
         /* --- STYLE DES ONGLETS EN BOUTONS --- */
@@ -165,7 +155,7 @@ if not df.empty:
 tab_dashboard, tab_glossaire = st.tabs(["📊 Tableau de Bord", "📖 Référentiel consommations carbone (5 Pôles)"])
 
 # ==========================================
-# ---         ONGLET DASHBOARD           ---
+# ---          ONGLET DASHBOARD          ---
 # ==========================================
 with tab_dashboard:
     if not df.empty:
@@ -216,183 +206,90 @@ with tab_dashboard:
         
         st.divider()
 
-        # --- BLOC DU MILIEU : LE BILAN GRAPHIQUE DÉTAILLÉ (COMPARAISON CÔTE À CÔTE) ---
-        st.markdown('<p class="inner-title">🔍 Analyse Comparative des Émissions Carbone</p>', unsafe_allow_html=True)
+        # --- BLOC DU MILIEU : LE BILAN GRAPHIQUE DÉTAILLÉ ---
+        st.markdown('<p class="inner-title">🔍 Analyse détaillée par Établissement</p>', unsafe_allow_html=True)
         
         if not df_active.empty:
+            selected_school = st.selectbox("Sélectionnez un établissement pour explorer ses statistiques :", df_active[col_etab].unique())
             
-            # --- 1. CALCUL PRÉALABLE DES EMISSIONS TOTALES GLOBALES (RÉSEAU) ---
-            total_global_emissions = df_active[col_total].sum()
+            school_data = df_active[df_active[col_etab] == selected_school].iloc[0]
+            total_school_emissions = school_data[col_total]
+            
+            if total_school_emissions > 0:
+                # Énergie
+                elec_val = school_data.get("Electricité française", 0)
+                fioul_val = school_data.get("Fioul", 0)
+                gaz_val = school_data.get("Gaz Naturel", 0)
+                total_energie = elec_val + fioul_val + gaz_val
 
-            elec_global = df_active["Electricité française"].sum() if "Electricité française" in df_active.columns else 0
-            fioul_global = df_active["Fioul"].sum() if "Fioul" in df_active.columns else 0
-            gaz_global = df_active["Gaz Naturel"].sum() if "Gaz Naturel" in df_active.columns else 0
-            total_energie_global = elec_global + fioul_global + gaz_global
+                # Transports
+                voit_val = school_data.get("Voiture à essence", 0)
+                bus_v_val = school_data.get("Autobus (ville)", 0)
+                bus_s_val = school_data.get("Autobus (sortie scolaire)", 0)
+                total_transport = voit_val + bus_v_val + bus_s_val
 
-            voit_global = df_active["Voiture à essence"].sum() if "Voiture à essence" in df_active.columns else 0
-            bus_v_global = df_active["Autobus (ville)"].sum() if "Autobus (ville)" in df_active.columns else 0
-            bus_s_global = df_active["Autobus (sortie scolaire)"].sum() if "Autobus (sortie scolaire)" in df_active.columns else 0
-            total_transport_global = voit_global + bus_v_global + bus_s_global
+                # Alimentation
+                rep_m = school_data.get("Repas moyen", 0)
+                rep_v = school_data.get("Repas végétarien", 0)
+                rep_r = school_data.get("Repas viande rouge", 0)
+                rep_b = school_data.get("Repas viande blanche", 0)
+                rep_p = school_data.get("Repas POISSON", 0)
+                total_alimentation = rep_m + rep_v + rep_r + rep_b + rep_p
 
-            rep_m_global = df_active["Repas moyen"].sum() if "Repas moyen" in df_active.columns else 0
-            rep_v_global = df_active["Repas végétarien"].sum() if "Repas végétarien" in df_active.columns else 0
-            rep_r_global = df_active["Repas viande rouge"].sum() if "Repas viande rouge" in df_active.columns else 0
-            rep_b_global = df_active["Repas viande blanche"].sum() if "Repas viande blanche" in df_active.columns else 0
-            rep_p_global = df_active["Repas POISSON"].sum() if "Repas POISSON" in df_active.columns else 0
-            total_alimentation_global = rep_m_global + rep_v_global + rep_r_global + rep_b_global + rep_p_global
+                # Déchets
+                dech_p = school_data.get("Déchets Papier", 0)
+                dech_a = school_data.get("Déchets alimentaire", 0)
+                dech_pl = school_data.get("Déchets plastique", 0)
+                total_dechets = dech_p + dech_a + dech_pl
 
-            dech_p_global = df_active["Déchets Papier"].sum() if "Déchets Papier" in df_active.columns else 0
-            dech_a_global = df_active["Déchets alimentaire"].sum() if "Déchets alimentaire" in df_active.columns else 0
-            dech_pl_global = df_active["Déchets plastique"].sum() if "Déchets plastique" in df_active.columns else 0
-            total_dechets_global = dech_p_global + dech_a_global + dech_pl_global
+                # Biens & Consommables
+                pap_val = school_data.get("Paper", 0) if "Paper" in df.columns else school_data.get("Papier", 0)
+                plas_val = school_data.get("Plastique", 0)
+                cart_val = school_data.get("Carton", 0)
+                ordi_val = school_data.get("Ordinateur à écran plat", 0)
+                imp_val = school_data.get("Imprimante", 0)
+                phot_val = school_data.get("Photocopieurs", 0)
+                vid_val = school_data.get("Vidéo projecteur", 0)
+                total_biens = pap_val + plas_val + cart_val + ordi_val + imp_val + phot_val + vid_val
 
-            pap_global = df_active["Paper"].sum() if "Paper" in df_active.columns else (df_active["Papier"].sum() if "Papier" in df_active.columns else 0)
-            plas_global = df_active["Plastique"].sum() if "Plastique" in df_active.columns else 0
-            cart_global = df_active["Carton"].sum() if "Carton" in df_active.columns else 0
-            ordi_global = df_active["Ordinateur à écran plat"].sum() if "Ordinateur à écran plat" in df_active.columns else 0
-            imp_global = df_active["Imprimante"].sum() if "Imprimante" in df_active.columns else 0
-            phot_global = df_active["Photocopieurs"].sum() if "Photocopieurs" in df_active.columns else 0
-            vid_global = df_active["Vidéo projecteur"].sum() if "Vidéo projecteur" in df_active.columns else 0
-            total_biens_global = pap_global + plas_global + cart_global + ordi_global + imp_global + phot_global + vid_global
+                # Rendu visuel des barres colorées
+                draw_custom_bar("❄️ Énergie & Bâtiments", total_energie, total_school_emissions, "#22c55e")
+                with st.expander("Détails du poste Énergie"):
+                    draw_custom_bar("• Électricité française", elec_val, total_energie, "#4ade80", is_sub=True)
+                    draw_custom_bar("• Gaz Naturel", gaz_val, total_energie, "#4ade80", is_sub=True)
+                    draw_custom_bar("• Fioul de chauffage", fioul_val, total_energie, "#4ade80", is_sub=True)
 
-            # --- 2. SÉPARATION VISUELLE EN DEUX COLONNES ---
-            col_gauche, col_droite = st.columns(2)
+                draw_custom_bar("🍎 Alimentation & Cantine", total_alimentation, total_school_emissions, "#f97316")
+                with st.expander("Détails du poste Alimentation"):
+                    draw_custom_bar("• Repas avec Viande Rouge", rep_r, total_alimentation, "#fb923c", is_sub=True)
+                    draw_custom_bar("• Repas avec Poisson", rep_p, total_alimentation, "#fb923c", is_sub=True)
+                    draw_custom_bar("• Repas avec Viande Blanche", rep_b, total_alimentation, "#fb923c", is_sub=True)
+                    draw_custom_bar("• Repas Standard Moyen", rep_m, total_alimentation, "#fb923c", is_sub=True)
+                    draw_custom_bar("• Repas Végétarien", rep_v, total_alimentation, "#fb923c", is_sub=True)
 
-            # --- CÔTÉ GAUCHE : BASE INDIVIDUELLE ---
-            with col_gauche:
-                with st.container(border=True): 
-                    # Marqueur HTML pour injecter le style unifié via CSS
-                    st.markdown("<span class='marker-indiv'></span>", unsafe_allow_html=True)
-                    
-                    # Le selectbox reste confiné strictement à la largeur du tableau de gauche
-                    selected_school = st.selectbox("Sélectionnez un établissement pour explorer ses statistiques :", df_active[col_etab].unique())
-                    
-                    # Extraction des données spécifiques
-                    school_data = df_active[df_active[col_etab] == selected_school].iloc[0]
-                    total_school_emissions = school_data[col_total]
-                    
-                    elec_val = school_data.get("Electricité française", 0)
-                    fioul_val = school_data.get("Fioul", 0)
-                    gaz_val = school_data.get("Gaz Naturel", 0)
-                    total_energie = elec_val + fioul_val + gaz_val
+                draw_custom_bar("🚌 Déplacements & Transports", total_transport, total_school_emissions, "#3b82f6")
+                with st.expander("Détails du poste Transports"):
+                    draw_custom_bar("• Trajets en Voiture thermique", voit_val, total_transport, "#60a5fa", is_sub=True)
+                    draw_custom_bar("• Autobus (sorties scolaires)", bus_s_val, total_transport, "#60a5fa", is_sub=True)
+                    draw_custom_bar("• Autobus (lignes régulières / ville)", bus_v_val, total_transport, "#60a5fa", is_sub=True)
 
-                    voit_val = school_data.get("Voiture à essence", 0)
-                    bus_v_val = school_data.get("Autobus (ville)", 0)
-                    bus_s_val = school_data.get("Autobus (sortie scolaire)", 0)
-                    total_transport = voit_val + bus_v_val + bus_s_val
+                draw_custom_bar("📦 Biens, Consommables & Équipements", total_biens, total_school_emissions, "#a855f7")
+                with st.expander("Détails du poste Équipements & Consommables"):
+                    draw_custom_bar("• Photocopieurs (Empreinte de fabrication)", phot_val, total_biens, "#c084fc", is_sub=True)
+                    draw_custom_bar("• Ordinateurs portables / écrans plats", ordi_val, total_biens, "#c084fc", is_sub=True)
+                    draw_custom_bar("• Ramettes de papier consommées", pap_val, total_biens, "#c084fc", is_sub=True)
+                    draw_custom_bar("• Vidéoprojecteurs", vid_val, total_biens, "#c084fc", is_sub=True)
+                    draw_custom_bar("• Plastiques d'emballage", plas_val, total_biens, "#c084fc", is_sub=True)
+                    draw_custom_bar("• Imprimantes laser", imp_val, total_biens, "#c084fc", is_sub=True)
+                    draw_custom_bar("• Emballages Carton", cart_val, total_biens, "#c084fc", is_sub=True)
 
-                    rep_m = school_data.get("Repas moyen", 0)
-                    rep_v = school_data.get("Repas végétarien", 0)
-                    rep_r = school_data.get("Repas viande rouge", 0)
-                    rep_b = school_data.get("Repas viande blanche", 0)
-                    rep_p = school_data.get("Repas POISSON", 0)
-                    total_alimentation = rep_m + rep_v + rep_r + rep_b + rep_p
-
-                    dech_p = school_data.get("Déchets Papier", 0)
-                    dech_a = school_data.get("Déchets alimentaire", 0)
-                    dech_pl = school_data.get("Déchets plastique", 0)
-                    total_dechets = dech_p + dech_a + dech_pl
-
-                    pap_val = school_data.get("Paper", 0) if "Paper" in df.columns else school_data.get("Papier", 0)
-                    plas_val = school_data.get("Plastique", 0)
-                    cart_val = school_data.get("Carton", 0)
-                    ordi_val = school_data.get("Ordinateur à écran plat", 0)
-                    imp_val = school_data.get("Imprimante", 0)
-                    phot_val = school_data.get("Photocopieurs", 0)
-                    vid_val = school_data.get("Vidéo projecteur", 0)
-                    total_biens = pap_val + plas_val + cart_val + ordi_val + imp_val + phot_val + vid_val
-
-                    st.markdown(f"### 🏫 Base Individuelle : <span style='color:#38bdf8;'>{selected_school}</span>", unsafe_allow_html=True)
-                    st.write("---")
-                    
-                    if total_school_emissions > 0:
-                        draw_custom_bar("❄️ Énergie & Bâtiments", total_energie, total_school_emissions, "#22c55e")
-                        with st.expander("Détails du poste Énergie"):
-                            draw_custom_bar("• Électricité française", elec_val, total_energie, "#4ade80", is_sub=True)
-                            draw_custom_bar("• Gaz Naturel", gaz_val, total_energie, "#4ade80", is_sub=True)
-                            draw_custom_bar("• Fioul de chauffage", fioul_val, total_energie, "#4ade80", is_sub=True)
-
-                        draw_custom_bar("🍎 Alimentation & Cantine", total_alimentation, total_school_emissions, "#f97316")
-                        with st.expander("Détails du poste Alimentation"):
-                            draw_custom_bar("• Repas avec Viande Rouge", rep_r, total_alimentation, "#fb923c", is_sub=True)
-                            draw_custom_bar("• Repas avec Poisson", rep_p, total_alimentation, "#fb923c", is_sub=True)
-                            draw_custom_bar("• Repas avec Viande Blanche", rep_b, total_alimentation, "#fb923c", is_sub=True)
-                            draw_custom_bar("• Repas Standard Moyen", rep_m, total_alimentation, "#fb923c", is_sub=True)
-                            draw_custom_bar("• Repas Végétarien", rep_v, total_alimentation, "#fb923c", is_sub=True)
-
-                        draw_custom_bar("🚌 Déplacements & Transports", total_transport, total_school_emissions, "#3b82f6")
-                        with st.expander("Détails du poste Transports"):
-                            draw_custom_bar("• Trajets en Voiture thermique", voit_val, total_transport, "#60a5fa", is_sub=True)
-                            draw_custom_bar("• Autobus (sorties scolaires)", bus_s_val, total_transport, "#60a5fa", is_sub=True)
-                            draw_custom_bar("• Autobus (lignes régulières / ville)", bus_v_val, total_transport, "#60a5fa", is_sub=True)
-
-                        draw_custom_bar("📦 Biens, Consommables & Équipements", total_biens, total_school_emissions, "#a855f7")
-                        with st.expander("Détails du poste Équipements & Consommables"):
-                            draw_custom_bar("• Photocopieurs (Empreinte de fabrication)", phot_val, total_biens, "#c084fc", is_sub=True)
-                            draw_custom_bar("• Ordinateurs portables / écrans plats", ordi_val, total_biens, "#c084fc", is_sub=True)
-                            draw_custom_bar("• Ramettes de papier consommées", pap_val, total_biens, "#c084fc", is_sub=True)
-                            draw_custom_bar("• Vidéoprojecteurs", vid_val, total_biens, "#c084fc", is_sub=True)
-                            draw_custom_bar("• Plastiques d'emballage", plas_val, total_biens, "#c084fc", is_sub=True)
-                            draw_custom_bar("• Imprimantes laser", imp_val, total_biens, "#c084fc", is_sub=True)
-                            draw_custom_bar("• Emballages Carton", cart_val, total_biens, "#c084fc", is_sub=True)
-
-                        draw_custom_bar("🗑️ Gestion des Déchets", total_dechets, total_school_emissions, "#6366f1")
-                        with st.expander("Détails du poste Déchets"):
-                            draw_custom_bar("• Gaspillage alimentaire (restes de cantine)", dech_a, total_dechets, "#818cf8", is_sub=True)
-                            draw_custom_bar("• Déchets plastiques non recyclés", dech_pl, total_dechets, "#818cf8", is_sub=True)
-                            draw_custom_bar("• Déchets Papier jetés", dech_p, total_dechets, "#818cf8", is_sub=True)
-                    else:
-                        st.warning("Cet établissement n'a pas encore de données carbone calculées.")
-
-            # --- CÔTÉ DROIT : BASE GÉNÉRALE ---
-            with col_droite:
-                with st.container(border=True):
-                    # Marqueur HTML pour appliquer la même couleur que le tableau de gauche
-                    st.markdown("<span class='marker-global'></span>", unsafe_allow_html=True)
-                    
-                    # Alignement propre de hauteur
-                    st.markdown("<p style='margin-bottom: 12px; color: #cbd5e1; font-size: 14px;'>Comparatif global inter-établissements</p>", unsafe_allow_html=True)
-                    st.markdown("### 🌍 Base Générale <span style='color: #38bdf8;'>(Total Réseau)</span>", unsafe_allow_html=True)
-                    st.write("---")
-                    
-                    if total_global_emissions > 0:
-                        draw_custom_bar("❄️ Énergie & Bâtiments", total_energie_global, total_global_emissions, "#22c55e")
-                        with st.expander("Détails globaux du poste Énergie"):
-                            draw_custom_bar("• Électricité française", elec_global, total_energie_global, "#4ade80", is_sub=True)
-                            draw_custom_bar("• Gaz Naturel", gaz_global, total_energie_global, "#4ade80", is_sub=True)
-                            draw_custom_bar("• Fioul de chauffage", fioul_global, total_energie_global, "#4ade80", is_sub=True)
-
-                        draw_custom_bar("🍎 Alimentation & Cantine", total_alimentation_global, total_global_emissions, "#f97316")
-                        with st.expander("Détails globaux du poste Alimentation"):
-                            draw_custom_bar("• Repas avec Viande Rouge", rep_r_global, total_alimentation_global, "#fb923c", is_sub=True)
-                            draw_custom_bar("• Repas avec Poisson", rep_p_global, total_alimentation_global, "#fb923c", is_sub=True)
-                            draw_custom_bar("• Repas avec Viande Blanche", rep_b_global, total_alimentation_global, "#fb923c", is_sub=True)
-                            draw_custom_bar("• Repas Standard Moyen", rep_m_global, total_alimentation_global, "#fb923c", is_sub=True)
-                            draw_custom_bar("• Repas Végétarien", rep_v_global, total_alimentation_global, "#fb923c", is_sub=True)
-
-                        draw_custom_bar("🚌 Déplacements & Transports", total_transport_global, total_global_emissions, "#3b82f6")
-                        with st.expander("Détails globaux du poste Transports"):
-                            draw_custom_bar("• Trajets en Voiture thermique", voit_global, total_transport_global, "#60a5fa", is_sub=True)
-                            draw_custom_bar("• Autobus (sorties scolaires)", bus_s_global, total_transport_global, "#60a5fa", is_sub=True)
-                            draw_custom_bar("• Autobus (lignes régulières / ville)", bus_v_global, total_transport_global, "#60a5fa", is_sub=True)
-
-                        draw_custom_bar("📦 Biens, Consommables & Équipements", total_biens_global, total_global_emissions, "#a855f7")
-                        with st.expander("Détails globaux du poste Équipements & Consommables"):
-                            draw_custom_bar("• Photocopieurs (Empreinte de fabrication)", phot_global, total_biens_global, "#c084fc", is_sub=True)
-                            draw_custom_bar("• Ordinateurs portables / écrans plats", ordi_global, total_biens_global, "#c084fc", is_sub=True)
-                            draw_custom_bar("• Ramettes de papier consommées", pap_global, total_biens_global, "#c084fc", is_sub=True)
-                            draw_custom_bar("• Vidéoprojecteurs", vid_global, total_biens_global, "#c084fc", is_sub=True)
-                            draw_custom_bar("• Plastiques d'emballage", plas_global, total_biens_global, "#c084fc", is_sub=True)
-                            draw_custom_bar("• Imprimantes laser", imp_global, total_biens_global, "#c084fc", is_sub=True)
-                            draw_custom_bar("• Emballages Carton", cart_global, total_biens_global, "#c084fc", is_sub=True)
-
-                        draw_custom_bar("🗑️ Gestion des Déchets", total_dechets_global, total_global_emissions, "#6366f1")
-                        with st.expander("Détails globaux du poste Déchets"):
-                            draw_custom_bar("• Gaspillage alimentaire (restes de cantine)", dech_a_global, total_dechets_global, "#818cf8", is_sub=True)
-                            draw_custom_bar("• Déchets plastiques non recyclés", dech_pl_global, total_dechets_global, "#818cf8", is_sub=True)
-                            draw_custom_bar("• Déchets Papier jetés", dech_p_global, total_dechets_global, "#818cf8", is_sub=True)
-                    else:
-                        st.warning("Aucune donnée globale disponible pour l'ensemble du réseau.")
+                draw_custom_bar("🗑️ Gestion des Déchets", total_dechets, total_school_emissions, "#6366f1")
+                with st.expander("Détails du poste Déchets"):
+                    draw_custom_bar("• Gaspillage alimentaire (restes de cantine)", dech_a, total_dechets, "#818cf8", is_sub=True)
+                    draw_custom_bar("• Déchets plastiques non recyclés", dech_pl, total_dechets, "#818cf8", is_sub=True)
+                    draw_custom_bar("• Déchets Papier jetés", dech_p, total_dechets, "#818cf8", is_sub=True)
+            else:
+                st.warning("Cet établissement n'a pas encore de données carbone calculées.")
         else:
             st.info("Aucune donnée disponible pour l'analyse par établissement.")
 
