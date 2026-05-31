@@ -15,19 +15,29 @@ def set_style():
         
         /* Conteneur principal (Gris ardoise reposant) */
         .main .block-container {
-            background-color: #1e293b;
+            background-color: #161e2f;
             padding: 2rem 3rem !important;
             border-radius: 8px;
             color: #f1f5f9;
         }
         
-        /* --- STYLE DES CONTENEURS (CARTES DE COMPARAISON) --- */
-        div[data-testid="stVerticalBlockBorderWrapper"] {
-            background-color: #111827 !important; /* Fond sombre distinct pour séparer les deux tableaux */
-            border: 1px solid #334155 !important;
-            padding: 22px !important;
+        /* --- STYLE DES CONTENEURS SÉPARÉS (TRAVAIL SUR LES CONTRASTES) --- */
+        /* Conteneur de Gauche : Base Individuelle (Accentué et lumineux) */
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.marker-indiv) {
+            background-color: #1e293b !important; /* Fond plus clair */
+            border: 2px solid #38bdf8 !important; /* Bordure cyan vif pour l'interaction */
+            padding: 25px !important;
             border-radius: 12px !important;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 10px 20px -5px rgba(56, 189, 248, 0.15);
+        }
+        
+        /* Conteneur de Droite : Base Générale (Sombre et neutre) */
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.marker-global) {
+            background-color: #0b0f19 !important; /* Fond très sombre / noir mat */
+            border: 2px solid #475569 !important; /* Bordure grise discrète pour la référence */
+            padding: 25px !important;
+            border-radius: 12px !important;
+            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.5);
         }
         
         /* --- STYLE DES ONGLETS EN BOUTONS --- */
@@ -257,11 +267,13 @@ with tab_dashboard:
             # --- 2. SÉPARATION VISUELLE EN DEUX COLONNES ---
             col_gauche, col_droite = st.columns(2)
 
-            # --- CÔTÉ GAUCHE : BASE INDIVIDUELLE (AVEC FOND EN CAPSULÉ) ---
+            # --- CÔTÉ GAUCHE : BASE INDIVIDUELLE ---
             with col_gauche:
-                with st.container(border=True): # Le container applique le fond sombre personnalisé défini dans le CSS
+                with st.container(border=True): 
+                    # Injection du marqueur HTML pour cibler ce conteneur en CSS
+                    st.markdown("<span class='marker-indiv'></span>", unsafe_allow_html=True)
                     
-                    # Le selectbox est maintenant ICI : il reste confiné à la largeur de sa colonne
+                    # Le selectbox reste confiné strictement à la largeur du tableau individuel
                     selected_school = st.selectbox("Sélectionnez un établissement pour explorer ses statistiques :", df_active[col_etab].unique())
                     
                     # Extraction des données spécifiques
@@ -341,11 +353,13 @@ with tab_dashboard:
                     else:
                         st.warning("Cet établissement n'a pas encore de données carbone calculées.")
 
-            # --- CÔTÉ DROIT : BASE GÉNÉRALE (AVEC FOND EN CAPSULÉ ÉGALEMENT) ---
+            # --- CÔTÉ DROIT : BASE GÉNÉRALE ---
             with col_droite:
                 with st.container(border=True):
+                    # Injection du marqueur HTML pour cibler ce conteneur en CSS
+                    st.markdown("<span class='marker-global'></span>", unsafe_allow_html=True)
                     
-                    # Un sous-titre clair et un espace vide pour s'aligner visuellement sur la hauteur du selectbox de gauche
+                    # Alignement de hauteur avec le selectbox de gauche
                     st.markdown("<p style='margin-bottom: 12px; color: #cbd5e1; font-size: 14px;'>Comparatif global inter-établissements</p>", unsafe_allow_html=True)
                     st.markdown("### 🌍 Base Générale <span style='color: #38bdf8;'>(Total Réseau)</span>", unsafe_allow_html=True)
                     st.write("---")
