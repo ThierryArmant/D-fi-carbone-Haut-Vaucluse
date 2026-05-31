@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 # 1. CONFIGURATION DE LA PAGE
 st.set_page_config(page_title="Défi Carbone - Haut Vaucluse", page_icon="🌱", layout="wide")
 
-# 2. STYLE CSS (Mode Sombre / Reposant avec le style exact des Tuiles de la présentation)
+# 2. STYLE CSS (Mode Sombre / Reposant avec TOUS les onglets transformés en boutons modernes)
 def set_style():
     st.markdown(
         """
@@ -21,57 +21,66 @@ def set_style():
             color: #f1f5f9;
         }
         
-        /* --- STYLE DES ONGLETS EN BOUTONS --- */
+        /* --- 🎛️ COUPLAGE ET TRANSFORMATION DE TOUS LES ONGLETS EN BOUTONS --- */
+        /* Conteneur de la liste des onglets (Haut et Bas) */
         div[data-baseweb="tab-list"] {
-            gap: 12px;
-            background-color: transparent;
-            margin-bottom: 25px;
+            gap: 16px !important;
+            background-color: transparent !important;
+            margin-bottom: 30px !important;
         }
+        
+        /* Le bouton d'onglet par défaut (Style bouton moderne inactif) */
         div[data-baseweb="tab"] {
             background-color: #334155 !important;
             border-radius: 12px !important;
-            padding: 12px 24px !important;
+            padding: 14px 28px !important;
             color: #cbd5e1 !important;
             border: 1px solid #475569 !important;
             transition: all 0.3s ease !important;
             height: auto !important;
+            font-weight: bold !important;
         }
+        
+        /* Effet au survol des boutons */
         div[data-baseweb="tab"]:hover {
             background-color: #475569 !important;
             border-color: #38bdf8 !important;
             color: #ffffff !important;
-            cursor: pointer;
+            cursor: pointer !important;
         }
+        
+        /* Style du bouton sélectionné (Actif - Bleu cyan ultra-lisible) */
         div[data-baseweb="tab"][aria-selected="true"] {
             background-color: #38bdf8 !important;
-            color: #0f172a !important;
+            color: #0f172a !important; /* Texte noir pour un contraste maximal */
             border-color: #38bdf8 !important;
             font-weight: bold !important;
-            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4) !important;
         }
-        div[role="tabpanel"] { border: none !important; }
+        
+        /* Nettoyage RADICAL des lignes rouges et bordures par défaut de Streamlit */
         div[data-baseweb="tab-border"] { display: none !important; }
+        div[role="tabpanel"] { border: none !important; }
+        .stTabs [data-baseweb="tab-border"] { display: none !important; }
         
-        /* --- 💎 COULEURS DE LA PRÉSENTATION APPLIQUÉES AUX TABLEAUX --- */
-        /* Force le ciblage des blocs verticaux de Streamlit pour appliquer les styles */
-        div[data-testid*="VerticalBlock"]:has(.card-mid-left),
-        div[data-testid*="stBorderedContainer"]:has(.card-mid-left),
-        div[class*="stVerticalBlockBordered"]:has(.card-mid-left) {
-            background-color: #334155 !important; /* Le fond gris des diapos */
-            border: 2px solid #38bdf8 !important; /* Contour Cyan Lumineux */
-            padding: 25px !important;
-            border-radius: 20px !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5) !important;
+        /* --- 💎 DESIGN DES BLOCS EN RELIEF ET À TRÈS FORT CONTRASTE --- */
+        div[data-testid="stBorderedContainer"] {
+            border-radius: 16px !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4) !important;
         }
         
-        div[data-testid*="VerticalBlock"]:has(.card-mid-right),
-        div[data-testid*="stBorderedContainer"]:has(.card-mid-right),
-        div[class*="stVerticalBlockBordered"]:has(.card-mid-right) {
-            background-color: #243042 !important; /* Couleur sombre contrastée pour dissocier */
-            border: 2px solid #475569 !important; /* Contour Acier Mat */
+        /* Table de Gauche (Établissement sélectionné) : Fond bleu-gris distinct + Contour Cyan Pop */
+        div[data-testid="stBorderedContainer"]:has(.card-mid-left) {
+            background-color: #233044 !important;
+            border: 2px solid #38bdf8 !important;
             padding: 25px !important;
-            border-radius: 20px !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5) !important;
+        }
+        
+        /* Table de Droite (Cumul global du réseau) : Fond anthracite sombre distinct + Contour Acier Muted */
+        div[data-testid="stBorderedContainer"]:has(.card-mid-right) {
+            background-color: #141c29 !important;
+            border: 2px solid #475569 !important;
+            padding: 25px !important;
         }
         
         /* Titres des sections */
@@ -87,8 +96,8 @@ def set_style():
         /* Styles des barres de progression */
         .pole-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1em; margin-bottom: 5px; margin-top: 5px; color: #f1f5f9; }
         .sub-pole-header { display: flex; justify-content: space-between; font-size: 0.95em; color: #cbd5e1; margin-bottom: 3px; margin-top: 8px; }
-        .bar-container { background-color: #1e293b; border-radius: 6px; height: 16px; width: 100%; margin-bottom: 15px; overflow: hidden; border: 1px solid #475569; }
-        .sub-bar-container { background-color: #0f172a; border-radius: 4px; height: 10px; width: 100%; margin-bottom: 10px; overflow: hidden; }
+        .bar-container { background-color: #475569; border-radius: 6px; height: 16px; width: 100%; margin-bottom: 15px; overflow: hidden; }
+        .sub-bar-container { background-color: #334155; border-radius: 4px; height: 10px; width: 100%; margin-bottom: 10px; overflow: hidden; }
         </style>
         """,
         unsafe_allow_html=True
@@ -139,10 +148,12 @@ if not df.empty:
     df.columns = [str(c).replace('\xa0', ' ').replace('\n', ' ').strip() for c in df.columns]
     df.columns = [" ".join(c.split()) for c in df.columns]
 
-# 5. NAVIGATION PAR ONGLETS PRINCIPAUX
+# 5. NAVIGATION PAR ONGLETS PRINCIPAUX (Ils vont prendre le style bouton automatiquement)
 tab_dashboard, tab_glossaire = st.tabs(["📊 Tableau de Bord", "📖 Référentiel consommations carbone (5 Pôles)"])
 
-# --- ONGLET DASHBOARD ---
+# ==========================================
+# ---          ONGLET DASHBOARD          ---
+# ==========================================
 with tab_dashboard:
     if not df.empty:
         col_etab = "Etablissements" if "Etablissements" in df.columns else df.columns[0]
@@ -191,19 +202,17 @@ with tab_dashboard:
         
         st.divider()
 
-        # --- 2️⃣ BLOC DU MILIEU : DOUBLE TUILLE EN FACE-À-FACE ---
+        # --- 2️⃣ BLOC DU MILIEU : DOUBLE BOÎTE ÉTANCHE EN FACE-À-FACE ---
         st.markdown('<h2 style="text-align: center; color: #38bdf8; margin-bottom: 25px;">🔍 Analyse Comparative des Pôles de Consommation</h2>', unsafe_allow_html=True)
         
         if not df_active.empty:
             col_mid1, col_mid2 = st.columns([1, 1])
             
-            # --- 🅰️ TABLEAU GAUCHE EN TUILE TYPE SLIDES (INDIVIDUEL) ---
+            # --- 🅰️ TABLEAU GAUCHE EN CAPSULE CYAN (INDIVIDUEL) ---
             with col_mid1:
                 with st.container(border=True):
-                    # Injection du marqueur de détection CSS
                     st.markdown('<div class="card-mid-left"></div>', unsafe_allow_html=True)
                     
-                    # Sélection confinée à la colonne gauche
                     selected_school = st.selectbox("Sélectionnez votre établissement :", df_active[col_etab].unique(), key="left_school_selector")
                     st.markdown(f'<p class="inner-title" style="color: #ffffff; text-align: left; margin-top: 15px; margin-bottom: 20px;">🏫 Détail : {selected_school}</p>', unsafe_allow_html=True)
                     
@@ -242,15 +251,15 @@ with tab_dashboard:
                         d_pl = school_data.get("Déchets plastique", 0)
                         sch_dechets = d_p + d_a + d_pl
 
-                        # Rendu des barres
+                        # Affichage des barres
                         draw_custom_bar("❄️ Énergie & Bâtiments", sch_energie, tot_sch, "#22c55e")
-                        with st.expander("Détails Énergie"):
+                        with st.expander("Détails Énergie de l'établissement"):
                             draw_custom_bar("• Électricité française", e_elec, sch_energie, "#4ade80", is_sub=True)
                             draw_custom_bar("• Gaz Naturel", e_gaz, sch_energie, "#4ade80", is_sub=True)
                             draw_custom_bar("• Fioul de chauffage", e_fioul, sch_energie, "#4ade80", is_sub=True)
 
                         draw_custom_bar("🍎 Alimentation & Cantine", sch_alimentation, tot_sch, "#f97316")
-                        with st.expander("Détails Restauration"):
+                        with st.expander("Détails Restauration de l'établissement"):
                             draw_custom_bar("• Repas Viande Rouge", a_r, sch_alimentation, "#fb923c", is_sub=True)
                             draw_custom_bar("• Repas Poisson", a_p, sch_alimentation, "#fb923c", is_sub=True)
                             draw_custom_bar("• Repas Viande Blanche", a_b, sch_alimentation, "#fb923c", is_sub=True)
@@ -258,27 +267,26 @@ with tab_dashboard:
                             draw_custom_bar("• Repas Végétarien", a_v, sch_alimentation, "#fb923c", is_sub=True)
 
                         draw_custom_bar("🚌 Déplacements & Transports", sch_transport, tot_sch, "#3b82f6")
-                        with st.expander("Détails Transports"):
+                        with st.expander("Détails Transports de l'établissement"):
                             draw_custom_bar("• Voiture thermique individuelle", t_voit, sch_transport, "#60a5fa", is_sub=True)
                             draw_custom_bar("• Autobus / Autocar (sorties)", t_bus_s, sch_transport, "#60a5fa", is_sub=True)
 
                         draw_custom_bar("📦 Biens, Consommables & Équipements", sch_biens, tot_sch, "#a855f7")
-                        with st.expander("Détails Équipements"):
+                        with st.expander("Détails Équipements de l'établissement"):
                             draw_custom_bar("• Photocopieurs d'établissement", b_phot, sch_biens, "#c084fc", is_sub=True)
                             draw_custom_bar("• Ordinateurs & Écrans", b_ord, sch_biens, "#c084fc", is_sub=True)
                             draw_custom_bar("• Ramettes de papier", b_pap, sch_biens, "#c084fc", is_sub=True)
 
                         draw_custom_bar("🗑️ Gestion des Déchets", sch_dechets, tot_sch, "#6366f1")
-                        with st.expander("Détails Déchets"):
+                        with st.expander("Détails Déchets de l'établissement"):
                             draw_custom_bar("• Gaspillage assiette cantine", d_a, sch_dechets, "#818cf8", is_sub=True)
                             draw_custom_bar("• Déchets plastiques jetés", d_pl, sch_dechets, "#818cf8", is_sub=True)
                     else:
-                        st.warning("Cet établissement n'a pas encore de données.")
+                        st.warning("Cet établissement n'a pas encore de données carbone calculées.")
 
-            # --- 🆂 TABLEAU DROIT EN TUILE SOMBRE CONTRASTÉE (CUMULÉ RÉSEAU) ---
+            # --- 🆂 TABLEAU DROIT EN CAPSULE ACIER (CUMULÉ RÉSEAU) ---
             with col_mid2:
                 with st.container(border=True):
-                    # Injection du marqueur de détection opposé
                     st.markdown('<div class="card-mid-right"></div>', unsafe_allow_html=True)
                     st.markdown('<p class="inner-title" style="color: #38bdf8; text-align: left; margin-bottom: 58px;">🌍 Global : Secteurs d\'impact du Réseau</p>', unsafe_allow_html=True)
                     
@@ -322,7 +330,7 @@ with tab_dashboard:
                         net_d_pl = safe_sum("Déchets plastique")
                         net_dechets = net_d_p + net_d_a + net_d_pl
 
-                        # Barres cumulatives globales du réseau
+                        # Barres cumulatives globales
                         draw_custom_bar("❄️ Énergie & Bâtiments (Total Réseau)", net_energie, tot_net, "#22c55e")
                         with st.expander("Détails Énergie du Réseau"):
                             draw_custom_bar("• Électricité globale", net_elec, net_energie, "#4ade80", is_sub=True)
@@ -358,7 +366,7 @@ with tab_dashboard:
         st.markdown('<p class="inner-title">📋 Synthèse Globale des Établissements (Données Centralisées)</p>', unsafe_allow_html=True)
         st.dataframe(df, hide_index=True, width="stretch")
 
-# --- ONGLET GLOSSAIRE ---
+# --- ONGLET GLOSSAIRE (Version Spéciale Élèves / Vie Quotidienne) ---
 with tab_glossaire:
     st.markdown("<h2 style='color: #38bdf8; text-align: center;'>📖 Traducteur Carbone : Ça représente quoi dans ma vie ?</h2>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; color: #cbd5e1;'>Parce que les 'kg de CO2' c'est abstrait, voici ce que nos consommations représentent en objets ou activités de ton quotidien !</p>", unsafe_allow_html=True)
