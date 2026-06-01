@@ -1,4 +1,4 @@
-import streamlit st
+import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
@@ -198,7 +198,7 @@ with tab_dashboard:
         
         st.divider()
 
-        # --- 2️⃣ BLOC DU MILIEU : DOUBLE TUILE COMPACTE ---
+        # --- 2️⃣ BLOC DU MILIEU : DOUBLE TUILE COMPACTE EN FILTRAGE ÉTANCHE ---
         st.markdown('<h2 style="text-align: center; color: #38bdf8;">🔍 Analyse Comparative des Pôles</h2>', unsafe_allow_html=True)
         
         if not df_active.empty:
@@ -434,7 +434,7 @@ with tab_glossaire:
         <div class="anecdote">
         <b>💡 3 Comparaisons Chocs pour les élèves :</b><br>
         1. 🍔 <b>Le crash du Burger :</b> Jeter seulement 2 kg de nourriture à la poubelle de la cantine pollue autant que de fabriquer <b>un double cheeseburger au bœuf entier jeté direct à la benne</b> !<br>
-        2. ✂️ <b>Le sweat de marque coupé :</b> Gaspiller 5 kg de nourriture sur une semaine, c'est comme acheter <b>un sweat neuf</b> pour le découper en morceaux sans jamais l'avoir porté.<br>
+        2. ✂️ <b>Le sweat de marque coupé :</b> Gaspiller 5 kg de nourriture sur une semaine, c'est comme acheter <b>un sweat neuf</b> pour le couper en morceaux sans jamais l'avoir porté.<br>
         3. 🛴 <b>Le raid gâché :</b> Jeter son plateau repas complet sans y toucher, c'est gaspiller l'équivalent carbone d'un voyage de <b>40 km en trottinette électrique</b>.
         </div>
         """, unsafe_allow_html=True)
