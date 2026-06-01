@@ -86,8 +86,8 @@ def set_style():
         h2 { font-size: 18px !important; margin-top: 4px !important; margin-bottom: 8px !important; }
         [data-testid="stHeader"] { height: 0px; }
         
-        /* Blocs anecdotes et méthodologies */
-        .anecdote { background-color: #1e3a8a; padding: 10px 14px; border-left: 4px solid #3b82f6; border-radius: 4px; margin: 6px 0; color: #eff6ff; font-size: 13px; }
+        /* Blocs anecdotes et méthodologies style présentation */
+        .anecdote { background-color: #1e3a8a; padding: 12px 16px; border-left: 5px solid #3b82f6; border-radius: 6px; margin: 8px 0; color: #eff6ff; font-size: 13.5px; }
         .methode { background-color: #14532d; padding: 8px 12px; border-left: 4px solid #22c55e; border-radius: 4px; font-size: 12px; margin-top: 6px; color: #f0fdf4; }
         
         /* Barres de progression d'émissions affinées */
@@ -434,7 +434,7 @@ with tab_glossaire:
         <div class="anecdote">
         <b>💡 3 Comparaisons Chocs pour les élèves :</b><br>
         1. 🍔 <b>Le crash du Burger :</b> Jeter seulement 2 kg de nourriture à la poubelle de la cantine pollue autant que de fabriquer <b>un double cheeseburger au bœuf entier jeté direct à la benne</b> !<br>
-        2. ✂️ <b>Le sweat de marque coupé :</b> Gaspiller 5 kg de nourriture sur une semaine, c'est comme acheter <b>un sweat neuf</b> pour le couper en morceaux sans jamais l'avoir porté.<br>
+        2. ✂️ <b>Le sweat de marque coupé :</b> Gaspiller 5 kg de nourriture sur une semaine, c'est comme acheter <b>un sweat neuf</b> pour le découper en morceaux sans jamais l'avoir porté.<br>
         3. 🛴 <b>Le raid gâché :</b> Jeter son plateau repas complet sans y toucher, c'est gaspiller l'équivalent carbone d'un voyage de <b>40 km en trottinette électrique</b>.
         </div>
         """, unsafe_allow_html=True)
