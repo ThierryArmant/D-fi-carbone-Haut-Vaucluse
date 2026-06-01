@@ -160,7 +160,7 @@ with tab_dashboard:
         col_eff = "Effectif total" if "Effectif total" in df.columns else df.columns[1]
         col_conso = "conso carbone par personne" if "conso carbone par personne" in df.columns else df.columns[8]
 
-        # Conversion numérique
+        # Conversion numérique sécurisée
         cols_to_convert = [c for c in df.columns if c != col_etab]
         for col in cols_to_convert:
             df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
@@ -198,13 +198,13 @@ with tab_dashboard:
         
         st.divider()
 
-        # --- 2️⃣ BLOC DU MILIEU : DOUBLE TUILE COMPACTE EN FILTRAGE ÉTANCHE ---
+        # --- 2️⃣ BLOC DU MILIEU : DOUBLE TUILE EN FACE-À-FACE COMPLÈTE ---
         st.markdown('<h2 style="text-align: center; color: #38bdf8;">🔍 Analyse Comparative des Pôles</h2>', unsafe_allow_html=True)
         
         if not df_active.empty:
             col_mid1, col_mid2 = st.columns([1, 1])
             
-            # --- 🅰️ TABLEAU GAUCHE (INDIVIDUEL) ---
+            # --- 🅰️ TABLEAU GAUCHE : ÉTABLISSEMENT UNIQUE AVEC CLÉS EXACTES ---
             with col_mid1:
                 with st.container():
                     st.markdown('<div class="card-mid-left"></div>', unsafe_allow_html=True)
@@ -215,6 +215,7 @@ with tab_dashboard:
                     tot_sch = school_data[col_total]
                     
                     if tot_sch > 0:
+                        # Rétablissement des pointeurs de colonnes exacts du Sheets
                         e_elec = school_data.get("Electricité française", 0)
                         e_fioul = school_data.get("Fioul", 0)
                         e_gaz = school_data.get("Gaz Naturel", 0)
@@ -246,6 +247,7 @@ with tab_dashboard:
                         d_pl = school_data.get("Déchets plastique", 0)
                         sch_dechets = d_p + d_a + d_pl
 
+                        # Affichage des barres
                         draw_custom_bar("❄️ Énergie & Bâtiments", sch_energie, tot_sch, "#22c55e")
                         with st.expander("Détails Énergie"):
                             draw_custom_bar("• Électricité française", e_elec, sch_energie, "#4ade80", is_sub=True)
@@ -262,23 +264,25 @@ with tab_dashboard:
 
                         draw_custom_bar("🚌 Déplacements & Transports", sch_transport, tot_sch, "#3b82f6")
                         with st.expander("Détails Transports"):
-                            draw_custom_bar("• Voiture individuelle", t_voit, sch_transport, "#60a5fa", is_sub=True)
-                            draw_custom_bar("• Bus / Autocar (sorties)", t_bus_s, sch_transport, "#60a5fa", is_sub=True)
+                            draw_custom_bar("• Voiture à essence", t_voit, sch_transport, "#60a5fa", is_sub=True)
+                            draw_custom_bar("• Autobus (sortie scolaire)", t_bus_s, sch_transport, "#60a5fa", is_sub=True)
+                            draw_custom_bar("• Autobus (ville)", t_bus_v, sch_transport, "#60a5fa", is_sub=True)
 
                         draw_custom_bar("📦 Biens, Consommables & Équipements", sch_biens, tot_sch, "#a855f7")
                         with st.expander("Détails Équipements"):
                             draw_custom_bar("• Photocopieurs (Fab)", b_phot, sch_biens, "#c084fc", is_sub=True)
-                            draw_custom_bar("• Ordinateurs & Écrans", b_ord, sch_biens, "#c084fc", is_sub=True)
-                            draw_custom_bar("• Ramettes de papier", b_pap, sch_biens, "#c084fc", is_sub=True)
+                            draw_custom_bar("• Ordinateur à écran plat", b_ord, sch_biens, "#c084fc", is_sub=True)
+                            draw_custom_bar("• Papier", b_pap, sch_biens, "#c084fc", is_sub=True)
 
                         draw_custom_bar("🗑️ Gestion des Déchets", sch_dechets, tot_sch, "#6366f1")
                         with st.expander("Détails Déchets"):
-                            draw_custom_bar("• Gaspillage cantine", d_a, sch_dechets, "#818cf8", is_sub=True)
-                            draw_custom_bar("• Déchets plastiques", d_pl, sch_dechets, "#818cf8", is_sub=True)
+                            draw_custom_bar("• Déchets alimentaire", d_a, sch_dechets, "#818cf8", is_sub=True)
+                            draw_custom_bar("• Déchets plastique", d_pl, sch_dechets, "#818cf8", is_sub=True)
+                            draw_custom_bar("• Déchets Papier", d_p, sch_dechets, "#818cf8", is_sub=True)
                     else:
                         st.warning("Cet établissement n'a pas encore de données.")
 
-            # --- 🆂 TABLEAU DROIT (CUMULÉ) ---
+            # --- 🆂 TABLEAU DROIT : CUMUL GLOBLAL SANS COUPE DE CLÉS ---
             with col_mid2:
                 with st.container():
                     st.markdown('<div class="card-mid-right"></div>', unsafe_allow_html=True)
@@ -324,9 +328,10 @@ with tab_dashboard:
                         net_d_pl = safe_sum("Déchets plastique")
                         net_dechets = net_d_p + net_d_a + net_d_pl
 
+                        # Rendu des barres cumulatives
                         draw_custom_bar("❄️ Énergie & Bâtiments (Total Réseau)", net_energie, tot_net, "#22c55e")
                         with st.expander("Détails Énergie (Réseau)"):
-                            draw_custom_bar("• Électricité globale", net_elec, net_energie, "#4ade80", is_sub=True)
+                            draw_custom_bar("• Électricité française totale", net_elec, net_energie, "#4ade80", is_sub=True)
                             draw_custom_bar("• Gaz Naturel global", net_gaz, net_energie, "#4ade80", is_sub=True)
                             draw_custom_bar("• Fioul global", net_fioul, net_energie, "#4ade80", is_sub=True)
 
@@ -334,21 +339,27 @@ with tab_dashboard:
                         with st.expander("Détails Restauration (Réseau)"):
                             draw_custom_bar("• Viande Rouge cumulée", net_a_r, net_alimentation, "#fb923c", is_sub=True)
                             draw_custom_bar("• Poisson cumulé", net_a_p, net_alimentation, "#fb923c", is_sub=True)
+                            draw_custom_bar("• Viande Blanche cumulée", net_a_b, net_alimentation, "#fb923c", is_sub=True)
+                            draw_custom_bar("• Repas Standard Moyen global", net_a_m, net_alimentation, "#fb923c", is_sub=True)
+                            draw_custom_bar("• Repas Végétarien global", net_a_v, net_alimentation, "#fb923c", is_sub=True)
 
                         draw_custom_bar("🚌 Déplacements & Transports (Total Réseau)", net_transport, tot_net, "#3b82f6")
                         with st.expander("Détails Transports (Réseau)"):
-                            draw_custom_bar("• Voitures particulières", net_t_voit, net_transport, "#60a5fa", is_sub=True)
-                            draw_custom_bar("• Bus et cars scolaires", net_t_bus_s, net_transport, "#60a5fa", is_sub=True)
+                            draw_custom_bar("• Voiture à essence", net_t_voit, net_transport, "#60a5fa", is_sub=True)
+                            draw_custom_bar("• Autobus (sortie scolaire)", net_t_bus_s, net_transport, "#60a5fa", is_sub=True)
+                            draw_custom_bar("• Autobus (ville)", net_t_bus_v, net_transport, "#60a5fa", is_sub=True)
 
                         draw_custom_bar("📦 Biens & Équipements (Total Réseau)", net_biens, tot_net, "#a855f7")
                         with st.expander("Détails Équipements (Réseau)"):
                             draw_custom_bar("• Fabrication Photocopieurs", net_b_phot, net_biens, "#c084fc", is_sub=True)
-                            draw_custom_bar("• Total Ordinateurs", net_b_ord, net_biens, "#c084fc", is_sub=True)
+                            draw_custom_bar("• Total Ordinateur à écran plat", net_b_ord, net_biens, "#c084fc", is_sub=True)
+                            draw_custom_bar("• Total Papier", net_b_pap, net_biens, "#c084fc", is_sub=True)
 
                         draw_custom_bar("🗑️ Gestion des Déchets (Total Réseau)", net_dechets, tot_net, "#6366f1")
                         with st.expander("Détails Déchets (Réseau)"):
-                            draw_custom_bar("• Restes alimentaires", net_d_a, net_dechets, "#818cf8", is_sub=True)
-                            draw_custom_bar("• Plastiques non recyclés", net_d_pl, net_dechets, "#818cf8", is_sub=True)
+                            draw_custom_bar("• Déchets alimentaire", net_d_a, net_dechets, "#818cf8", is_sub=True)
+                            draw_custom_bar("• Déchets plastique", net_d_pl, net_dechets, "#818cf8", is_sub=True)
+                            draw_custom_bar("• Déchets Papier global", net_d_p, net_dechets, "#818cf8", is_sub=True)
 
         st.divider()
         st.markdown('<p class="inner-title">📋 Synthèse Globale des Établissements</p>', unsafe_allow_html=True)
@@ -372,7 +383,6 @@ with tab_glossaire:
         • <b>Repas Végétarien :</b> 0.50 kg CO2e / repas
         </div>
         """, unsafe_allow_html=True)
-        
         st.markdown("""
         <div class="anecdote">
         <b>💡 3 Comparaisons Chocs pour les élèves :</b><br>
@@ -391,7 +401,6 @@ with tab_glossaire:
         • <b>Fioul de chauffage :</b> 0.32 kg CO2e / kWh
         </div>
         """, unsafe_allow_html=True)
-        
         st.markdown("""
         <div class="anecdote">
         <b>💡 3 Comparaisons Chocs pour les élèves :</b><br>
@@ -410,7 +419,6 @@ with tab_glossaire:
         • <b>Autocar Scolaire (Rempli) :</b> Impact divisé par 50 (Ultra-faible)
         </div>
         """, unsafe_allow_html=True)
-        
         st.markdown("""
         <div class="anecdote">
         <b>💡 3 Comparaisons Chocs pour les élèves :</b><br>
@@ -429,12 +437,11 @@ with tab_glossaire:
         • <b>Plastiques et emballages associés :</b> 0.87 kg CO2e / kg jeté
         </div>
         """, unsafe_allow_html=True)
-        
         st.markdown("""
         <div class="anecdote">
         <b>💡 3 Comparaisons Chocs pour les élèves :</b><br>
         1. 🍔 <b>Le crash du Burger :</b> Jeter seulement 2 kg de nourriture à la poubelle de la cantine pollue autant que de fabriquer <b>un double cheeseburger au bœuf entier jeté direct à la benne</b> !<br>
-        2. ✂️ <b>Le sweat de marque coupé :</b> Gaspiller 5 kg de nourriture sur une semaine, c'est comme acheter <b>un sweat neuf</b> pour le découper en morceaux sans jamais l'avoir porté.<br>
+        2. ✂️ <b>Le sweat de marque coupé :</b> Gaspiller 5 kg de nourriture sur une semaine, c'est comme acheter <b>un sweat neuf</b> pour le couper en morceaux sans jamais l'avoir porté.<br>
         3. 🛴 <b>Le raid gâché :</b> Jeter son plateau repas complet sans y toucher, c'est gaspiller l'équivalent carbone d'un voyage de <b>40 km en trottinette électrique</b>.
         </div>
         """, unsafe_allow_html=True)
@@ -449,7 +456,6 @@ with tab_glossaire:
         • <b>Rame de papier A4 (Impact de production) :</b> 0.91 kg CO2e / kg
         </div>
         """, unsafe_allow_html=True)
-        
         st.markdown("""
         <div class="anecdote">
         <b>💡 3 Comparaisons Chocs pour les élèves :</b><br>
