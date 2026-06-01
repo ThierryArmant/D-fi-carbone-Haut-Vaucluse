@@ -61,23 +61,19 @@ def set_style():
             font-size: 14px !important;
         }
         
-        /* --- 💎 CELLULES EN RELIEF AVEC BORDURES DE COULEURS DISTINCTES --- */
-        div[data-testid*="column"]:has(.card-mid-left),
-        div[class*="stVerticalBlock"]:has(.card-mid-left) {
-            background-color: #1e293b !important;
+        /* --- 💎 CELLULES EN RELIEF STYLE DIAPOSITIVES AVEC BORDURES DISTINCTES --- */
+        div[data-testid="stBorderedContainer"]:has(.card-mid-left) {
+            background-color: #233044 !important; /* Fond gris bleuté */
             border: 2px solid #22d3ee !important; /* Cadre Turquoise */
             padding: 14px 18px !important;
             border-radius: 12px !important;
-            box-shadow: 0 15px 20px -5px rgba(0, 0, 0, 0.5) !important;
         }
         
-        div[data-testid*="column"]:has(.card-mid-right),
-        div[class*="stVerticalBlock"]:has(.card-mid-right) {
-            background-color: #111827 !important;
+        div[data-testid="stBorderedContainer"]:has(.card-mid-right) {
+            background-color: #141c29 !important; /* Fond anthracite sombre */
             border: 2px solid #475569 !important; /* Cadre Acier Mat */
             padding: 14px 18px !important;
             border-radius: 12px !important;
-            box-shadow: 0 15px 20px -5px rgba(0, 0, 0, 0.5) !important;
         }
         
         /* Ajustements généraux des en-têtes */
@@ -86,7 +82,7 @@ def set_style():
         h2 { font-size: 18px !important; margin-top: 4px !important; margin-bottom: 8px !important; }
         [data-testid="stHeader"] { height: 0px; }
         
-        /* Blocs anecdotes et méthodologies */
+        /* Blocs anecdotes et méthodologies style présentation */
         .anecdote { background-color: #1e3a8a; padding: 10px 14px; border-left: 4px solid #3b82f6; border-radius: 4px; margin: 6px 0; color: #eff6ff; font-size: 13px; }
         .methode { background-color: #14532d; padding: 8px 12px; border-left: 4px solid #22c55e; border-radius: 4px; font-size: 12px; margin-top: 6px; color: #f0fdf4; }
         
@@ -160,7 +156,7 @@ with tab_dashboard:
         col_eff = "Effectif total" if "Effectif total" in df.columns else df.columns[1]
         col_conso = "conso carbone par personne" if "conso carbone par personne" in df.columns else df.columns[8]
 
-        # Conversion numérique sécurisée
+        # Conversion numérique globale
         cols_to_convert = [c for c in df.columns if c != col_etab]
         for col in cols_to_convert:
             df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
@@ -198,15 +194,15 @@ with tab_dashboard:
         
         st.divider()
 
-        # --- 2️⃣ BLOC DU MILIEU : DOUBLE TUILE EN FACE-À-FACE COMPLÈTE ---
+        # --- 2️⃣ BLOC DU MILIEU : DOUBLE TUILE COMPACTE RESTAURÉE ---
         st.markdown('<h2 style="text-align: center; color: #38bdf8;">🔍 Analyse Comparative des Pôles</h2>', unsafe_allow_html=True)
         
         if not df_active.empty:
             col_mid1, col_mid2 = st.columns([1, 1])
             
-            # --- 🅰️ TABLEAU GAUCHE : ÉTABLISSEMENT UNIQUE AVEC CLÉS EXACTES ---
+            # --- 🅰️ TABLEAU GAUCHE (INDIVIDUEL AVEC DONNÉES COMPLÈTES) ---
             with col_mid1:
-                with st.container():
+                with st.container(border=True):
                     st.markdown('<div class="card-mid-left"></div>', unsafe_allow_html=True)
                     selected_school = st.selectbox("Établissement audité :", df_active[col_etab].unique(), key="left_school_selector")
                     st.markdown(f'<p class="inner-title" style="color: #22d3ee; text-align: left; margin-top: 5px; margin-bottom: 10px; font-size: 18px; font-weight: bold;">🏫 Établissement Audité : {selected_school}</p>', unsafe_allow_html=True)
@@ -215,7 +211,6 @@ with tab_dashboard:
                     tot_sch = school_data[col_total]
                     
                     if tot_sch > 0:
-                        # Rétablissement des pointeurs de colonnes exacts du Sheets
                         e_elec = school_data.get("Electricité française", 0)
                         e_fioul = school_data.get("Fioul", 0)
                         e_gaz = school_data.get("Gaz Naturel", 0)
@@ -247,7 +242,6 @@ with tab_dashboard:
                         d_pl = school_data.get("Déchets plastique", 0)
                         sch_dechets = d_p + d_a + d_pl
 
-                        # Affichage des barres
                         draw_custom_bar("❄️ Énergie & Bâtiments", sch_energie, tot_sch, "#22c55e")
                         with st.expander("Détails Énergie"):
                             draw_custom_bar("• Électricité française", e_elec, sch_energie, "#4ade80", is_sub=True)
@@ -282,9 +276,9 @@ with tab_dashboard:
                     else:
                         st.warning("Cet établissement n'a pas encore de données.")
 
-            # --- 🆂 TABLEAU DROIT : CUMUL GLOBLAL SANS COUPE DE CLÉS ---
+            # --- 🆂 TABLEAU DROIT (CUMULÉ) ---
             with col_mid2:
-                with st.container():
+                with st.container(border=True):
                     st.markdown('<div class="card-mid-right"></div>', unsafe_allow_html=True)
                     st.markdown('<p class="inner-title" style="color: #cbd5e1; text-align: left; margin-bottom: 45px; font-size: 18px; font-weight: bold;">🌍 Global : Secteurs d\'impact du Réseau</p>', unsafe_allow_html=True)
                     
@@ -328,7 +322,6 @@ with tab_dashboard:
                         net_d_pl = safe_sum("Déchets plastique")
                         net_dechets = net_d_p + net_d_a + net_d_pl
 
-                        # Rendu des barres cumulatives
                         draw_custom_bar("❄️ Énergie & Bâtiments (Total Réseau)", net_energie, tot_net, "#22c55e")
                         with st.expander("Détails Énergie (Réseau)"):
                             draw_custom_bar("• Électricité française totale", net_elec, net_energie, "#4ade80", is_sub=True)
@@ -412,58 +405,4 @@ with tab_glossaire:
 
     with g_tabs[2]:
         st.subheader("🚌 Référentiel carbone (ADEME)")
-        st.markdown("""
-        <div class="unit-box">
-        • <b>Voiture thermique (Moyenne) :</b> 0.26 kg CO2e / km<br>
-        • <b>Autobus de ville :</b> 0.18 kg CO2e / passager.km<br>
-        • <b>Autocar Scolaire (Rempli) :</b> Impact divisé par 50 (Ultra-faible)
-        </div>
-        """, unsafe_allow_html=True)
-        st.markdown("""
-        <div class="anecdote">
-        <b>💡 3 Comparaisons Chocs pour les élèves :</b><br>
-        1. 💬 <b>L'usine à Snaps :</b> Faire un court trajet de 4 km en voiture pour venir au collège émet autant de CO2 que d'envoyer <b>250 Snaps vidéo</b>.<br>
-        2. 🧴 <b>Les bouteilles plastique :</b> Ces mêmes 4 km en voiture polluent autant que la fabrication de <b>15 bouteilles en plastique</b> d'un litre et demi.<br>
-        3. 🚌 <b>Le super-pouvoir du car :</b> Partager un bus à 50 camarades divise ton impact par 4. Ta part devient aussi légère que si tu venais en <b>trottinette électrique</b> !
-        </div>
-        """, unsafe_allow_html=True)
-
-    with g_tabs[3]:
-        st.subheader("🗑️ Référentiel carbone (ADEME)")
-        st.markdown("""
-        <div class="unit-box">
-        • <b>Gaspillage alimentaire (Assiette globale) :</b> 1.20 kg CO2e / kg jeté<br>
-        • <b>Gaspillage du Pain :</b> 0.63 kg CO2e / kg jeté<br>
-        • <b>Plastiques et emballages associés :</b> 0.87 kg CO2e / kg jeté
-        </div>
-        """, unsafe_allow_html=True)
-        st.markdown("""
-        <div class="anecdote">
-        <b>💡 3 Comparaisons Chocs pour les élèves :</b><br>
-        1. 🍔 <b>Le crash du Burger :</b> Jeter seulement 2 kg de nourriture à la poubelle de la cantine pollue autant que de fabriquer <b>un double cheeseburger au bœuf entier jeté direct à la benne</b> !<br>
-        2. ✂️ <b>Le sweat de marque coupé :</b> Gaspiller 5 kg de nourriture sur une semaine, c'est comme acheter <b>un sweat neuf</b> pour le couper en morceaux sans jamais l'avoir porté.<br>
-        3. 🛴 <b>Le raid gâché :</b> Jeter son plateau repas complet sans y toucher, c'est gaspiller l'équivalent carbone d'un voyage de <b>40 km en trottinette électrique</b>.
-        </div>
-        """, unsafe_allow_html=True)
-
-    with g_tabs[4]:
-        st.subheader("📦 Référentiel carbone - Énergie Grise (ADEME)")
-        st.markdown("""
-        <div class="unit-box">
-        • <b>Photocopieur d'établissement (Fabrication) :</b> 2 935 kg CO2e<br>
-        • <b>Grand Écran Plat de classe :</b> 1 283 kg CO2e<br>
-        • <b>Ordinateur Portable d'élève :</b> 161 kg CO2e<br>
-        • <b>Rame de papier A4 (Impact de production) :</b> 0.91 kg CO2e / kg
-        </div>
-        """, unsafe_allow_html=True)
-        st.markdown("""
-        <div class="anecdote">
-        <b>💡 3 Comparaisons Chocs pour les élèves :</b><br>
-        1. 👖 <b>Le placard de Jeans :</b> Fabriquer un seul ordinateur portable (161 kg) rejette autant de CO2 que de fabriquer <b>7 paires de jeans neufs</b>.<br>
-        2. 🛵 <b>Le tour de France en scooter :</b> Acheter un grand écran plat de salle pollue autant à la fabrication que de faire **5 000 km en scooter**.<br>
-        3. 🌳 <b>Le massacre des arbres :</b> Utiliser 1 000 ramettes de papier dans l'année au collège équivaut à abattre une mini-forêt de **10 arbres adultes**.
-        </div>
-        """, unsafe_allow_html=True)
-
-st.divider()
-st.caption("Sources des référentiels : Base Empreinte ADEME / Simulateur National 'Nos Gestes Climat' - Juin 2026")
+        st
