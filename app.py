@@ -86,8 +86,8 @@ def set_style():
         h2 { font-size: 18px !important; margin-top: 4px !important; margin-bottom: 8px !important; }
         [data-testid="stHeader"] { height: 0px; }
         
-        /* Blocs anecdotes et méthodologies style présentation */
-        .anecdote { background-color: #1e3a8a; padding: 12px 16px; border-left: 5px solid #3b82f6; border-radius: 6px; margin: 8px 0; color: #eff6ff; font-size: 13.5px; }
+        /* Blocs anecdotes et méthodologies */
+        .anecdote { background-color: #1e3a8a; padding: 10px 14px; border-left: 4px solid #3b82f6; border-radius: 4px; margin: 6px 0; color: #eff6ff; font-size: 13px; }
         .methode { background-color: #14532d; padding: 8px 12px; border-left: 4px solid #22c55e; border-radius: 4px; font-size: 12px; margin-top: 6px; color: #f0fdf4; }
         
         /* Barres de progression d'émissions affinées */
@@ -125,27 +125,39 @@ def draw_custom_bar(label, value_kg, total_kg, color, is_sub=False):
 votre_gid = "169103083" 
 url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid={votre_gid}"
 
-# 4. CHARGEMENT DES DONNÉES
+# 4. CHARGEMENT SÉCURISÉ DES DONNÉES (Anti-Accents et tolérant aux changements)
 @st.cache_data(ttl=60)
 def load_data():
     try:
         raw = pd.read_csv(url, header=None)
+        raw = raw.map(lambda x: str(x).strip() if pd.notnull(x) else x)
+        
+        header_idx = 0
         for i, row in raw.iterrows():
-            row_str = [str(x).strip() for x in row.values]
-            if any("etablissement" in x.lower() for x in row_str):
-                data = raw.iloc[i+1:].copy()
-                new_cols = [str(val).strip() if pd.notnull(val) else f"Col_{j}" for j, val in enumerate(row.values)]
-                data.columns = new_cols
-                return data.loc[:, ~data.columns.duplicated()].reset_index(drop=True)
+            row_str_lower = [str(x).lower() for x in row.values if pd.notnull(x)]
+            if any("etab" in x or "étab" in x or "ecole" in x or "école" in x for x in row_str_lower):
+                header_idx = i
+                break
+                
+        data = raw.iloc[header_idx+1:].copy()
+        new_cols = [str(val).strip() if pd.notnull(val) else f"Col_{j}" for j, val in enumerate(raw.iloc[header_idx].values)]
+        data.columns = new_cols
+        return data.loc[:, ~data.columns.duplicated()].reset_index(drop=True)
     except Exception as e:
         st.error(f"Erreur de connexion Sheets : {e}")
     return pd.DataFrame()
 
 df = load_data()
 
+# 5. ASSIGNATION DYNAMIQUE DES COLONNES CRITIQUES
 if not df.empty:
     df.columns = [str(c).replace('\xa0', ' ').replace('\n', ' ').strip() for c in df.columns]
     df.columns = [" ".join(c.split()) for c in df.columns]
+    
+    col_etab = next((c for c in df.columns if "etab" in c.lower() or "étab" in c.lower() or "école" in c.lower()), df.columns[0])
+    col_total = next((c for c in df.columns if "total" in c.lower() and ("émi" in c.lower() or "emi" in c.lower())), df.columns[7] if len(df.columns) > 7 else df.columns[-1])
+    col_eff = next((c for c in df.columns if "effectif" in c.lower()), df.columns[1] if len(df.columns) > 1 else df.columns[-1])
+    col_conso = next((c for c in df.columns if "conso" in c.lower() or "personne" in c.lower()), df.columns[8] if len(df.columns) > 8 else df.columns[-1])
 
 # 5. NAVIGATION PAR ONGLETS PRINCIPAUX
 tab_dashboard, tab_glossaire = st.tabs(["📊 Tableau de Bord", "📖 Référentiel consommations carbone (5 Pôles)"])
@@ -155,25 +167,20 @@ tab_dashboard, tab_glossaire = st.tabs(["📊 Tableau de Bord", "📖 Référent
 # ==========================================
 with tab_dashboard:
     if not df.empty:
-        col_etab = "Etablissements" if "Etablissements" in df.columns else df.columns[0]
-        col_total = "Total émissions" if "Total émissions" in df.columns else df.columns[7]
-        col_eff = "Effectif total" if "Effectif total" in df.columns else df.columns[1]
-        col_conso = "conso carbone par personne" if "conso carbone par personne" in df.columns else df.columns[8]
-
-        # Conversion numérique
-        cols_to_convert = [c for c in df.columns if c != col_etab]
-        for col in cols_to_convert:
-            df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
+        # Conversion numérique globale
+        for col in df.columns:
+            if col != col_etab:
+                df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
         
-        df_active = df[(df[col_etab].astype(str).str.strip() != "") & (df[col_conso] > 0)].copy()
+        df_active = df[df[col_etab].astype(str).str.strip() != ""].copy()
+        df_active = df_active[~df_active[col_etab].astype(str).str.lower().str.contains("total|moyenne")].copy()
 
         st.markdown("<h1 style='text-align: center; color: #38bdf8;'>🌱 Réseau Haut Vaucluse</h1>", unsafe_allow_html=True)
         
-        # --- ESPACE ENSEIGNANTS : ACCÈS FORMULAIRE ---
         with st.expander("🔐 Saisie de nouvelles données", expanded=False):
             pwd = st.text_input("Code secret :", type="password", key="main_pwd")
             if pwd == "CARBONE2026":
-                st.link_button("🚀 Ouvrir le formulaire Google Forms", "https://docs.google.com/forms/d/e/1FAIpQLSe6QOMdXWJPYHsbMkq41IyzM7Rc9izcqsFpZhQzWiaqygyykQ/viewform", use_container_width=True)
+                st.link_button("🚀 Ouvrir le formulaire Google Forms", "https://docs.forms.com", use_container_width=True)
 
         # --- 1️⃣ BLOC DU HAUT COMPACT ---
         col_top1, col_top2 = st.columns([1, 1])
@@ -204,6 +211,15 @@ with tab_dashboard:
         if not df_active.empty:
             col_mid1, col_mid2 = st.columns([1, 1])
             
+            # Fonctions utilitaires de recherche tolérante pour sécuriser l'extraction
+            def safe_get(row_data, keyword):
+                match = [c for c in df_active.columns if keyword.lower() in c.lower()]
+                return row_data[match[0]] if match else 0
+
+            def safe_sum(keyword):
+                match = [c for c in df_active.columns if keyword.lower() in c.lower()]
+                return df_active[match[0]].sum() if match else 0
+            
             # --- 🅰️ TABLEAU GAUCHE (INDIVIDUEL) ---
             with col_mid1:
                 with st.container():
@@ -215,35 +231,35 @@ with tab_dashboard:
                     tot_sch = school_data[col_total]
                     
                     if tot_sch > 0:
-                        e_elec = school_data.get("Electricité française", 0)
-                        e_fioul = school_data.get("Fioul", 0)
-                        e_gaz = school_data.get("Gaz Naturel", 0)
+                        e_elec = safe_get(school_data, "Electricité")
+                        e_fioul = safe_get(school_data, "Fioul")
+                        e_gaz = safe_get(school_data, "Gaz")
                         sch_energie = e_elec + e_fioul + e_gaz
 
-                        a_m = school_data.get("Repas moyen", 0)
-                        a_v = school_data.get("Repas végétarien", 0)
-                        a_r = school_data.get("Repas viande rouge", 0)
-                        a_b = school_data.get("Repas viande blanche", 0)
-                        a_p = school_data.get("Repas POISSON", 0)
+                        a_m = safe_get(school_data, "Repas moyen")
+                        a_v = safe_get(school_data, "Repas végétarien")
+                        a_r = safe_get(school_data, "Repas viande rouge")
+                        a_b = safe_get(school_data, "Repas viande blanche")
+                        a_p = safe_get(school_data, "Repas POISSON")
                         sch_alimentation = a_m + a_v + a_r + a_b + a_p
 
-                        t_voit = school_data.get("Voiture à essence", 0)
-                        t_bus_v = school_data.get("Autobus (ville)", 0)
-                        t_bus_s = school_data.get("Autobus (sortie scolaire)", 0)
+                        t_voit = safe_get(school_data, "Voiture")
+                        t_bus_v = safe_get(school_data, "Autobus (ville)")
+                        t_bus_s = safe_get(school_data, "Autobus (sortie")
                         sch_transport = t_voit + t_bus_v + t_bus_s
 
-                        b_pap = school_data.get("Paper", 0) if "Paper" in df.columns else school_data.get("Papier", 0)
-                        b_plas = school_data.get("Plastique", 0)
-                        b_cart = school_data.get("Carton", 0)
-                        b_ord = school_data.get("Ordinateur à écran plat", 0)
-                        b_imp = school_data.get("Imprimante", 0)
-                        b_phot = school_data.get("Photocopieurs", 0)
-                        b_vid = school_data.get("Vidéo projecteur", 0)
+                        b_pap = safe_get(school_data, "Papier")
+                        b_plas = safe_get(school_data, "Plastique")
+                        b_cart = safe_get(school_data, "Carton")
+                        b_ord = safe_get(school_data, "Ordinateur")
+                        b_imp = safe_get(school_data, "Imprimante")
+                        b_phot = safe_get(school_data, "Photocopieur")
+                        b_vid = safe_get(school_data, "Vidéo")
                         sch_biens = b_pap + b_plas + b_cart + b_ord + b_imp + b_phot + b_vid
 
-                        d_p = school_data.get("Déchets Papier", 0)
-                        d_a = school_data.get("Déchets alimentaire", 0)
-                        d_pl = school_data.get("Déchets plastique", 0)
+                        d_p = safe_get(school_data, "Déchets Papier")
+                        d_a = safe_get(school_data, "Déchets alimentaire")
+                        d_pl = safe_get(school_data, "Déchets plastique")
                         sch_dechets = d_p + d_a + d_pl
 
                         draw_custom_bar("❄️ Énergie & Bâtiments", sch_energie, tot_sch, "#22c55e")
@@ -284,17 +300,12 @@ with tab_dashboard:
                     st.markdown('<div class="card-mid-right"></div>', unsafe_allow_html=True)
                     st.markdown('<p class="inner-title" style="color: #cbd5e1; text-align: left; margin-bottom: 45px; font-size: 18px; font-weight: bold;">🌍 Global : Secteurs d\'impact du Réseau</p>', unsafe_allow_html=True)
                     
-                    def safe_sum(col_name):
-                        if col_name in df_active.columns:
-                            return df_active[col_name].sum()
-                        return 0
-
                     tot_net = df_active[col_total].sum()
                     
                     if tot_net > 0:
-                        net_elec = safe_sum("Electricité française")
+                        net_elec = safe_sum("Electricité")
                         net_fioul = safe_sum("Fioul")
-                        net_gaz = safe_sum("Gaz Naturel")
+                        net_gaz = safe_sum("Gaz")
                         net_energie = net_elec + net_fioul + net_gaz
 
                         net_a_m = safe_sum("Repas moyen")
@@ -304,19 +315,18 @@ with tab_dashboard:
                         net_a_p = safe_sum("Repas POISSON")
                         net_alimentation = net_a_m + net_a_v + net_a_r + net_a_b + net_a_p
 
-                        net_t_voit = safe_sum("Voiture à essence")
+                        net_t_voit = safe_sum("Voiture")
                         net_t_bus_v = safe_sum("Autobus (ville)")
-                        net_t_bus_s = safe_sum("Autobus (sortie scolaire)")
+                        net_t_bus_s = safe_sum("Autobus (sortie")
                         net_transport = net_t_voit + net_t_bus_v + net_t_bus_s
 
-                        col_b_pap = "Paper" if "Paper" in df.columns else "Papier"
-                        net_b_pap = safe_sum(col_b_pap)
+                        net_b_pap = safe_sum("Papier")
                         net_b_plas = safe_sum("Plastique")
                         net_b_cart = safe_sum("Carton")
-                        net_b_ord = safe_sum("Ordinateur à écran plat")
+                        net_b_ord = safe_sum("Ordinateur")
                         net_b_imp = safe_sum("Imprimante")
-                        net_b_phot = safe_sum("Photocopieurs")
-                        net_b_vid = safe_sum("Vidéo projecteur")
+                        net_b_phot = safe_sum("Photocopieur")
+                        net_b_vid = safe_sum("Vidéo")
                         net_biens = net_b_pap + net_b_plas + net_b_cart + net_b_ord + net_b_imp + net_b_phot + net_b_vid
 
                         net_d_p = safe_sum("Déchets Papier")
@@ -397,7 +407,7 @@ with tab_glossaire:
         <b>💡 3 Comparaisons Chocs pour les élèves :</b><br>
         1. 🎮 <b>La session Gaming :</b> 1 kWh d'électricité (un projecteur allumé 4h), c'est assez d'énergie pour faire tourner une <b>PS5 pendant 8 heures</b> non-stop.<br>
         2. 🔋 <b>La recharge infinie :</b> Ce même petit kWh permet de recharger un smartphone de 0% à 100% tous les soirs pendant <b>2 ans complets</b>.<br>
-        3. 👕 <b>Le piège des fenêtres :</b> Ouvrir les fenêtres en hiver alors que le chauffage tourne à fond, c'est rejeter l'impact carbone de <b>2 t-shirts neufs</b> en pur gaspillage.
+        3. 👕 <b>Le piège des fenêtres :</b> Ouvrir les fenêtres en hiver alors que le chauffage tourne à fond, c'est rejeter l'impact carbone de <b>2 t-shirts neufs</b> en pur gâchis.
         </div>
         """, unsafe_allow_html=True)
 
@@ -434,7 +444,7 @@ with tab_glossaire:
         <div class="anecdote">
         <b>💡 3 Comparaisons Chocs pour les élèves :</b><br>
         1. 🍔 <b>Le crash du Burger :</b> Jeter seulement 2 kg de nourriture à la poubelle de la cantine pollue autant que de fabriquer <b>un double cheeseburger au bœuf entier jeté direct à la benne</b> !<br>
-        2. ✂️ <b>Le sweat de marque coupé :</b> Gaspiller 5 kg de nourriture sur une semaine, c'est comme acheter <b>un sweat neuf</b> pour le découper en morceaux sans jamais l'avoir porté.<br>
+        2. ✂️ <b>Le sweat de marque coupé :</b> Gaspiller 5 kg de nourriture sur une semaine, c'est comme acheter <b>un sweat neuf</b> pour le couper en morceaux sans jamais l'avoir porté.<br>
         3. 🛴 <b>Le raid gâché :</b> Jeter son plateau repas complet sans y toucher, c'est gaspiller l'équivalent carbone d'un voyage de <b>40 km en trottinette électrique</b>.
         </div>
         """, unsafe_allow_html=True)
@@ -460,4 +470,4 @@ with tab_glossaire:
         """, unsafe_allow_html=True)
 
 st.divider()
-st.caption("Sources des référentiels : Base Empreinte ADEME / Simulateur National 'Nos Gestes Climat' - Mai 2026")
+st.caption("Sources des référentiels : Base Empreinte ADEME / Simulateur National 'Nos Gestes Climat' - Juin 2026")
