@@ -19,7 +19,7 @@ def get_base64_image(file_name_without_ext):
 
 img_base64 = get_base64_image("image_1")
 
-# 2. STYLE CSS (Gris Crystal Unifié - Protection maximale de la lisibilité)
+# 2. STYLE CSS (Gris Crystal Opaque Universel - Protection maximale)
 def set_style(img_b64):
     bg_style = f"""
     [data-testid="stAppViewContainer"], .stAppViewContainer {{
@@ -30,9 +30,9 @@ def set_style(img_b64):
         background-repeat: no-repeat;
     }}
     """ if img_b64 else """
-    [data-testid="stAppViewContainer"] {
+    [data-testid="stAppViewContainer"] {{
         background: linear-gradient(135deg, #090d16 0%, #0f172a 100%);
-    }
+    }}
     """
     
     st.markdown(
@@ -40,47 +40,47 @@ def set_style(img_b64):
         <style>
         {bg_style}
         
-        /* Transparence des rideaux natifs de Streamlit */
+        /* Force la transparence des rideaux natifs de Streamlit */
         .stApp, [data-testid="stMain"], .main {{
             background-color: transparent !important;
         }}
         
-        /* Conteneur général de la page */
+        /* Conteneur général de la zone centrale */
         .main .block-container {{
-            background-color: rgba(15, 23, 42, 0.35) !important; 
+            background-color: rgba(9, 13, 22, 0.4) !important; /* Sombre légèrement le fond pour faire ressortir les blocs */
             border-radius: 16px;
             padding: 1rem 2rem !important;
             color: #f1f5f9;
         }}
         
-        /* --- 💎 CHARTE UNIFORME : CONTENEURS GRIS CRYSTAL (Glassmorphism) --- */
-        div[data-testid="stBorderedContainer"] {{
-            background-color: rgba(22, 28, 45, 0.82) !important; /* Gris Crystal protecteur */
-            backdrop-filter: blur(16px) !important; /* Flou de verre dépoli */
+        /* --- 🛡️ CHARTE DE PROTECTION TOTAL : FONDS DES TABLEAUX ET ZONE DE TEXTES --- */
+        div[data-testid="stBorderedContainer"], .stExpander {{
+            background-color: rgba(15, 23, 42, 0.95) !important; /* Fond Gris Sombre opaque à 95% pour bloquer l'image */
+            backdrop-filter: blur(16px) !important;
             -webkit-backdrop-filter: blur(16px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.12) !important; /* Liseré crystal */
+            border: 1px solid rgba(255, 255, 255, 0.15) !important; /* Liseré Crystal */
             padding: 16px 20px !important;
             border-radius: 14px !important;
-            box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.5) !important;
-            margin-bottom: 10px !important;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6) !important;
+            margin-bottom: 12px !important;
         }}
         
-        /* Harmonisation cosmétique des cadres spécifiques */
+        /* Personnalisation des liserés spécifiques */
         div[data-testid="stBorderedContainer"]:has(.card-mid-left) {{
-            border-left: 4px solid #22d3ee !important; /* Rappel turquoise à gauche */
+            border-left: 4px solid #22d3ee !important; /* Ligne turquoise signature */
         }}
         div[data-testid="stBorderedContainer"]:has(.card-mid-right) {{
-            border-left: 4px solid #475569 !important; /* Rappel acier à droite */
+            border-left: 4px solid #475569 !important; /* Ligne acier signature */
         }}
         
-        /* --- 🎛️ NAVIGATION PRINCIPALE À 3 BOUTONS DESIGN SLIDES --- */
+        /* --- 🎛️ STYLE DES ONGLETS PRINCIPAUX --- */
         div[data-baseweb="tab-list"] {{
             gap: 12px !important;
             background-color: transparent !important;
             margin-bottom: 16px !important;
         }}
         div[data-baseweb="tab"], button[data-baseweb="tab"] {{
-            background-color: rgba(30, 41, 59, 0.85) !important;
+            background-color: rgba(15, 23, 42, 0.95) !important;
             border-radius: 8px !important;
             padding: 10px 22px !important;
             color: #cbd5e1 !important;
@@ -90,7 +90,7 @@ def set_style(img_b64):
             font-size: 14px !important;
         }}
         div[data-baseweb="tab"]:hover, button[data-baseweb="tab"]:hover {{
-            background-color: rgba(51, 65, 85, 0.95) !important;
+            background-color: rgba(30, 41, 59, 1) !important;
             border-color: #22d3ee !important;
             color: #ffffff !important;
         }}
@@ -103,22 +103,15 @@ def set_style(img_b64):
         [data-baseweb="tab-border"] {{ display: none !important; }}
         div[role="tabpanel"] {{ border: none !important; }}
         
-        /* Titres, Libellés et Textes */
+        /* Libellés de widgets */
         [data-testid="stWidgetLabel"] p {{ color: #e2e8f0 !important; font-weight: 600; font-size: 14px; }}
-        .inner-title {{ text-align: center; font-weight: bold; font-size: 16px; color: #38bdf8; margin-bottom: 8px; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }}
+        .inner-title {{ text-align: center; font-weight: bold; font-size: 16px; color: #38bdf8; margin-bottom: 8px; }}
         
-        h1 {{ font-size: 26px !important; margin-top: 5px !important; margin-bottom: 15px !important; text-shadow: 0 3px 6px rgba(0,0,0,0.9); }}
-        h2 {{ font-size: 20px !important; margin-top: 8px !important; margin-bottom: 12px !important; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }}
         [data-testid="stHeader"] {{ height: 0px; }}
         
-        /* Éléments internes ajustés */
-        .stExpander {{
-            background-color: rgba(15, 23, 42, 0.6) !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            border-radius: 8px !important;
-        }}
-        .anecdote {{ background-color: rgba(30, 58, 138, 0.85); padding: 10px 14px; border-left: 4px solid #3b82f6; border-radius: 4px; color: #eff6ff; font-size: 13px; }}
-        .unit-box {{ background-color: rgba(15, 23, 42, 0.85); padding: 10px; border-radius: 6px; border: 1px dashed #475569; font-size: 13px; }}
+        /* Éléments internes */
+        .anecdote {{ background-color: rgba(30, 58, 138, 0.9); padding: 12px 14px; border-left: 4px solid #3b82f6; border-radius: 4px; color: #eff6ff; font-size: 13px; }}
+        .unit-box {{ background-color: rgba(9, 13, 22, 0.9); padding: 10px; border-radius: 6px; border: 1px dashed #475569; font-size: 13px; }}
         
         .pole-header {{ display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; margin-bottom: 4px; margin-top: 4px; color: #f1f5f9; }}
         .sub-pole-header {{ display: flex; justify-content: space-between; font-size: 12px; color: #cbd5e1; margin-bottom: 2px; margin-top: 4px; }}
@@ -131,11 +124,11 @@ def set_style(img_b64):
 
 set_style(img_base64)
 
-# Message de contrôle si problème de nommage à la racine
+# Alerte si problème de fichier
 if not img_base64:
-    st.error("⚠️ Fichier 'image_1' non détecté à la racine.")
+    st.error("⚠️ Fichier 'image_1' non détecté à la racine de ton projet.")
 
-# Fonction de dessin HTML des barres
+# Fonction de rendu des barres
 def draw_custom_bar(label, value_kg, total_kg, color, is_sub=False):
     pct = (value_kg / total_kg * 100) if total_kg > 0 else 0
     display_weight = f"{value_kg/1000:.2f} t" if value_kg >= 1000 else f"{value_kg:.1f} kg"
@@ -151,11 +144,10 @@ def draw_custom_bar(label, value_kg, total_kg, color, is_sub=False):
             <div class="sub-bar-container"><div style="background-color: {color}; height: 100%; width: {pct}%;"></div></div>
         """, unsafe_allow_html=True)
 
-# 3. CONSTRUCTEUR DE L'ACCÈS DONNÉES GOOGLE SHEETS
+# Connexion Sheets
 votre_gid = "169103083" 
 url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid={votre_gid}"
 
-# 4. ENGINE DE CHARGEMENT UNIVERSEL
 @st.cache_data(ttl=30)
 def load_data():
     try:
@@ -193,7 +185,7 @@ if not df.empty:
     df.columns = [str(c).replace('\xa0', ' ').replace('\n', ' ').strip() for c in df.columns]
     df.columns = [" ".join(c.split()) for c in df.columns]
 
-# 5. INITIALISATION DES ONGLETS D'ÉTUDE
+# Onglets principaux
 tab_dashboard, tab_conso_graph, tab_glossaire = st.tabs(["📊 Tableau de Bord", "🌱 Empreinte carbone", "📖 Référentiel Éléves"])
 
 # ==========================================
@@ -213,16 +205,22 @@ with tab_dashboard:
         df_active = df[df[col_etab].astype(str).str.strip() != ""].copy()
         df_active = df_active[~df_active[col_etab].astype(str).str.lower().str.contains("total|moyenne")].copy()
 
-        # En-tête principal isolé dans son propre bandeau Crystal
-        with st.container(border=True):
-            st.markdown("<h1 style='text-align: center; color: #22d3ee; margin: 0;'>🌱 Défi Carbone - Réseau Haut Vaucluse</h1>", unsafe_allow_html=True)
+        # 💎 SHIELD DE COULEUR POUR LE TITRE PRINCIPAL
+        st.markdown(
+            """
+            <div style="background-color: rgba(15, 23, 42, 0.95); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 8px 32px rgba(0,0,0,0.5); margin-bottom: 15px;">
+                <h1 style='text-align: center; color: #22d3ee; margin: 0; font-size: 26px; font-weight: bold;'>🌱 Défi Carbone - Réseau Haut Vaucluse</h1>
+            </div>
+            """, 
+            unsafe_allow_html=True
+        )
         
         with st.expander("🔐 Saisie de nouvelles données", expanded=False):
             pwd = st.text_input("Code secret :", type="password", key="main_pwd")
             if pwd == "CARBONE2026":
                 st.link_button("🚀 Ouvrir le formulaire Google Forms", "https://docs.google.com/forms/d/e/1FAIpQLSe6QOMdXWJPYHsbMkq41IyzM7Rc9izcqsFpZhQzWiaqygyykQ/viewform", use_container_width=True)
 
-        # Blocs du haut encapsulés de manière étanche
+        # Blocs du haut sous coques protectrices
         col_top1, col_top2 = st.columns([1, 1])
         with col_top1:
             with st.container(border=True):
@@ -261,8 +259,15 @@ with tab_dashboard:
         
         st.divider()
         
-        with st.container(border=True):
-            st.markdown('<h2 style="text-align: center; color: #22d3ee; margin: 0;">🔍 Analyse Comparative des Pôles</h2>', unsafe_allow_html=True)
+        # 💎 SHIELD DE COULEUR POUR LE TITRE DES PÔLES
+        st.markdown(
+            """
+            <div style="background-color: rgba(15, 23, 42, 0.95); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 8px 32px rgba(0,0,0,0.5); margin-bottom: 15px;">
+                <h2 style='text-align: center; color: #22d3ee; margin: 0; font-size: 20px; font-weight: bold;'>🔍 Analyse Comparative des Pôles</h2>
+            </div>
+            """, 
+            unsafe_allow_html=True
+        )
         
         if not df_active.empty:
             col_mid1, col_mid2 = st.columns([1, 1])
@@ -335,8 +340,14 @@ with tab_dashboard:
 # ==========================================
 with tab_conso_graph:
     if not df.empty:
-        with st.container(border=True):
-            st.markdown("<h2 style='text-align: center; color: #22d3ee; margin: 0;'>📊 Comparatif Graphique Interactif du Réseau</h2>", unsafe_allow_html=True)
+        st.markdown(
+            """
+            <div style="background-color: rgba(15, 23, 42, 0.95); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 8px 32px rgba(0,0,0,0.5); margin-bottom: 15px;">
+                <h2 style='text-align: center; color: #22d3ee; margin: 0; font-size: 20px; font-weight: bold;'>📊 Comparatif Graphique Interactif du Réseau</h2>
+            </div>
+            """, 
+            unsafe_allow_html=True
+        )
         
         with st.container(border=True):
             df_sorted_graph = df_active[[col_etab, col_conso]].sort_values(col_conso, ascending=True)
@@ -369,8 +380,14 @@ with tab_conso_graph:
 # ---          3. ONGLET GLOSSAIRE       ---
 # ==========================================
 with tab_glossaire:
-    with st.container(border=True):
-        st.markdown("<h2 style='color: #22d3ee; text-align: center; margin: 0;'>📖 Dictionnaire Carbone : Unités & Équivalents Enfants</h2>", unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div style="background-color: rgba(15, 23, 42, 0.95); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 8px 32px rgba(0,0,0,0.5); margin-bottom: 15px;">
+            <h2 style='color: #22d3ee; text-align: center; margin: 0; font-size: 20px; font-weight: bold;'>📖 Dictionnaire Carbone : Unités & Équivalents Enfants</h2>
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
     
     with st.container(border=True):
         g_tabs = st.tabs(["🍎 Cantine", "❄️ Énergie", "🚌 Transports"])
