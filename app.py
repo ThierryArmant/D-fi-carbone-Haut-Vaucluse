@@ -19,7 +19,7 @@ def get_base64_image(file_name_without_ext):
 
 img_base64 = get_base64_image("image_1")
 
-# 2. STYLE CSS (Fonds Isolés et Dalles Étanches - Zéro conflit de transparence)
+# 2. STYLE CSS (Glassmorphism Aérien & Lumineux - Style Crystal)
 def set_style(img_b64):
     bg_style = f"""
     [data-testid="stAppViewContainer"], .stAppViewContainer {{
@@ -40,52 +40,53 @@ def set_style(img_b64):
         <style>
         {bg_style}
         
-        /* Transparence des structures de fond de base uniquement */
+        /* Transparence des structures par défaut de Streamlit */
         .stApp, [data-testid="stMain"], .main {{
             background-color: transparent !important;
         }}
         
-        /* Ajustement de l'espacement central */
+        /* Conteneur global de la page (effet translucide très léger) */
         .main .block-container {{
-            background-color: rgba(9, 13, 22, 0.2) !important; 
+            background-color: rgba(9, 13, 22, 0.1) !important; 
             border-radius: 16px;
             padding: 1rem 2rem !important;
             color: #f1f5f9;
         }}
         
-        /* --- 💎 LES DALLES DE VERRE CRIS-CRYSTAL (Glassmorphism Blindé) --- */
+        /* --- 💎 LES DALLES DE VERRE LUMINEUSES (Glassmorphism Pur & Transparent) --- */
         div[data-testid="stColumn"], 
         div[data-testid="stExpander"], 
         .stExpander,
         .glass-card {{
-            background-color: rgba(13, 22, 38, 0.85) !important; /* Fond Ardoise Opaque */
-            backdrop-filter: blur(20px) saturate(160%) !important; /* Effet dépoli puissant */
-            -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
-            border: 1px solid rgba(255, 255, 255, 0.16) !important; /* Liseré Crystal brillant */
+            background-color: rgba(11, 19, 36, 0.55) !important; /* Opacité réduite pour plus de transparence */
+            backdrop-filter: blur(24px) saturate(190%) !important; /* Flou dépoli lourd et couleurs vibrantes */
+            -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.22) !important; /* Liseré Crystal plus lumineux */
             padding: 22px !important;
             border-radius: 14px !important;
-            box-shadow: 0 12px 36px 0 rgba(0, 0, 0, 0.6) !important;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4) !important;
             margin-bottom: 15px !important;
         }}
         
-        /* --- 🎛️ STYLE DES ONGLETS PRINCIPAUX --- */
+        /* --- 🎛️ NAVIGATION DESIGN DES ONGLETS PRINCIPAUX --- */
         div[data-baseweb="tab-list"] {{
             gap: 12px !important;
             background-color: transparent !important;
             margin-bottom: 16px !important;
         }}
         div[data-baseweb="tab"], button[data-baseweb="tab"] {{
-            background-color: rgba(15, 23, 42, 0.9) !important;
+            background-color: rgba(15, 23, 42, 0.6) !important;
+            backdrop-filter: blur(10px) !important;
             border-radius: 8px !important;
             padding: 10px 22px !important;
             color: #cbd5e1 !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
             transition: all 0.2s ease !important;
             font-weight: bold !important;
             font-size: 14px !important;
         }}
         div[data-baseweb="tab"]:hover, button[data-baseweb="tab"]:hover {{
-            background-color: rgba(30, 41, 59, 1) !important;
+            background-color: rgba(30, 41, 59, 0.85) !important;
             border-color: #22d3ee !important;
             color: #ffffff !important;
         }}
@@ -98,7 +99,7 @@ def set_style(img_b64):
         [data-baseweb="tab-border"] {{ display: none !important; }}
         div[role="tabpanel"] {{ border: none !important; }}
         
-        /* Typographies et ombrages */
+        /* Textes et Titres sécurisés */
         [data-testid="stWidgetLabel"] p {{ color: #e2e8f0 !important; font-weight: 600; font-size: 14px; }}
         .inner-title {{ text-align: center; font-weight: bold; font-size: 16px; color: #38bdf8; margin-bottom: 12px; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }}
         
@@ -106,14 +107,17 @@ def set_style(img_b64):
         h2 {{ font-size: 20px !important; font-weight: bold !important; margin: 0 !important; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }}
         [data-testid="stHeader"] {{ height: 0px; }}
         
-        /* Sous-composants internes */
-        .anecdote {{ background-color: rgba(30, 58, 138, 0.85); padding: 12px 14px; border-left: 4px solid #3b82f6; border-radius: 4px; color: #eff6ff; font-size: 13px; }}
-        .unit-box {{ background-color: rgba(9, 13, 22, 0.85); padding: 10px; border-radius: 6px; border: 1px dashed #475569; font-size: 13px; }}
+        /* Éléments internes aux fiches */
+        .anecdote {{ background-color: rgba(30, 58, 138, 0.7); padding: 12px 14px; border-left: 4px solid #3b82f6; border-radius: 4px; color: #eff6ff; font-size: 13px; }}
+        .unit-box {{ background-color: rgba(9, 13, 22, 0.7) !important; padding: 10px; border-radius: 6px; border: 1px dashed #475569; font-size: 13px; }}
         
         .pole-header {{ display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; margin-bottom: 5px; margin-top: 5px; color: #f1f5f9; }}
         .sub-pole-header {{ display: flex; justify-content: space-between; font-size: 12px; color: #cbd5e1; margin-bottom: 2px; margin-top: 4px; }}
         .bar-container {{ background-color: #475569; border-radius: 4px; height: 12px; width: 100%; margin-bottom: 8px; overflow: hidden; }}
         .sub-bar-container {{ background-color: #334155; border-radius: 3px; height: 8px; width: 100%; margin-bottom: 6px; overflow: hidden; }}
+        
+        /* Ajustement spécifique pour intégrer proprement les tableaux dans le verre */
+        .stDataFrame div {{ background-color: transparent !important; }}
         </style>
         """,
         unsafe_allow_html=True
@@ -137,11 +141,11 @@ def draw_custom_bar(label, value_kg, total_kg, color, is_sub=False):
             <div class="sub-bar-container"><div style="background-color: {color}; height: 100%; width: {pct}%;"></div></div>
         """, unsafe_allow_html=True)
 
-# 3. CONTEXTE GOOGLE SHEETS
+# 3. VARIABLES DE CONNEXION GOOGLE SHEETS
 votre_gid = "169103083" 
 url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid={votre_gid}"
 
-# 4. ENGINE DE DATA CHARGEMENT
+# 4. CHARGEMENT UNIVERSEL DES DONNÉES
 @st.cache_data(ttl=30)
 def load_data():
     try:
@@ -159,6 +163,7 @@ def load_data():
 
 df = load_data()
 
+# Protecteurs anti-KeyError
 def safe_get_val(row_data, col_name):
     if col_name in row_data.index:
         return row_data[col_name]
@@ -179,7 +184,7 @@ if not df.empty:
     df.columns = [str(c).replace('\xa0', ' ').replace('\n', ' ').strip() for c in df.columns]
     df.columns = [" ".join(c.split()) for c in df.columns]
 
-# 5. ASSIGNATION DES ONGLETS
+# 5. ASSIGNATION DES ONGLETS PRINCIPAUX
 tab_dashboard, tab_conso_graph, tab_glossaire = st.tabs(["📊 Tableau de Bord", "🌱 Empreinte carbone", "📖 Référentiel Éléves"])
 
 # ==========================================
@@ -199,7 +204,7 @@ with tab_dashboard:
         df_active = df[df[col_etab].astype(str).str.strip() != ""].copy()
         df_active = df_active[~df_active[col_etab].astype(str).str.lower().str.contains("total|moyenne")].copy()
 
-        # Titre enveloppé de manière étanche dans sa propre dalle Crystal
+        # Titre principal
         st.markdown(
             """
             <div class="glass-card" style="text-align: center; border-left: 5px solid #22d3ee !important;">
@@ -214,7 +219,7 @@ with tab_dashboard:
             if pwd == "CARBONE2026":
                 st.link_button("🚀 Ouvrir le formulaire Google Forms", "https://docs.google.com/forms/d/e/1FAIpQLSe6QOMdXWJPYHsbMkq41IyzM7Rc9izcqsFpZhQzWiaqygyykQ/viewform", use_container_width=True)
 
-        # Les deux fiches du haut s'enferment automatiquement dans leur dalle Crystal
+        # Fiches supérieures en mode verre cristallin
         col_top1, col_top2 = st.columns([1, 1])
         with col_top1:
             st.markdown('<p class="inner-title">📊 Classement des Établissements (kg/personne)</p>', unsafe_allow_html=True)
@@ -251,7 +256,7 @@ with tab_dashboard:
         
         st.divider()
         
-        # Inter-titre analytique enveloppé de manière étanche
+        # Titre d'analyse
         st.markdown(
             """
             <div class="glass-card" style="text-align: center; border-left: 5px solid #38bdf8 !important;">
@@ -261,7 +266,7 @@ with tab_dashboard:
             unsafe_allow_html=True
         )
         
-        # Les fiches du bas s'enferment automatiquement dans leur dalle Crystal
+        # Fiches inférieures d'analyse
         if not df_active.empty:
             col_mid1, col_mid2 = st.columns([1, 1])
             
@@ -331,7 +336,7 @@ with tab_conso_graph:
         st.markdown(
             """
             <div class="glass-card" style="text-align: center;">
-                <h2 style='color: #22d3ee; margin: 0;'>📊 Comparatif Graphique Interactif du Réseau</h2>
+                <h2 style='color: #22d3ee; margin: 0;'>📊 Comparatif Graphic Interactif du Réseau</h2>
             </div>
             """, 
             unsafe_allow_html=True
