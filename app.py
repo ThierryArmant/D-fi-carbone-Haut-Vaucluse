@@ -19,7 +19,7 @@ def get_base64_image(file_name_without_ext):
 
 img_base64 = get_base64_image("image_1")
 
-# 2. STYLE CSS (Grand Bouclier Glassmorphism - Teinte Cristal Fumé Léger)
+# 2. STYLE CSS (Grand Bouclier Unique - Teinte Cristal Fumé Premium)
 def set_style(img_b64):
     bg_style = f"""
     [data-testid="stAppViewContainer"], .stAppViewContainer {{
@@ -45,25 +45,25 @@ def set_style(img_b64):
             background-color: transparent !important;
         }}
         
-        /* --- 💎 LE CADRE GLOSSY UNIQUE ASSOMBRI (Master Glassmorphism Cristal Fumé) --- */
+        /* --- 💎 LE CADRE GLOSSY UNIQUE LÉGÈREMENT PLUS CONTRASTÉ (Master Glassmorphism) --- */
         .main .block-container {{
-            background-color: rgba(215, 224, 235, 0.38) !important; /* Teinte cristal fumé léger pour un contraste parfait */
-            backdrop-filter: blur(25px) saturate(160%) !important; /* Flou de texture haute diffraction */
-            -webkit-backdrop-filter: blur(25px) saturate(160%) !important;
-            border: 1px solid rgba(255, 255, 255, 0.55) !important; /* Grand liseré crystal blanc pur brillant */
+            background-color: rgba(202, 214, 228, 0.44) !important; /* Dosé à 44% d'opacité fumée pour faire ressortir les éléments */
+            backdrop-filter: blur(28px) saturate(165%) !important; /* Flou de texture haute diffraction augmenté */
+            -webkit-backdrop-filter: blur(28px) saturate(165%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.65) !important; /* Liseré cristal blanc pur brillant */
             padding: 2.5rem !important;
             border-radius: 24px !important;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2) !important;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.22) !important;
             margin-top: 1rem !important;
         }}
         
-        /* Sous-boîtes pour structurer subtilement l'espace interne */
+        /* Sous-boîtes pour structurer l'espace interne sans alourdir */
         div[data-testid="stBorderedContainer"], 
         div[data-testid="stColumn"],
         [data-testid="stExpander"], 
         .stExpander {{
-            background-color: rgba(255, 255, 255, 0.18) !important;
-            border: 1px solid rgba(255, 255, 255, 0.35) !important;
+            background-color: rgba(255, 255, 255, 0.2) !important;
+            border: 1px solid rgba(255, 255, 255, 0.4) !important;
             border-radius: 14px !important;
             box-shadow: none !important;
             padding: 15px !important;
@@ -77,18 +77,18 @@ def set_style(img_b64):
             margin-bottom: 20px !important;
         }}
         div[data-baseweb="tab"], button[data-baseweb="tab"] {{
-            background-color: rgba(255, 255, 255, 0.3) !important;
+            background-color: rgba(255, 255, 255, 0.35) !important;
             backdrop-filter: blur(10px) !important;
             border-radius: 8px !important;
             padding: 10px 22px !important;
             color: #0f172a !important;
-            border: 1px solid rgba(255, 255, 255, 0.45) !important;
+            border: 1px solid rgba(255, 255, 255, 0.5) !important;
             transition: all 0.2s ease !important;
             font-weight: bold !important;
             font-size: 14px !important;
         }}
         div[data-baseweb="tab"]:hover, button[data-baseweb="tab"]:hover {{
-            background-color: rgba(255, 255, 255, 0.55) !important;
+            background-color: rgba(255, 255, 255, 0.6) !important;
             border-color: #22d3ee !important;
         }}
         div[data-baseweb="tab"][aria-selected="true"], button[data-baseweb="tab"][aria-selected="true"] {{
@@ -111,11 +111,11 @@ def set_style(img_b64):
         
         /* Ajustements des composants internes */
         .anecdote {{ background-color: rgba(2, 132, 199, 0.15); padding: 12px 14px; border-left: 4px solid #0284c7; border-radius: 4px; color: #0f172a; font-size: 13px; }}
-        .unit-box {{ background-color: rgba(255, 255, 255, 0.45) !important; padding: 10px; border-radius: 6px; border: 1px dashed rgba(15, 23, 42, 0.35); font-size: 13px; color: #0f172a; }}
+        .unit-box {{ background-color: rgba(255, 255, 255, 0.5) !important; padding: 10px; border-radius: 6px; border: 1px dashed rgba(15, 23, 42, 0.4); font-size: 13px; color: #0f172a; }}
         
         /* Jauges et barres horizontales sur fond satiné */
-        .bar-container {{ background-color: rgba(15, 23, 42, 0.1); border-radius: 4px; height: 12px; width: 100%; margin-bottom: 8px; overflow: hidden; }}
-        .sub-bar-container {{ background-color: rgba(15, 23, 42, 0.07); border-radius: 3px; height: 8px; width: 100%; margin-bottom: 6px; overflow: hidden; }}
+        .bar-container {{ background-color: rgba(15, 23, 42, 0.12); border-radius: 4px; height: 12px; width: 100%; margin-bottom: 8px; overflow: hidden; }}
+        .sub-bar-container {{ background-color: rgba(15, 23, 42, 0.08); border-radius: 3px; height: 8px; width: 100%; margin-bottom: 6px; overflow: hidden; }}
         .stDataFrame div {{ background-color: transparent !important; }}
         </style>
         """,
