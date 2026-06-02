@@ -5,12 +5,12 @@ import plotly.graph_objects as go
 # 1. CONFIGURATION DE LA PAGE
 st.set_page_config(page_title="Défi Carbone - Haut Vaucluse", page_icon="🌱", layout="wide")
 
-# 2. STYLE CSS (Restauration de la version d'hier soir : Ultra-Compacte, Boutons et Reliefs 3D)
+# 2. STYLE CSS (Mode Sombre / Ultra-Compact avec boutons universels et cadres contrastés)
 def set_style():
     st.markdown(
         """
         <style>
-        /* Compression globale des interlignes et textes pour éviter le scrolling */
+        /* Compression globale des interlignes et textes */
         .stApp { background-color: #0f172a; color: #f1f5f9; line-height: 1.25 !important; }
         
         /* Conteneur principal */
@@ -61,7 +61,7 @@ def set_style():
             font-size: 14px !important;
         }
         
-        /* --- 💎 DEUX TUILES EN RELIEF COMPACTES --- */
+        /* --- 💎 CELLULES EN RELIEF ÉTANCHE STYLE DIAPOSITIVES --- */
         div[data-testid="stBorderedContainer"]:has(.card-mid-left) {
             background-color: #233044 !important;
             border: 2px solid #22d3ee !important; /* Cadre Turquoise */
@@ -126,7 +126,7 @@ def draw_custom_bar(label, value_kg, total_kg, color, is_sub=False):
 votre_gid = "169103083" 
 url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid={votre_gid}"
 
-# 4. CHARGEMENT UNIVERSEL DES DONNÉES (Anti-Coupures et tolérant aux variations d'accents)
+# 4. CHARGEMENT UNIVERSEL DES DONNÉES (Anti-Coupures de lignes d'en-têtes)
 @st.cache_data(ttl=30)
 def load_data():
     try:
@@ -144,50 +144,40 @@ def load_data():
 
 df = load_data()
 
-# 5. DÉTECTION ET MAPPAGE DYNAMIQUE DES COLONNES (Zéro KeyError et Zéro conflit)
+# 🎛️ FONCTION RECHERCHE UNIVERSELLE PROTECTRICE (Élimine à 100% les risques de KeyError)
+def safe_get(source, include_all, exclude_any=None):
+    is_df = isinstance(source, pd.DataFrame)
+    cols = source.columns if is_df else source.index
+    for c in cols:
+        c_clean = str(c).lower().replace('é','e').replace('è','e').replace('à','a').replace('â','a').replace('ô','o').strip()
+        if exclude_any and any(ex in c_clean for ex in exclude_any):
+            continue
+        if all(inc in c_clean for inc in include_all):
+            return source[c].sum() if is_df else source[c]
+    return 0.0
+
+# Assignation automatique des pivots principaux
 if not df.empty:
     df.columns = [str(c).replace('\xa0', ' ').replace('\n', ' ').strip() for c in df.columns]
     df.columns = [" ".join(c.split()) for c in df.columns]
     
-    # Repérage des pivots
     col_etab = next((c for c in df.columns if any(k in c.lower() for k in ["etab", "étab", "ecole", "école"])), df.columns[0])
+    
     max_idx = len(df.columns) - 1
     col_total = next((c for c in df.columns if "total émission" in c.lower() or "total emission" in c.lower() or "total" in c.lower()), df.columns[7 if max_idx >= 7 else max_idx])
     col_eff = next((c for c in df.columns if "effectif" in c.lower()), df.columns[1 if max_idx >= 1 else max_idx])
     col_conso = next((c for c in df.columns if "conso" in c.lower() or "personne" in c.lower()), df.columns[8 if max_idx >= 8 else max_idx])
 
-    # Extraction dynamique sécurisée des labels exacts du Sheets
-    c_elec = next((c for c in df.columns if "electricit" in c.lower()), "Electricité française")
-    c_fioul = next((c for c in df.columns if "fioul" in c.lower() or "fuel" in c.lower()), "Fioul")
-    c_gaz = next((c for c in df.columns if "gaz" in c.lower()), "Gaz Naturel")
-    
-    c_repas_m = next((c for c in df.columns if "repas moyen" in c.lower() or "repas standard" in c.lower()), "Repas moyen")
-    c_repas_v = next((c for c in df.columns if "vegetarien" in c.lower() or "vege" in c.lower()), "Repas végétarien")
-    c_repas_r = next((c for c in df.columns if "viande rouge" in c.lower() or "boeuf" in c.lower() or "bœuf" in c.lower()), "Repas viande rouge")
-    c_repas_b = next((c for c in df.columns if "viande blanche" in c.lower() or "poulet" in c.lower()), "Repas viande blanche")
-    c_repas_p = next((c for c in df.columns if "poisson" in c.lower()), "Repas POISSON")
-    
-    c_voiture = next((c for c in df.columns if "voiture" in c.lower()), "Voiture à essence")
-    c_bus_v = next((c for c in df.columns if "bus" in c.lower() and "ville" in c.lower()), "Autobus (ville)")
-    c_bus_s = next((c for c in df.columns if "bus" in c.lower() and "sortie" in c.lower()), "Autobus (sortie scolaire)")
-    
-    c_papier = next((c for c in df.columns if "papier" in c.lower() and "dechet" not in c.lower() and "déchet" not in c.lower()), "Papier")
-    c_ord = next((c for c in df.columns if "ordinateur" in c.lower() or "ecran" in c.lower() or "écran" in c.lower()), "Ordinateur à écran plat")
-
-    c_dech_pap = next((c for c in df.columns if "dechet" in c.lower() and "papier" in c.lower() or "déchet" in c.lower() and "papier" in c.lower()), "Déchets Papier")
-    c_dech_ali = next((c for c in df.columns if "dechet" in c.lower() and "aliment" in c.lower() or "déchet" in c.lower() and "aliment" in c.lower() or "gaspillage" in c.lower()), "Déchets alimentaire")
-    c_dech_pla = next((c for c in df.columns if "dechet" in c.lower() and "plastique" in c.lower() or "déchet" in c.lower() and "plastique" in c.lower()), "Déchets plastique")
-
-    # Conversion numérique globale de toutes les lignes de valeurs
+    # Conversion numérique globale en toute sécurité
     cols_to_convert = [c for c in df.columns if c != col_etab]
     for col in cols_to_convert:
         df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
     
-    # Isolement strict pour afficher l'ensemble des 14 écoles sans pré-filtrage restrictif
+    # Préservation de l'intégralité des lignes d'écoles saisies
     df_active = df[df[col_etab].astype(str).str.strip() != ""].copy()
     df_active = df_active[~df_active[col_etab].astype(str).str.lower().str.contains("total|moyenne")].copy()
 
-# 6. CONFIGURATION DES 3 BOUTONS D'ONGLETS DEMANDÉS
+# 5. CONFIGURATION DE L'INTERFACE À 3 ONGLETS AVEC LES NOMS EXACTS
 tab_dashboard, tab_conso_graph, tab_glossaire = st.tabs(["📊 Tableau de Bord", "🌱 Empreinte carbone", "📖 Référentiel Éléves"])
 
 # ==========================================
@@ -225,7 +215,7 @@ with tab_dashboard:
         
         st.divider()
 
-        # --- 2️⃣ BLOC DU MILIEU : RESTAURATION DES DEUX TUILES FACE-À-FACE ---
+        # --- 2️⃣ BLOC DU MILIEU : DOUBLE TUILE EN FACE-À-FACE ET INVIOLABLE ---
         st.markdown('<h2 style="text-align: center; color: #38bdf8;">🔍 Analyse Comparative des Pôles</h2>', unsafe_allow_html=True)
         
         if not df_active.empty:
@@ -235,50 +225,68 @@ with tab_dashboard:
             with col_mid1:
                 with st.container(border=True):
                     st.markdown('<div class="card-mid-left"></div>', unsafe_allow_html=True)
-                    selected_school = st.selectbox("Établissement audité :", df_active[col_etab].unique(), key="left_school_selector")
+                    selected_school = st.selectbox("Sélectionnez votre établissement :", df_active[col_etab].unique(), key="left_school_selector")
                     st.markdown(f'<p class="inner-title" style="color: #22d3ee; text-align: left; margin-top: 5px; margin-bottom: 10px; font-size: 18px; font-weight: bold;">🏫 Établissement Audité : {selected_school}</p>', unsafe_allow_html=True)
                     
                     school_data = df_active[df_active[col_etab] == selected_school].iloc[0]
                     tot_sch = school_data[col_total]
                     
                     if tot_sch >= 0:
-                        # Lecture sécurisée via les colonnes dynamiques
-                        sch_energie = school_data.get(c_elec, 0) + school_data.get(c_fioul, 0) + school_data.get(c_gaz, 0)
-                        sch_alimentation = school_data.get(c_repas_m, 0) + school_data.get(c_repas_v, 0) + school_data.get(c_repas_r, 0) + school_data.get(c_repas_b, 0) + school_data.get(c_repas_p, 0)
-                        sch_transport = school_data.get(c_voiture, 0) + school_data.get(c_bus_v, 0) + school_data.get(c_bus_s, 0)
-                        sch_biens = school_data.get(c_papier, 0) + school_data.get(c_ord, 0)
-                        sch_dechets = school_data.get(c_dech_pap, 0) + school_data.get(c_dech_ali, 0) + school_data.get(c_dech_pla, 0)
+                        # Extractions individuelles 100% sécurisées via safe_get
+                        e_elec = safe_get(school_data, ["electricit"])
+                        e_fioul = safe_get(school_data, ["fioul"]) + safe_get(school_data, ["fuel"])
+                        e_gaz = safe_get(school_data, ["gaz"])
+                        sch_energie = e_elec + e_fioul + e_gaz
+
+                        a_m = safe_get(school_data, ["repas", "moyen"]) + safe_get(school_data, ["repas", "standard"])
+                        a_v = safe_get(school_data, ["vegeta"]) + safe_get(school_data, ["vege"])
+                        a_r = safe_get(school_data, ["rouge"]) + safe_get(school_data, ["boeuf"]) + safe_get(school_data, ["bœuf"])
+                        a_b = safe_get(school_data, ["blanche"]) + safe_get(school_data, ["poulet"])
+                        a_p = safe_get(school_data, ["poisson"])
+                        sch_alimentation = a_m + a_v + a_r + a_b + a_p
+
+                        t_voit = safe_get(school_data, ["voiture"])
+                        t_bus_v = safe_get(school_data, ["ville"])
+                        t_bus_s = safe_get(school_data, ["sortie"]) + safe_get(school_data, ["scolaire"])
+                        sch_transport = t_voit + t_bus_v + t_bus_s
+
+                        b_pap = safe_get(school_data, ["papier"], exclude_any=["dechet"]) + safe_get(school_data, ["paper"], exclude_any=["dechet"])
+                        b_ord = safe_get(school_data, ["ordinateur"]) + safe_get(school_data, ["ecran"]) + safe_get(school_data, ["écran"])
+                        sch_biens = b_pap + b_ord
+
+                        d_p = safe_get(school_data, ["dechet", "papier"])
+                        d_a = safe_get(school_data, ["dechet", "aliment"]) + safe_get(school_data, ["gaspillage"])
+                        d_pl = safe_get(school_data, ["dechet", "plastique"])
+                        sch_dechets = d_p + d_a + d_pl
 
                         draw_custom_bar("❄️ Énergie & Bâtiments", sch_energie, tot_sch, "#22c55e")
                         with st.expander("Détails Énergie (cliquez pour ouvrir)"):
-                            draw_custom_bar("• Électricité française", school_data.get(c_elec, 0), sch_energie, "#4ade80", is_sub=True)
-                            draw_custom_bar("• Gaz Naturel", school_data.get(c_gaz, 0), sch_energie, "#4ade80", is_sub=True)
-                            draw_custom_bar("• Fioul de chauffage", school_data.get(c_fioul, 0), sch_energie, "#4ade80", is_sub=True)
+                            draw_custom_bar("• Électricité", e_elec, sch_energie, "#4ade80", is_sub=True)
+                            draw_custom_bar("• Gaz Naturel", e_gaz, sch_energie, "#4ade80", is_sub=True)
+                            draw_custom_bar("• Fioul de chauffage", e_fioul, sch_energie, "#4ade80", is_sub=True)
 
                         draw_custom_bar("🍎 Alimentation & Cantine", sch_alimentation, tot_sch, "#f97316")
                         with st.expander("Détails Restauration (cliquez pour ouvrir)"):
-                            draw_custom_bar("• Repas Viande Rouge", school_data.get(c_repas_r, 0), sch_alimentation, "#fb923c", is_sub=True)
-                            draw_custom_bar("• Repas Poisson", school_data.get(c_repas_p, 0), sch_alimentation, "#fb923c", is_sub=True)
-                            draw_custom_bar("• Repas Viande Blanche", school_data.get(c_repas_b, 0), sch_alimentation, "#fb923c", is_sub=True)
-                            draw_custom_bar("• Repas Standard Moyen", school_data.get(c_repas_m, 0), sch_alimentation, "#fb923c", is_sub=True)
-                            draw_custom_bar("• Repas Végétarien", school_data.get(c_repas_v, 0), sch_alimentation, "#fb923c", is_sub=True)
+                            draw_custom_bar("• Repas Viande Rouge", a_r, sch_alimentation, "#fb923c", is_sub=True)
+                            draw_custom_bar("• Repas Poisson", a_p, sch_alimentation, "#fb923c", is_sub=True)
+                            draw_custom_bar("• Repas Viande Blanche", a_b, sch_alimentation, "#fb923c", is_sub=True)
+                            draw_custom_bar("• Repas Standard Moyen", a_m, sch_alimentation, "#fb923c", is_sub=True)
+                            draw_custom_bar("• Repas Végétarien", a_v, sch_alimentation, "#fb923c", is_sub=True)
 
                         draw_custom_bar("🚌 Déplacements & Transports", sch_transport, tot_sch, "#3b82f6")
                         with st.expander("Détails Transports (cliquez pour ouvrir)"):
-                            draw_custom_bar("• Voiture individuelle", school_data.get(c_voiture, 0), sch_transport, "#60a5fa", is_sub=True)
-                            draw_custom_bar("• Autobus / Autocar (sorties)", school_data.get(c_bus_s, 0), sch_transport, "#60a5fa", is_sub=True)
+                            draw_custom_bar("• Voiture individuelle", t_voit, sch_transport, "#60a5fa", is_sub=True)
+                            draw_custom_bar("• Autobus / Autocar (sorties)", t_bus_s, sch_transport, "#60a5fa", is_sub=True)
 
                         draw_custom_bar("📦 Biens, Consommables & Équipements", sch_biens, tot_sch, "#a855f7")
                         with st.expander("Détails Équipements (cliquez pour ouvrir)"):
-                            draw_custom_bar("• Ordinateurs & Écrans", school_data.get(c_ord, 0), sch_biens, "#c084fc", is_sub=True)
-                            draw_custom_bar("• Consommation Papier", school_data.get(c_papier, 0), sch_biens, "#c084fc", is_sub=True)
+                            draw_custom_bar("• Ordinateurs & Matériel", b_ord, sch_biens, "#c084fc", is_sub=True)
+                            draw_custom_bar("• Ramettes de papier", b_pap, sch_biens, "#c084fc", is_sub=True)
 
                         draw_custom_bar("🗑️ Gestion des Déchets", sch_dechets, tot_sch, "#6366f1")
                         with st.expander("Détails Déchets (cliquez pour ouvrir)"):
-                            draw_custom_bar("• Restes alimentaires", school_data.get(c_dech_ali, 0), sch_dechets, "#818cf8", is_sub=True)
-                            draw_custom_bar("• Déchets plastique", school_data.get(c_dech_pla, 0), sch_dechets, "#818cf8", is_sub=True)
-                    else:
-                        st.warning("Cet établissement n'a pas de données calculées.")
+                            draw_custom_bar("• Restes alimentaires", d_a, sch_dechets, "#818cf8", is_sub=True)
+                            draw_custom_bar("• Déchets plastique", d_pl, sch_dechets, "#818cf8", is_sub=True)
 
             # --- 🆂 TABLEAU DROIT : PÔLES CUMULÉS DU RÉSEAU (CADRE ACIER) ---
             with col_mid2:
@@ -289,38 +297,59 @@ with tab_dashboard:
                     tot_net = df_active[col_total].sum()
                     
                     if tot_net >= 0:
-                        net_energie = df_active[c_elec].sum() + df_active[c_fioul].sum() + df_active[c_gaz].sum()
-                        net_alimentation = df_active[c_repas_m].sum() + df_active[c_repas_v].sum() + df_active[c_repas_r].sum() + df_active[c_repas_b].sum() + df_active[c_repas_p].sum()
-                        net_transport = df_active[c_voiture].sum() + df_active[c_bus_v].sum() + df_active[c_bus_s].sum()
-                        net_biens = df_active[c_papier].sum() + df_active[c_ord].sum()
-                        net_dechets = df_active[c_dech_pap].sum() + df_active[c_dech_ali].sum() + df_active[c_dech_pla].sum()
+                        # Calculs cumulés du réseau 100% sécurisés via safe_get
+                        net_elec = safe_get(df_active, ["electricit"])
+                        net_fioul = safe_get(df_active, ["fioul"]) + safe_get(df_active, ["fuel"])
+                        net_gaz = safe_get(df_active, ["gaz"])
+                        net_energie = net_elec + net_fioul + net_gaz
+
+                        net_a_m = safe_get(df_active, ["repas", "moyen"]) + safe_get(df_active, ["repas", "standard"])
+                        net_a_v = safe_get(df_active, ["vegeta"]) + safe_get(df_active, ["vege"])
+                        net_a_r = safe_get(df_active, ["rouge"]) + safe_get(df_active, ["boeuf"]) + safe_get(df_active, ["bœuf"])
+                        net_a_b = safe_get(df_active, ["blanche"]) + safe_get(df_active, ["poulet"])
+                        net_a_p = safe_get(df_active, ["poisson"])
+                        net_alimentation = net_a_m + net_a_v + net_a_r + net_a_b + net_a_p
+
+                        net_t_voit = safe_get(df_active, ["voiture"])
+                        net_t_bus_v = safe_get(df_active, ["ville"])
+                        net_t_bus_s = safe_get(df_active, ["sortie"]) + safe_get(df_active, ["scolaire"])
+                        net_transport = net_t_voit + net_t_bus_v + net_t_bus_s
+
+                        net_b_pap = safe_get(df_active, ["papier"], exclude_any=["dechet"]) + safe_get(df_active, ["paper"], exclude_any=["dechet"])
+                        net_b_ord = safe_get(df_active, ["ordinateur"]) + safe_get(df_active, ["ecran"]) + safe_get(df_active, ["écran"])
+                        net_biens = net_b_pap + net_b_ord
+
+                        net_d_p = safe_get(df_active, ["dechet", "papier"])
+                        net_d_a = safe_get(df_active, ["dechet", "aliment"]) + safe_get(df_active, ["gaspillage"])
+                        net_d_pl = safe_get(df_active, ["dechet", "plastique"])
+                        net_dechets = net_d_p + net_d_a + net_d_pl
 
                         # Rendu des barres globales
                         draw_custom_bar("❄️ Énergie & Bâtiments (Total Réseau)", net_energie, tot_net, "#22c55e")
                         with st.expander("Détails Énergie Réseau"):
-                            draw_custom_bar("• Électricité française totale", df_active[c_elec].sum(), net_energie, "#4ade80", is_sub=True)
-                            draw_custom_bar("• Gaz Naturel total", df_active[c_gaz].sum(), net_energie, "#4ade80", is_sub=True)
+                            draw_custom_bar("• Électricité française totale", net_elec, net_energie, "#4ade80", is_sub=True)
+                            draw_custom_bar("• Gaz Naturel total", net_gaz, net_energie, "#4ade80", is_sub=True)
 
                         draw_custom_bar("🍎 Alimentation & Cantine (Total Réseau)", net_alimentation, tot_net, "#f97316")
                         with st.expander("Détails Restauration Réseau"):
-                            draw_custom_bar("• Viande Rouge cumulée", df_active[c_repas_r].sum(), net_alimentation, "#fb923c", is_sub=True)
-                            draw_custom_bar("• Poisson cumulé", df_active[c_repas_p].sum(), net_alimentation, "#fb923c", is_sub=True)
+                            draw_custom_bar("• Viande Rouge cumulée", net_a_r, net_alimentation, "#fb923c", is_sub=True)
+                            draw_custom_bar("• Poisson cumulé", net_a_p, net_alimentation, "#fb923c", is_sub=True)
 
                         draw_custom_bar("🚌 Déplacements & Transports (Total Réseau)", net_transport, tot_net, "#3b82f6")
                         with st.expander("Détails Transports Réseau"):
-                            draw_custom_bar("• Voiture à essence totale", df_active[c_voiture].sum(), net_transport, "#60a5fa", is_sub=True)
-                            draw_custom_bar("• Bus et autocars total", df_active[c_bus_s].sum(), net_transport, "#60a5fa", is_sub=True)
+                            draw_custom_bar("• Voiture à essence totale", net_t_voit, net_transport, "#60a5fa", is_sub=True)
+                            draw_custom_bar("• Bus et autocars total", net_t_bus_s, net_transport, "#60a5fa", is_sub=True)
 
                         draw_custom_bar("📦 Biens & Équipements (Total Réseau)", net_biens, tot_net, "#a855f7")
                         with st.expander("Détails Équipements Réseau"):
-                            draw_custom_bar("• Parc Informatique / Tech", df_active[c_ord].sum(), net_biens, "#c084fc", is_sub=True)
+                            draw_custom_bar("• Total Ordinateurs / Écrans", net_b_ord, net_biens, "#c084fc", is_sub=True)
 
                         draw_custom_bar("🗑️ Gestion des Déchets (Total Réseau)", net_dechets, tot_net, "#6366f1")
                         with st.expander("Détails Déchets Réseau"):
-                            draw_custom_bar("• Restes de cantine globaux", df_active[c_dech_ali].sum(), net_dechets, "#818cf8", is_sub=True)
+                            draw_custom_bar("• Restes de cantine globaux", net_d_a, net_dechets, "#818cf8", is_sub=True)
 
 # ==========================================
-# ---    2. ONGLET EMPREINTE CARBONNE    ---
+# ---        2. ONGLET EMPREINTE CARBONNE   ---
 # ==========================================
 with tab_conso_graph:
     if not df.empty:
