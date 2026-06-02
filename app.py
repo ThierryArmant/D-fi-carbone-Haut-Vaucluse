@@ -366,7 +366,7 @@ with tab_conso_graph:
             height=400,
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
-            xaxis=dict(title="Consommation Carbone (kg / personne)", color="#cbd5e1", gridcolor="rgba(255,255,255,0.05)", showgrid=True),
+            xaxis=dict(title="empreinte carbone (kg / personne)", color="#cbd5e1", gridcolor="rgba(255,255,255,0.05)", showgrid=True),
             yaxis=dict(color="#f1f5f9", tickfont=dict(size=12))
         )
         st.plotly_chart(fig_bar, use_container_width=True)
