@@ -19,7 +19,7 @@ def get_base64_image(file_name_without_ext):
 
 img_base64 = get_base64_image("image_1")
 
-# 2. STYLE CSS (Moteur Glassmorphism Premium Unifié)
+# 2. STYLE CSS (Glassmorphism Réparé et Sécurisé)
 def set_style(img_b64):
     bg_style = f"""
     [data-testid="stAppViewContainer"], .stAppViewContainer {{
@@ -40,60 +40,59 @@ def set_style(img_b64):
         <style>
         {bg_style}
         
-        /* Neutralisation des fonds opaques par défaut de Streamlit */
-        .stApp, [data-testid="stMain"], .main, [data-testid="stVerticalBlock"], [data-testid="stVerticalBlockContainer"] {{
+        /* Rend transparent uniquement le rideau principal sans toucher aux blocs enfants */
+        .stApp, [data-testid="stMain"], .main {{
             background-color: transparent !important;
         }}
         
-        /* Ajustement de la zone centrale globale */
+        /* Conteneur global de la page */
         .main .block-container {{
-            background-color: rgba(9, 13, 22, 0.2) !important; 
+            background-color: rgba(9, 13, 22, 0.15) !important; 
             border-radius: 16px;
             padding: 1rem 2rem !important;
             color: #f1f5f9;
         }}
         
-        /* --- 💎 COQUES GRAPHISME VERRE DÉPOLI (Glassmorphism Pur) --- */
+        /* --- 💎 COQUES EN VERRE DÉPOLI (Le Glassmorphism Réparé !) --- */
         div[data-testid="stBorderedContainer"],
         div[data-testid="stExpander"],
         .stExpander {{
-            background-color: rgba(15, 23, 42, 0.68) !important; /* Teinte Gris Ardoise Crystal */
-            backdrop-filter: blur(20px) saturate(170%) !important; /* Flou de diffraction lourd */
-            -webkit-backdrop-filter: blur(20px) saturate(170%) !important;
+            background-color: rgba(15, 23, 42, 0.85) !important; /* Gris Crystal Opaque à 85% pour bloquer le fond */
+            backdrop-filter: blur(16px) saturate(140%) !important; /* Effet flou dépoli lourd */
+            -webkit-backdrop-filter: blur(16px) saturate(140%) !important;
             border: 1px solid rgba(255, 255, 255, 0.15) !important; /* Liseré Crystal lumineux */
-            padding: 22px !important;
-            border-radius: 16px !important;
-            box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5) !important;
-            margin-bottom: 16px !important;
+            padding: 20px !important;
+            border-radius: 12px !important;
+            box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.5) !important;
+            margin-bottom: 14px !important;
         }}
         
-        /* Identification fine des liserés signatures */
+        /* Repères couleurs discrets à gauche de tes dalles d'analyse */
         div[data-testid="stBorderedContainer"]:has(.card-mid-left) {{
-            border-left: 5px solid #22d3ee !important;
+            border-left: 4px solid #22d3ee !important;
         }}
         div[data-testid="stBorderedContainer"]:has(.card-mid-right) {{
-            border-left: 5px solid #475569 !important;
+            border-left: 4px solid #475569 !important;
         }}
         
-        /* --- 🎛️ STYLE DES BOUTONS D'ONGLETS SENS SLIDES --- */
+        /* --- 🎛️ STYLE DESIGN DES ONGLETS PRINCIPAUX --- */
         div[data-baseweb="tab-list"] {{
             gap: 12px !important;
             background-color: transparent !important;
             margin-bottom: 16px !important;
         }}
         div[data-baseweb="tab"], button[data-baseweb="tab"] {{
-            background-color: rgba(15, 23, 42, 0.75) !important;
-            backdrop-filter: blur(8px) !important;
+            background-color: rgba(15, 23, 42, 0.9) !important;
             border-radius: 8px !important;
             padding: 10px 22px !important;
             color: #cbd5e1 !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
             transition: all 0.2s ease !important;
             font-weight: bold !important;
             font-size: 14px !important;
         }}
         div[data-baseweb="tab"]:hover, button[data-baseweb="tab"]:hover {{
-            background-color: rgba(30, 41, 59, 0.95) !important;
+            background-color: rgba(30, 41, 59, 1) !important;
             border-color: #22d3ee !important;
             color: #ffffff !important;
         }}
@@ -106,7 +105,7 @@ def set_style(img_b64):
         [data-baseweb="tab-border"] {{ display: none !important; }}
         div[role="tabpanel"] {{ border: none !important; }}
         
-        /* Typographies et ombres de sécurité */
+        /* Textes et Titres */
         [data-testid="stWidgetLabel"] p {{ color: #e2e8f0 !important; font-weight: 600; font-size: 14px; }}
         .inner-title {{ text-align: center; font-weight: bold; font-size: 16px; color: #38bdf8; margin-bottom: 12px; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }}
         
@@ -114,7 +113,7 @@ def set_style(img_b64):
         h2 {{ font-size: 20px !important; font-weight: bold !important; margin: 0 !important; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }}
         [data-testid="stHeader"] {{ height: 0px; }}
         
-        /* Éléments internes aux fiches */
+        /* Éléments internes */
         .anecdote {{ background-color: rgba(30, 58, 138, 0.85); padding: 12px 14px; border-left: 4px solid #3b82f6; border-radius: 4px; color: #eff6ff; font-size: 13px; }}
         .unit-box {{ background-color: rgba(9, 13, 22, 0.85); padding: 10px; border-radius: 6px; border: 1px dashed #475569; font-size: 13px; }}
         
@@ -187,7 +186,7 @@ if not df.empty:
     df.columns = [str(c).replace('\xa0', ' ').replace('\n', ' ').strip() for c in df.columns]
     df.columns = [" ".join(c.split()) for c in df.columns]
 
-# 5. ASSIGNATION DES ONGLETS PRINCIPAUX
+# 5. INITIALISATION DES ONGLETS
 tab_dashboard, tab_conso_graph, tab_glossaire = st.tabs(["📊 Tableau de Bord", "🌱 Empreinte carbone", "📖 Référentiel Éléves"])
 
 # ==========================================
@@ -207,7 +206,7 @@ with tab_dashboard:
         df_active = df[df[col_etab].astype(str).str.strip() != ""].copy()
         df_active = df_active[~df_active[col_etab].astype(str).str.lower().str.contains("total|moyenne")].copy()
 
-        # Titre enveloppé dans une dalle de verre dédiée
+        # Titre principal enveloppé de manière étanche
         with st.container(border=True):
             st.markdown("<h1 style='text-align: center; color: #22d3ee;'>🌱 Défi Carbone - Réseau Haut Vaucluse</h1>", unsafe_allow_html=True)
         
@@ -373,7 +372,7 @@ with tab_glossaire:
         with g_tabs[0]:
             st.subheader("🍎 Référentiel carbone (ADEME)")
             st.markdown('<div class="unit-box">• <b>Viande Rouge :</b> 7.26 kg CO2e | • <b>Poisson :</b> 2.00 kg CO2e | • <b>Végétarien :</b> 0.50 kg CO2e</div>', unsafe_allow_html=True)
-            st.markdown('<div class="anecdote"><b>💡 Équivalent élève :</b> 1 repas bœuf = Fabriquer 1 paire de baskets neuve ou scroller sur TikTok pendant 150 heures !</div>', unsafe_allow_html=True)
+            st.markdown('<div class="anecdote"><b>💡 Équivalent élève :</b> 1 repas bœuf = Fabriquer 1 paire de baskets neuve ou scroller on TikTok pendant 150 heures !</div>', unsafe_allow_html=True)
 
 st.divider()
 st.caption("Sources : Base Empreinte ADEME / Contexte Réseau Climat Haut Vaucluse - Juin 2026")
