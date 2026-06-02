@@ -211,14 +211,13 @@ with tab_dashboard:
             else:
                 moyenne = 0
 
-            # 🛠️ AJUSTEMENT ET CENTRAGE DU TEXTE DU SCORE NUMÉRIQUE ICI
+            # 🛠️ LA CORRECTION SÉCURISÉE DU RECADRAGE DE LA JAUGE ICI
             fig = go.Figure(go.Indicator(
                 mode = "gauge+number", 
                 value = moyenne, 
-                domain = {'x': [0, 1], 'y': [0, 1]}, # Force le centrage de l'élément dans son conteneur
+                domain = {'x': [0.1, 0.9], 'y': [0, 1]}, # Recentrage horizontal et élargissement du domaine
                 number = {
                     'suffix': " kg", 
-                    'align': 'center', # Aligne parfaitement le texte au centre horizontal
                     'font': {'color': '#f1f5f9', 'size': 24}
                 }, 
                 gauge = {
@@ -228,7 +227,7 @@ with tab_dashboard:
                     'threshold': {'line': {'color': "red", 'width': 3}, 'value': 1000}
                 }
             ))
-            fig.update_layout(height=210, margin=dict(t=20, b=10, l=30, r=30), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+            fig.update_layout(height=210, margin=dict(t=30, b=10, l=10, r=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
             st.plotly_chart(fig, use_container_width=True)
         
         st.divider()
@@ -418,7 +417,7 @@ with tab_glossaire:
     with g_tabs[4]:
         st.subheader("📦 Énergie Grise (ADEME)")
         st.markdown('<div class="unit-box">• <b>Grand Écran Plat :</b> 1 283 kg CO2e | • <b>Ordinateur Portable :</b> 161 kg CO2e</div>', unsafe_allow_html=True)
-        st.markdown('<div class="anecdote"><b>💡 3 Comparaisons Chocs :</b><br>1. 👖 <b>Jeans :</b> 1 ordinateur portable = Fabriquer 7 jeans neufs.<br>2. 🛵 <b>Scooter :</b> 1 grand écran = Rejeter le CO2 de 5 000 km en scooter.<br>3. 🌳 <b>Forêt :</b> Utiliser 1 000 ramettes de papier = Abattre 10 arbres adultes.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="anecdote"><b>💡 3 Comparaisons Chocs :</b><br>1. <b>Jeans :</b> 1 ordinateur portable = Fabriquer 7 jeans neufs.<br>2. 🛵 <b>Scooter :</b> 1 grand écran = Rejeter le CO2 de 5 000 km en scooter.<br>3. 🌳 <b>Forêt :</b> Utiliser 1 000 ramettes de papier = Abattre 10 arbres adultes.</div>', unsafe_allow_html=True)
 
 st.divider()
 st.caption("Sources des référentiels : Base Empreinte ADEME / Simulateur National 'Nos Gestes Climat' - Juin 2026")
