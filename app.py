@@ -7,10 +7,14 @@ import os
 # 1. CONFIGURATION DE LA PAGE
 st.set_page_config(page_title="Défi Carbone - Haut Vaucluse", page_icon="🌱", layout="wide")
 
-# Moteur de chargement de ton image personnalisée en Base64
+# Moteur de recherche absolu pour ton fichier "image_1" à la racine
 def get_base64_image(file_name_without_ext):
-    for ext in [".jpg", ".jpeg", ".png"]:
-        path = file_name_without_ext + ext
+    # Récupère le dossier exact où se trouve app.py
+    current_dir = os.path.dirname(__file__)
+    
+    # On teste toutes les extensions possibles (y compris sans extension comme c'est le cas ici)
+    for ext in ["", ".jpg", ".jpeg", ".png", ".JPG", ".JPEG", ".PNG"]:
+        path = os.path.join(current_dir, file_name_without_ext + ext)
         if os.path.exists(path):
             with open(path, "rb") as img_file:
                 return base64.b64encode(img_file.read()).decode()
@@ -18,15 +22,16 @@ def get_base64_image(file_name_without_ext):
 
 img_base64 = get_base64_image("image_1")
 
-# 2. STYLE CSS (Interface Verre Flottant Haute Visibilité sur ton image ODD)
+# 2. STYLE CSS (Fonds de tableaux étanches et transparence du rideau principal)
 def set_style(img_b64):
-    # Arrière-plan si l'image_1 est présente, sinon repli sur le dégradé sombre
+    # Si l'image est trouvée, on l'applique, sinon fond dégradé de secours
     bg_style = f"""
-    [data-testid="stAppViewContainer"] {{
+    [data-testid="stAppViewContainer"], .stAppViewContainer {{
         background-image: url("data:image/jpeg;base64,{img_b64}");
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
+        background-repeat: no-repeat;
     }}
     """ if img_b64 else """
     [data-testid="stAppViewContainer"] {
@@ -39,38 +44,38 @@ def set_style(img_b64):
         <style>
         {bg_style}
         
-        /* Application en transparence */
-        .stApp {{ background-color: transparent; color: #f1f5f9; line-height: 1.25 !important; }}
-        
-        /* --- 🛡️ PROTECTION RENFORCÉE DES TABLEAUX (Fonds étanches) --- */
-        /* Conteneur général de la page */
-        .main .block-container {{
-            background-color: rgba(15, 23, 42, 0.45) !important; /* Filtre translucide global */
-            border-radius: 16px;
-            backdrop-filter: blur(6px);
-            padding: 0.8rem 1.5rem !important;
-            color: #f1f5f9;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        /* 🛡️ FORCE LA TRANSPARENCE DU RIDEAU POUR LAISSER APPARAÎTRE L'IMAGE */
+        .stApp, [data-testid="stMain"], .main {{
+            background-color: transparent !important;
         }}
         
-        /* Table de Gauche (Établissement unique) : Fond bleu ardoise opaque + Cadre Turquoise */
+        /* Conteneur général de la page (effet verre dépoli léger) */
+        .main .block-container {{
+            background-color: rgba(15, 23, 42, 0.45) !important; 
+            border-radius: 16px;
+            padding: 0.8rem 1.5rem !important;
+            color: #f1f5f9;
+        }}
+        
+        /* --- 🛡️ PROTECTION ABSOLUE DES TABLEAUX (Fonds étanches à 96%) --- */
+        /* Tableau de Gauche (Établissement unique) : Cadre Turquoise */
         div[data-testid="stBorderedContainer"]:has(.card-mid-left) {{
-            background-color: rgba(30, 41, 59, 0.88) !important; /* Haute opacité anti-altération */
+            background-color: rgba(30, 41, 59, 0.96) !important; 
             border: 2px solid #22d3ee !important;
             padding: 14px 18px !important;
             border-radius: 12px !important;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6) !important;
-            backdrop-filter: blur(14px) !important;
+            backdrop-filter: blur(10px) !important;
         }}
         
-        /* Table de Droite (Cumul global du réseau) : Fond anthracite profond opaque + Cadre Acier */
+        /* Tableau de Droite (Cumul global du réseau) : Cadre Acier */
         div[data-testid="stBorderedContainer"]:has(.card-mid-right) {{
-            background-color: rgba(15, 23, 42, 0.92) !important; /* Contraste maximal pour les barres colorées */
+            background-color: rgba(15, 23, 42, 0.96) !important; 
             border: 2px solid rgba(71, 85, 105, 0.6) !important;
             padding: 14px 18px !important;
             border-radius: 12px !important;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6) !important;
-            backdrop-filter: blur(14px) !important;
+            backdrop-filter: blur(10px) !important;
         }}
         
         /* --- 🎛️ NAVIGATION PRINCIPALE À 3 BOUTONS DESIGN SLIDES --- */
@@ -80,11 +85,11 @@ def set_style(img_b64):
             margin-bottom: 12px !important;
         }}
         div[data-baseweb="tab"], button[data-baseweb="tab"] {{
-            background-color: rgba(51, 65, 85, 0.8) !important;
+            background-color: rgba(51, 65, 85, 0.85) !important;
             border-radius: 8px !important;
             padding: 8px 18px !important;
             color: #cbd5e1 !important;
-            border: 1px solid rgba(71, 85, 105, 0.4) !important;
+            border: 1px solid rgba(71, 85, 105, 0.5) !important;
             transition: all 0.2s ease !important;
             height: auto !important;
             font-weight: bold !important;
@@ -92,7 +97,7 @@ def set_style(img_b64):
             margin-right: 4px !important;
         }}
         div[data-baseweb="tab"]:hover, button[data-baseweb="tab"]:hover {{
-            background-color: rgba(71, 85, 105, 0.9) !important;
+            background-color: rgba(71, 85, 105, 0.95) !important;
             border-color: #22d3ee !important;
             color: #ffffff !important;
             cursor: pointer !important;
@@ -106,38 +111,30 @@ def set_style(img_b64):
         [data-baseweb="tab-border"] {{ display: none !important; }}
         div[role="tabpanel"] {{ border: none !important; }}
         
-        /* --- 🔍 INTITULÉ DE LA SÉLECTION D'ÉCOLE --- */
-        [data-testid="stWidgetLabel"] p {{
-            color: #e2e8f0 !important;
-            font-weight: 600 !important;
-            font-size: 14px !important;
-        }}
-        
+        /* Intitulations */
+        [data-testid="stWidgetLabel"] p {{ color: #e2e8f0 !important; font-weight: 600; font-size: 14px; }}
         .inner-title {{ text-align: center; font-weight: bold; font-size: 16px; color: #38bdf8; margin-bottom: 6px; }}
-        h1 {{ font-size: 24px !important; margin-top: 0px !important; margin-bottom: 8px !important; text-shadow: 0 2px 4px rgba(0,0,0,0.6); }}
+        h1 {{ font-size: 24px !important; margin-top: 0px !important; margin-bottom: 8px !important; text-shadow: 0 2px 4px rgba(0,0,0,0.7); }}
         h2 {{ font-size: 18px !important; margin-top: 4px !important; margin-bottom: 8px !important; }}
         [data-testid="stHeader"] {{ height: 0px; }}
         
         .stExpander {{
-            background-color: rgba(255, 255, 255, 0.05) !important;
+            background-color: rgba(30, 41, 59, 0.9) !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
             border-radius: 6px !important;
-            margin-bottom: 4px !important;
         }}
-        
-        .anecdote {{ background-color: rgba(30, 58, 138, 0.75); padding: 10px 14px; border-left: 4px solid #3b82f6; border-radius: 4px; margin: 6px 0; color: #eff6ff; font-size: 13px; }}
-        .unit-box {{ background-color: rgba(30, 41, 59, 0.75); padding: 10px; border-radius: 6px; border: 1px dashed #475569; margin-bottom: 10px; font-size: 13px; }}
-        
-        .pole-header {{ display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; margin-bottom: 3px; margin-top: 3px; color: #f1f5f9; }}
-        .sub-pole-header {{ display: flex; justify-content: space-between; font-size: 12px; color: #cbd5e1; margin-bottom: 2px; margin-top: 4px; }}
-        .bar-container {{ background-color: #475569; border-radius: 4px; height: 11px; width: 100%; margin-bottom: 8px; overflow: hidden; }}
-        .sub-bar-container {{ background-color: #334155; border-radius: 3px; height: 7px; width: 100%; margin-bottom: 6px; overflow: hidden; }}
+        .anecdote {{ background-color: rgba(30, 58, 138, 0.85); padding: 10px 14px; border-left: 4px solid #3b82f6; border-radius: 4px; color: #eff6ff; font-size: 13px; }}
+        .unit-box {{ background-color: rgba(15, 23, 42, 0.85); padding: 10px; border-radius: 6px; border: 1px dashed #475569; font-size: 13px; }}
         </style>
         """,
         unsafe_allow_html=True
     )
 
 set_style(img_base64)
+
+# Alerte de secours visuelle s'il y a un problème de déploiement
+if not img_base64:
+    st.error("⚠️ Le script n'arrive pas à localiser le fichier nommé 'image_1' à la racine de ton projet.")
 
 # Fonction utilitaire pour dessiner les barres de progression en HTML
 def draw_custom_bar(label, value_kg, total_kg, color, is_sub=False):
@@ -198,7 +195,7 @@ if not df.empty:
     df.columns = [str(c).replace('\xa0', ' ').replace('\n', ' ').strip() for c in df.columns]
     df.columns = [" ".join(c.split()) for c in df.columns]
 
-# 5. ASSIGNATION DES 3 ONGLETS MODÉLISÉS ODD
+# 5. ASSIGNATION DES ONGLETS
 tab_dashboard, tab_conso_graph, tab_glossaire = st.tabs(["📊 Tableau de Bord", "🌱 Empreinte carbone", "📖 Référentiel Éléves"])
 
 # ==========================================
@@ -293,13 +290,13 @@ with tab_dashboard:
                         with st.expander("Détails Restauration (cliquez pour ouvrir)"):
                             draw_custom_bar("• Repas Viande Rouge", safe_get_val(school_data, "Repas viande rouge"), sch_alimentation, "#f97316", is_sub=True)
                             draw_custom_bar("• Repas Poisson", safe_get_val(school_data, "Repas POISSON"), sch_alimentation, "#f97316", is_sub=True)
-                            draw_custom_bar("• Repas Standard Moyen", safe_get_val(school_data, "Repas moyen"), sch_alimentation, "#f97316", is_sub=True)
+                            draw_custom_bar("• Repas Standard", safe_get_val(school_data, "Repas moyen"), sch_alimentation, "#f97316", is_sub=True)
                             draw_custom_bar("• Repas Végétarien", safe_get_val(school_data, "Repas végétarien"), sch_alimentation, "#f97316", is_sub=True)
 
                         draw_custom_bar("🚌 Déplacements & Transports", sch_transport, tot_sch, "#60a5fa")
                         with st.expander("Détails Transports (cliquez pour ouvrir)"):
-                            draw_custom_bar("• Voiture à essence", safe_get_val(school_data, "Voiture à essence"), sch_transport, "#3b82f6", is_sub=True)
-                            draw_custom_bar("• Autobus (sorties / voyages)", safe_get_val(school_data, "Autobus (sortie scolaire)"), sch_transport, "#3b82f6", is_sub=True)
+                            draw_custom_bar("• Voiture", safe_get_val(school_data, "Voiture à essence"), sch_transport, "#3b82f6", is_sub=True)
+                            draw_custom_bar("• Bus (voyages / sorties)", safe_get_val(school_data, "Autobus (sortie scolaire)"), sch_transport, "#3b82f6", is_sub=True)
 
                         draw_custom_bar("📦 Biens, Consommables & Équipements", sch_biens, tot_sch, "#c084fc")
                         draw_custom_bar("🗑️ Gestion des Déchets", sch_dechets, tot_sch, "#818cf8")
