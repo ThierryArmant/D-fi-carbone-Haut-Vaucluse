@@ -9,10 +9,7 @@ st.set_page_config(page_title="Défi Carbone - Haut Vaucluse", page_icon="🌱",
 
 # Moteur de recherche absolu pour ton fichier "image_1" à la racine
 def get_base64_image(file_name_without_ext):
-    # Récupère le dossier exact où se trouve app.py
     current_dir = os.path.dirname(__file__)
-    
-    # On teste toutes les extensions possibles (y compris sans extension comme c'est le cas ici)
     for ext in ["", ".jpg", ".jpeg", ".png", ".JPG", ".JPEG", ".PNG"]:
         path = os.path.join(current_dir, file_name_without_ext + ext)
         if os.path.exists(path):
@@ -22,9 +19,8 @@ def get_base64_image(file_name_without_ext):
 
 img_base64 = get_base64_image("image_1")
 
-# 2. STYLE CSS (Fonds de tableaux étanches et transparence du rideau principal)
+# 2. STYLE CSS (Gris Crystal Unifié - Protection maximale de la lisibilité)
 def set_style(img_b64):
-    # Si l'image est trouvée, on l'applique, sinon fond dégradé de secours
     bg_style = f"""
     [data-testid="stAppViewContainer"], .stAppViewContainer {{
         background-image: url("data:image/jpeg;base64,{img_b64}");
@@ -44,63 +40,59 @@ def set_style(img_b64):
         <style>
         {bg_style}
         
-        /* 🛡️ FORCE LA TRANSPARENCE DU RIDEAU POUR LAISSER APPARAÎTRE L'IMAGE */
+        /* Transparence des rideaux natifs de Streamlit */
         .stApp, [data-testid="stMain"], .main {{
             background-color: transparent !important;
         }}
         
-        /* Conteneur général de la page (effet verre dépoli léger) */
+        /* Conteneur général de la page */
         .main .block-container {{
-            background-color: rgba(15, 23, 42, 0.45) !important; 
+            background-color: rgba(15, 23, 42, 0.35) !important; 
             border-radius: 16px;
-            padding: 0.8rem 1.5rem !important;
+            padding: 1rem 2rem !important;
             color: #f1f5f9;
         }}
         
-        /* --- 🛡️ PROTECTION ABSOLUE DES TABLEAUX (Fonds étanches à 96%) --- */
-        /* Tableau de Gauche (Établissement unique) : Cadre Turquoise */
-        div[data-testid="stBorderedContainer"]:has(.card-mid-left) {{
-            background-color: rgba(30, 41, 59, 0.96) !important; 
-            border: 2px solid #22d3ee !important;
-            padding: 14px 18px !important;
-            border-radius: 12px !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6) !important;
-            backdrop-filter: blur(10px) !important;
+        /* --- 💎 CHARTE UNIFORME : CONTENEURS GRIS CRYSTAL (Glassmorphism) --- */
+        div[data-testid="stBorderedContainer"] {{
+            background-color: rgba(22, 28, 45, 0.82) !important; /* Gris Crystal protecteur */
+            backdrop-filter: blur(16px) !important; /* Flou de verre dépoli */
+            -webkit-backdrop-filter: blur(16px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important; /* Liseré crystal */
+            padding: 16px 20px !important;
+            border-radius: 14px !important;
+            box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.5) !important;
+            margin-bottom: 10px !important;
         }}
         
-        /* Tableau de Droite (Cumul global du réseau) : Cadre Acier */
+        /* Harmonisation cosmétique des cadres spécifiques */
+        div[data-testid="stBorderedContainer"]:has(.card-mid-left) {{
+            border-left: 4px solid #22d3ee !important; /* Rappel turquoise à gauche */
+        }}
         div[data-testid="stBorderedContainer"]:has(.card-mid-right) {{
-            background-color: rgba(15, 23, 42, 0.96) !important; 
-            border: 2px solid rgba(71, 85, 105, 0.6) !important;
-            padding: 14px 18px !important;
-            border-radius: 12px !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6) !important;
-            backdrop-filter: blur(10px) !important;
+            border-left: 4px solid #475569 !important; /* Rappel acier à droite */
         }}
         
         /* --- 🎛️ NAVIGATION PRINCIPALE À 3 BOUTONS DESIGN SLIDES --- */
         div[data-baseweb="tab-list"] {{
-            gap: 10px !important;
+            gap: 12px !important;
             background-color: transparent !important;
-            margin-bottom: 12px !important;
+            margin-bottom: 16px !important;
         }}
         div[data-baseweb="tab"], button[data-baseweb="tab"] {{
-            background-color: rgba(51, 65, 85, 0.85) !important;
+            background-color: rgba(30, 41, 59, 0.85) !important;
             border-radius: 8px !important;
-            padding: 8px 18px !important;
+            padding: 10px 22px !important;
             color: #cbd5e1 !important;
-            border: 1px solid rgba(71, 85, 105, 0.5) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
             transition: all 0.2s ease !important;
-            height: auto !important;
             font-weight: bold !important;
             font-size: 14px !important;
-            margin-right: 4px !important;
         }}
         div[data-baseweb="tab"]:hover, button[data-baseweb="tab"]:hover {{
-            background-color: rgba(71, 85, 105, 0.95) !important;
+            background-color: rgba(51, 65, 85, 0.95) !important;
             border-color: #22d3ee !important;
             color: #ffffff !important;
-            cursor: pointer !important;
         }}
         div[data-baseweb="tab"][aria-selected="true"], button[data-baseweb="tab"][aria-selected="true"] {{
             background-color: #22d3ee !important;
@@ -111,20 +103,27 @@ def set_style(img_b64):
         [data-baseweb="tab-border"] {{ display: none !important; }}
         div[role="tabpanel"] {{ border: none !important; }}
         
-        /* Intitulations */
+        /* Titres, Libellés et Textes */
         [data-testid="stWidgetLabel"] p {{ color: #e2e8f0 !important; font-weight: 600; font-size: 14px; }}
-        .inner-title {{ text-align: center; font-weight: bold; font-size: 16px; color: #38bdf8; margin-bottom: 6px; }}
-        h1 {{ font-size: 24px !important; margin-top: 0px !important; margin-bottom: 8px !important; text-shadow: 0 2px 4px rgba(0,0,0,0.7); }}
-        h2 {{ font-size: 18px !important; margin-top: 4px !important; margin-bottom: 8px !important; }}
+        .inner-title {{ text-align: center; font-weight: bold; font-size: 16px; color: #38bdf8; margin-bottom: 8px; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }}
+        
+        h1 {{ font-size: 26px !important; margin-top: 5px !important; margin-bottom: 15px !important; text-shadow: 0 3px 6px rgba(0,0,0,0.9); }}
+        h2 {{ font-size: 20px !important; margin-top: 8px !important; margin-bottom: 12px !important; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }}
         [data-testid="stHeader"] {{ height: 0px; }}
         
+        /* Éléments internes ajustés */
         .stExpander {{
-            background-color: rgba(30, 41, 59, 0.9) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            border-radius: 6px !important;
+            background-color: rgba(15, 23, 42, 0.6) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 8px !important;
         }}
         .anecdote {{ background-color: rgba(30, 58, 138, 0.85); padding: 10px 14px; border-left: 4px solid #3b82f6; border-radius: 4px; color: #eff6ff; font-size: 13px; }}
         .unit-box {{ background-color: rgba(15, 23, 42, 0.85); padding: 10px; border-radius: 6px; border: 1px dashed #475569; font-size: 13px; }}
+        
+        .pole-header {{ display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; margin-bottom: 4px; margin-top: 4px; color: #f1f5f9; }}
+        .sub-pole-header {{ display: flex; justify-content: space-between; font-size: 12px; color: #cbd5e1; margin-bottom: 2px; margin-top: 4px; }}
+        .bar-container {{ background-color: #475569; border-radius: 4px; height: 12px; width: 100%; margin-bottom: 8px; overflow: hidden; }}
+        .sub-bar-container {{ background-color: #334155; border-radius: 3px; height: 8px; width: 100%; margin-bottom: 6px; overflow: hidden; }}
         </style>
         """,
         unsafe_allow_html=True
@@ -132,11 +131,11 @@ def set_style(img_b64):
 
 set_style(img_base64)
 
-# Alerte de secours visuelle s'il y a un problème de déploiement
+# Message de contrôle si problème de nommage à la racine
 if not img_base64:
-    st.error("⚠️ Le script n'arrive pas à localiser le fichier nommé 'image_1' à la racine de ton projet.")
+    st.error("⚠️ Fichier 'image_1' non détecté à la racine.")
 
-# Fonction utilitaire pour dessiner les barres de progression en HTML
+# Fonction de dessin HTML des barres
 def draw_custom_bar(label, value_kg, total_kg, color, is_sub=False):
     pct = (value_kg / total_kg * 100) if total_kg > 0 else 0
     display_weight = f"{value_kg/1000:.2f} t" if value_kg >= 1000 else f"{value_kg:.1f} kg"
@@ -152,11 +151,11 @@ def draw_custom_bar(label, value_kg, total_kg, color, is_sub=False):
             <div class="sub-bar-container"><div style="background-color: {color}; height: 100%; width: {pct}%;"></div></div>
         """, unsafe_allow_html=True)
 
-# 3. VARIABLES DE CONNEXION GOOGLE SHEETS
+# 3. CONSTRUCTEUR DE L'ACCÈS DONNÉES GOOGLE SHEETS
 votre_gid = "169103083" 
 url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid={votre_gid}"
 
-# 4. CHARGEMENT UNIVERSEL DES DONNÉES
+# 4. ENGINE DE CHARGEMENT UNIVERSEL
 @st.cache_data(ttl=30)
 def load_data():
     try:
@@ -174,7 +173,6 @@ def load_data():
 
 df = load_data()
 
-# Extraction sécurisée anti-KeyError
 def safe_get_val(row_data, col_name):
     if col_name in row_data.index:
         return row_data[col_name]
@@ -195,7 +193,7 @@ if not df.empty:
     df.columns = [str(c).replace('\xa0', ' ').replace('\n', ' ').strip() for c in df.columns]
     df.columns = [" ".join(c.split()) for c in df.columns]
 
-# 5. ASSIGNATION DES ONGLETS
+# 5. INITIALISATION DES ONGLETS D'ÉTUDE
 tab_dashboard, tab_conso_graph, tab_glossaire = st.tabs(["📊 Tableau de Bord", "🌱 Empreinte carbone", "📖 Référentiel Éléves"])
 
 # ==========================================
@@ -215,49 +213,56 @@ with tab_dashboard:
         df_active = df[df[col_etab].astype(str).str.strip() != ""].copy()
         df_active = df_active[~df_active[col_etab].astype(str).str.lower().str.contains("total|moyenne")].copy()
 
-        st.markdown("<h1 style='text-align: center; color: #22d3ee;'>🌱 Défi Carbone - Réseau Haut Vaucluse</h1>", unsafe_allow_html=True)
+        # En-tête principal isolé dans son propre bandeau Crystal
+        with st.container(border=True):
+            st.markdown("<h1 style='text-align: center; color: #22d3ee; margin: 0;'>🌱 Défi Carbone - Réseau Haut Vaucluse</h1>", unsafe_allow_html=True)
         
         with st.expander("🔐 Saisie de nouvelles données", expanded=False):
             pwd = st.text_input("Code secret :", type="password", key="main_pwd")
             if pwd == "CARBONE2026":
                 st.link_button("🚀 Ouvrir le formulaire Google Forms", "https://docs.google.com/forms/d/e/1FAIpQLSe6QOMdXWJPYHsbMkq41IyzM7Rc9izcqsFpZhQzWiaqygyykQ/viewform", use_container_width=True)
 
+        # Blocs du haut encapsulés de manière étanche
         col_top1, col_top2 = st.columns([1, 1])
         with col_top1:
-            st.markdown('<p class="inner-title">📊 Classement des Établissements (kg/personne)</p>', unsafe_allow_html=True)
-            if not df_active.empty:
-                df_ranking = df_active[[col_etab, col_conso]].sort_values(col_conso, ascending=False)
-                st.dataframe(df_ranking, hide_index=True, width="stretch", height=210)
-            else:
-                st.info("En attente de données...")
+            with st.container(border=True):
+                st.markdown('<p class="inner-title">📊 Classement des Établissements (kg/personne)</p>', unsafe_allow_html=True)
+                if not df_active.empty:
+                    df_ranking = df_active[[col_etab, col_conso]].sort_values(col_conso, ascending=False)
+                    st.dataframe(df_ranking, hide_index=True, width="stretch", height=210)
+                else:
+                    st.info("En attente de données...")
                 
         with col_top2:
-            st.markdown('<p class="inner-title">🚀 Moyenne Globale du Réseau (kg/pers)</p>', unsafe_allow_html=True)
-            if not df_active.empty and df_active[col_eff].sum() > 0:
-                moyenne = df_active[col_total].sum() / df_active[col_eff].sum()
-            else:
-                moyenne = 0
+            with st.container(border=True):
+                st.markdown('<p class="inner-title">🚀 Moyenne Globale du Réseau (kg/pers)</p>', unsafe_allow_html=True)
+                if not df_active.empty and df_active[col_eff].sum() > 0:
+                    moyenne = df_active[col_total].sum() / df_active[col_eff].sum()
+                else:
+                    moyenne = 0
 
-            fig = go.Figure(go.Indicator(
-                mode = "gauge+number", 
-                value = moyenne, 
-                domain = {'x': [0.1, 0.9], 'y': [0, 1]},
-                number = {
-                    'suffix': " kg", 
-                    'font': {'color': '#f1f5f9', 'size': 24}
-                }, 
-                gauge = {
-                    'axis': {'range': [None, 2000], 'tickfont': {'color': '#f1f5f9', 'size': 10}}, 
-                    'bar': {'color': "#22d3ee"}, 
-                    'steps': [{'range': [0, 500], 'color': "#1e3a8a"}, {'range': [500, 1000], 'color': "#b45309"}, {'range': [1000, 2000], 'color': "#991b1b"}], 
-                    'threshold': {'line': {'color': "red", 'width': 3}, 'value': 1000}
-                }
-            ))
-            fig.update_layout(height=210, margin=dict(t=30, b=10, l=10, r=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-            st.plotly_chart(fig, use_container_width=True)
+                fig = go.Figure(go.Indicator(
+                    mode = "gauge+number", 
+                    value = moyenne, 
+                    domain = {'x': [0.1, 0.9], 'y': [0, 1]},
+                    number = {
+                        'suffix': " kg", 
+                        'font': {'color': '#f1f5f9', 'size': 24}
+                    }, 
+                    gauge = {
+                        'axis': {'range': [None, 2000], 'tickfont': {'color': '#f1f5f9', 'size': 10}}, 
+                        'bar': {'color': "#22d3ee"}, 
+                        'steps': [{'range': [0, 500], 'color': "#1e3a8a"}, {'range': [500, 1000], 'color': "#b45309"}, {'range': [1000, 2000], 'color': "#991b1b"}], 
+                        'threshold': {'line': {'color': "red", 'width': 3}, 'value': 1000}
+                    }
+                ))
+                fig.update_layout(height=210, margin=dict(t=30, b=10, l=10, r=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+                st.plotly_chart(fig, use_container_width=True)
         
         st.divider()
-        st.markdown('<h2 style="text-align: center; color: #22d3ee;">🔍 Analyse Comparative des Pôles</h2>', unsafe_allow_html=True)
+        
+        with st.container(border=True):
+            st.markdown('<h2 style="text-align: center; color: #22d3ee; margin: 0;">🔍 Analyse Comparative des Pôles</h2>', unsafe_allow_html=True)
         
         if not df_active.empty:
             col_mid1, col_mid2 = st.columns([1, 1])
@@ -330,44 +335,50 @@ with tab_dashboard:
 # ==========================================
 with tab_conso_graph:
     if not df.empty:
-        st.markdown("<h2 style='text-align: center; color: #22d3ee;'>📊 Comparatif Graphique Interactif du Réseau</h2>", unsafe_allow_html=True)
+        with st.container(border=True):
+            st.markdown("<h2 style='text-align: center; color: #22d3ee; margin: 0;'>📊 Comparatif Graphique Interactif du Réseau</h2>", unsafe_allow_html=True)
         
-        df_sorted_graph = df_active[[col_etab, col_conso]].sort_values(col_conso, ascending=True)
-        
-        fig_bar = go.Figure()
-        fig_bar.add_trace(go.Bar(
-            y=df_sorted_graph[col_etab],
-            x=df_sorted_graph[col_conso],
-            orientation='h',
-            marker=dict(color='#22d3ee', line=dict(color='rgba(0,0,0,0.5)', width=1)),
-            hovertemplate="<b>%{y}</b><br>Empreinte : <b>%{x:.1f} kg CO2e/pers</b><extra></extra>"
-        ))
-        
-        fig_bar.update_layout(
-            margin=dict(l=20, r=20, t=10, b=10),
-            height=450,
-            paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='rgba(0,0,0,0)',
-            xaxis=dict(title="Consommation Carbone (kg / personne)", color="#cbd5e1", gridcolor="rgba(255,255,255,0.1)", showgrid=True),
-            yaxis=dict(color="#f1f5f9", tickfont=dict(size=12))
-        )
-        st.plotly_chart(fig_bar, use_container_width=True)
+        with st.container(border=True):
+            df_sorted_graph = df_active[[col_etab, col_conso]].sort_values(col_conso, ascending=True)
+            
+            fig_bar = go.Figure()
+            fig_bar.add_trace(go.Bar(
+                y=df_sorted_graph[col_etab],
+                x=df_sorted_graph[col_conso],
+                orientation='h',
+                marker=dict(color='#22d3ee', line=dict(color='rgba(0,0,0,0.5)', width=1)),
+                hovertemplate="<b>%{y}</b><br>Empreinte : <b>%{x:.1f} kg CO2e/pers</b><extra></extra>"
+            ))
+            
+            fig_bar.update_layout(
+                margin=dict(l=20, r=20, t=10, b=10),
+                height=450,
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                xaxis=dict(title="Consommation Carbone (kg / personne)", color="#cbd5e1", gridcolor="rgba(255,255,255,0.1)", showgrid=True),
+                yaxis=dict(color="#f1f5f9", tickfont=dict(size=12))
+            )
+            st.plotly_chart(fig_bar, use_container_width=True)
         
         st.divider()
-        st.markdown('<p class="inner-title">📋 Synthèse Globale Centralisée (Données Brutes)</p>', unsafe_allow_html=True)
-        st.dataframe(df, hide_index=True, width="stretch", height=250)
+        with st.container(border=True):
+            st.markdown('<p class="inner-title">📋 Synthèse Globale Centralisée (Données Brutes)</p>', unsafe_allow_html=True)
+            st.dataframe(df, hide_index=True, width="stretch", height=250)
 
 # ==========================================
 # ---          3. ONGLET GLOSSAIRE       ---
 # ==========================================
 with tab_glossaire:
-    st.markdown("<h2 style='color: #22d3ee; text-align: center; margin-bottom: 15px;'>📖 Dictionnaire Carbone : Unités & Équivalents Enfants</h2>", unsafe_allow_html=True)
-    g_tabs = st.tabs(["🍎 Cantine", "❄️ Énergie", "🚌 Transports"])
+    with st.container(border=True):
+        st.markdown("<h2 style='color: #22d3ee; text-align: center; margin: 0;'>📖 Dictionnaire Carbone : Unités & Équivalents Enfants</h2>", unsafe_allow_html=True)
     
-    with g_tabs[0]:
-        st.subheader("🍎 Référentiel carbone (ADEME)")
-        st.markdown('<div class="unit-box">• <b>Viande Rouge :</b> 7.26 kg CO2e | • <b>Poisson :</b> 2.00 kg CO2e | • <b>Végétarien :</b> 0.50 kg CO2e</div>', unsafe_allow_html=True)
-        st.markdown('<div class="anecdote"><b>💡 Équivalent élève :</b> 1 repas bœuf = Fabriquer 1 paire de baskets neuve ou scroller sur TikTok pendant 150 heures !</div>', unsafe_allow_html=True)
+    with st.container(border=True):
+        g_tabs = st.tabs(["🍎 Cantine", "❄️ Énergie", "🚌 Transports"])
+        
+        with g_tabs[0]:
+            st.subheader("🍎 Référentiel carbone (ADEME)")
+            st.markdown('<div class="unit-box">• <b>Viande Rouge :</b> 7.26 kg CO2e | • <b>Poisson :</b> 2.00 kg CO2e | • <b>Végétarien :</b> 0.50 kg CO2e</div>', unsafe_allow_html=True)
+            st.markdown('<div class="anecdote"><b>💡 Équivalent élève :</b> 1 repas bœuf = Fabriquer 1 paire de baskets neuve ou scroller sur TikTok pendant 150 heures !</div>', unsafe_allow_html=True)
 
 st.divider()
 st.caption("Sources : Base Empreinte ADEME / Contexte Réseau Climat Haut Vaucluse - Juin 2026")
