@@ -19,7 +19,7 @@ def get_base64_image(file_name_without_ext):
 
 img_base64 = get_base64_image("image_1")
 
-# 2. STYLE CSS (Hyper-Glassmorphism : Transparence Crystal Max)
+# 2. STYLE CSS (Moteur Pure Glassmorphism - Effet Givré Blanc Satin)
 def set_style(img_b64):
     bg_style = f"""
     [data-testid="stAppViewContainer"], .stAppViewContainer {{
@@ -31,7 +31,7 @@ def set_style(img_b64):
     }}
     """ if img_b64 else """
     [data-testid="stAppViewContainer"] {{
-        background: linear-gradient(135deg, #090d16 0%, #0f172a 100%);
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     }}
     """
     
@@ -40,31 +40,31 @@ def set_style(img_b64):
         <style>
         {bg_style}
         
-        /* Nettoyage complet des couches opaques Streamlit */
+        /* Nettoyage complet des structures opaques Streamlit */
         .stApp, [data-testid="stMain"], .main {{
             background-color: transparent !important;
         }}
         
         /* Zone centrale globale */
         .main .block-container {{
-            background-color: rgba(9, 13, 22, 0.05) !important; 
+            background-color: rgba(255, 255, 255, 0.02) !important; 
             border-radius: 16px;
             padding: 1rem 2rem !important;
             color: #f1f5f9;
         }}
         
-        /* --- 💎 DALLES EN VERRE DE POLI CRISTALLIN (Transparence Élevée) --- */
+        /* --- 💎 COQUES EN VERRE GIVRÉ BLANC (Exactement comme ta capture !) --- */
         div[data-testid="stColumn"], 
         div[data-testid="stExpander"], 
         .stExpander,
         .glass-card {{
-            background-color: rgba(10, 18, 36, 0.28) !important; /* Opacité ultra-légère à 28% pour un effet aérien */
-            backdrop-filter: blur(25px) saturate(200%) !important; /* Réfraction maximale du fond */
-            -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
-            border: 1px solid rgba(255, 255, 255, 0.25) !important; /* Bordure Crystal blanche ultra-nette */
+            background-color: rgba(255, 255, 255, 0.16) !important; /* Base blanche translucide satinée */
+            backdrop-filter: blur(25px) saturate(140%) !important; /* Flou optique haut de gamme */
+            -webkit-backdrop-filter: blur(25px) saturate(140%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.45) !important; /* Liseré blanc pur très net */
             padding: 22px !important;
-            border-radius: 16px !important;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35) !important;
+            border-radius: 20px !important; /* Angles arrondis doux */
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15) !important; /* Ombre douce satinée */
             margin-bottom: 15px !important;
         }}
         
@@ -75,46 +75,45 @@ def set_style(img_b64):
             margin-bottom: 16px !important;
         }}
         div[data-baseweb="tab"], button[data-baseweb="tab"] {{
-            background-color: rgba(15, 23, 42, 0.45) !important;
+            background-color: rgba(255, 255, 255, 0.15) !important;
             backdrop-filter: blur(10px) !important;
             border-radius: 8px !important;
             padding: 10px 22px !important;
-            color: #cbd5e1 !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
             transition: all 0.2s ease !important;
             font-weight: bold !important;
             font-size: 14px !important;
         }}
         div[data-baseweb="tab"]:hover, button[data-baseweb="tab"]:hover {{
-            background-color: rgba(30, 41, 59, 0.75) !important;
+            background-color: rgba(255, 255, 255, 0.3) !important;
             border-color: #22d3ee !important;
-            color: #ffffff !important;
         }}
         div[data-baseweb="tab"][aria-selected="true"], button[data-baseweb="tab"][aria-selected="true"] {{
             background-color: #22d3ee !important;
             color: #0f172a !important; 
             border-color: #22d3ee !important;
-            box-shadow: 0 4px 14px rgba(34, 211, 238, 0.5) !important;
+            box-shadow: 0 4px 14px rgba(34, 211, 238, 0.4) !important;
         }}
         [data-baseweb="tab-border"] {{ display: none !important; }}
         div[role="tabpanel"] {{ border: none !important; }}
         
-        /* Sécurisation typographique et ombres de contrastes */
-        [data-testid="stWidgetLabel"] p {{ color: #e2e8f0 !important; font-weight: 600; font-size: 14px; }}
-        .inner-title {{ text-align: center; font-weight: bold; font-size: 16px; color: #38bdf8; margin-bottom: 12px; text-shadow: 0 1px 3px rgba(0,0,0,0.9); }}
+        /* Ajustements textes et titres pour fond givré lumineux */
+        [data-testid="stWidgetLabel"] p {{ color: #ffffff !important; font-weight: 600; font-size: 14px; }}
+        .inner-title {{ text-align: center; font-weight: bold; font-size: 16px; color: #0284c7; margin-bottom: 12px; text-shadow: 0 1px 2px rgba(255,255,255,0.3); }}
         
-        h1 {{ font-size: 26px !important; font-weight: bold !important; margin: 0 !important; text-shadow: 0 2px 5px rgba(0,0,0,0.9); }}
-        h2 {{ font-size: 20px !important; font-weight: bold !important; margin: 0 !important; text-shadow: 0 2px 5px rgba(0,0,0,0.9); }}
+        h1 {{ font-size: 26px !important; font-weight: bold !important; color: #ffffff !important; margin: 0 !important; text-shadow: 0 2px 4px rgba(0,0,0,0.4); }}
+        h2 {{ font-size: 20px !important; font-weight: bold !important; color: #ffffff !important; margin: 0 !important; text-shadow: 0 2px 4px rgba(0,0,0,0.4); }}
         [data-testid="stHeader"] {{ height: 0px; }}
         
         /* Composants internes */
-        .anecdote {{ background-color: rgba(30, 58, 138, 0.6); padding: 12px 14px; border-left: 4px solid #3b82f6; border-radius: 4px; color: #eff6ff; font-size: 13px; }}
-        .unit-box {{ background-color: rgba(9, 13, 22, 0.5) !important; padding: 10px; border-radius: 6px; border: 1px dashed #475569; font-size: 13px; }}
+        .anecdote {{ background-color: rgba(2, 132, 199, 0.25); padding: 12px 14px; border-left: 4px solid #0284c7; border-radius: 4px; color: #ffffff; font-size: 13px; }}
+        .unit-box {{ background-color: rgba(255, 255, 255, 0.2) !important; padding: 10px; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.4); font-size: 13px; }}
         
-        .pole-header {{ display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; margin-bottom: 5px; margin-top: 5px; color: #f1f5f9; }}
-        .sub-pole-header {{ display: flex; justify-content: space-between; font-size: 12px; color: #cbd5e1; margin-bottom: 2px; margin-top: 4px; }}
-        .bar-container {{ background-color: #475569; border-radius: 4px; height: 12px; width: 100%; margin-bottom: 8px; overflow: hidden; }}
-        .sub-bar-container {{ background-color: #334155; border-radius: 3px; height: 8px; width: 100%; margin-bottom: 6px; overflow: hidden; }}
+        .pole-header {{ display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; margin-bottom: 5px; margin-top: 5px; color: #ffffff; }}
+        .sub-pole-header {{ display: flex; justify-content: space-between; font-size: 12px; color: #f1f5f9; margin-bottom: 2px; margin-top: 4px; }}
+        .bar-container {{ background-color: rgba(255,255,255,0.25); border-radius: 4px; height: 12px; width: 100%; margin-bottom: 8px; overflow: hidden; }}
+        .sub-bar-container {{ background-color: rgba(255,255,255,0.15); border-radius: 3px; height: 8px; width: 100%; margin-bottom: 6px; overflow: hidden; }}
         </style>
         """,
         unsafe_allow_html=True
@@ -204,7 +203,7 @@ with tab_dashboard:
         st.markdown(
             """
             <div class="glass-card" style="text-align: center; border-left: 5px solid #22d3ee !important;">
-                <h1 style='color: #22d3ee; margin: 0;'>🌱 Défi Carbone - Réseau Haut Vaucluse</h1>
+                <h1 style='color: #ffffff; margin: 0;'>🌱 Défi Carbone - Réseau Haut Vaucluse</h1>
             </div>
             """, 
             unsafe_allow_html=True
@@ -215,7 +214,7 @@ with tab_dashboard:
             if pwd == "CARBONE2026":
                 st.link_button("🚀 Ouvrir le formulaire Google Forms", "https://docs.google.com/forms/d/e/1FAIpQLSe6QOMdXWJPYHsbMkq41IyzM7Rc9izcqsFpZhQzWiaqygyykQ/viewform", use_container_width=True)
 
-        # Fiches de synthèse supérieures
+        # Fiches supérieures de synthèse
         col_top1, col_top2 = st.columns([1, 1])
         with col_top1:
             with st.container(border=True):
@@ -240,12 +239,12 @@ with tab_dashboard:
                     domain = {'x': [0.1, 0.9], 'y': [0, 1]},
                     number = {
                         'suffix': " kg", 
-                        'font': {'color': '#f1f5f9', 'size': 24}
+                        'font': {'color': '#ffffff', 'size': 24}
                     }, 
                     gauge = {
-                        'axis': {'range': [None, 2000], 'tickfont': {'color': '#f1f5f9', 'size': 10}}, 
+                        'axis': {'range': [None, 2000], 'tickfont': {'color': '#ffffff', 'size': 10}}, 
                         'bar': {'color': "#22d3ee"}, 
-                        'steps': [{'range': [0, 500], 'color': "#1e3a8a"}, {'range': [500, 1000], 'color': "#b45309"}, {'range': [1000, 2000], 'color': "#991b1b"}], 
+                        'steps': [{'range': [0, 500], 'color': "rgba(2, 132, 199, 0.4)"}, {'range': [500, 1000], 'color': "rgba(249, 115, 22, 0.4)"}, {'range': [1000, 2000], 'color': "rgba(239, 68, 68, 0.4)"}], 
                         'threshold': {'line': {'color': "red", 'width': 3}, 'value': 1000}
                     }
                 ))
@@ -254,11 +253,11 @@ with tab_dashboard:
         
         st.divider()
         
-        # Titre analytique d'inter-page
+        # Inter-titre
         st.markdown(
             """
             <div class="glass-card" style="text-align: center; border-left: 5px solid #38bdf8 !important;">
-                <h2 style='color: #22d3ee; margin: 0;'>🔍 Analyse Comparative des Pôles</h2>
+                <h2 style='color: #ffffff; margin: 0;'>🔍 Analyse Comparative des Pôles</h2>
             </div>
             """, 
             unsafe_allow_html=True
@@ -285,30 +284,30 @@ with tab_dashboard:
                         sch_biens = b_pap + safe_get_val(school_data, "Plastique") + safe_get_val(school_data, "Carton") + safe_get_val(school_data, "Ordinateur à écran plat") + safe_get_val(school_data, "Imprimante") + safe_get_val(school_data, "Photocopieurs") + safe_get_val(school_data, "Vidéo projecteur")
                         sch_dechets = safe_get_val(school_data, "Déchets Papier") + safe_get_val(school_data, "Déchets alimentaire") + safe_get_val(school_data, "Déchets plastique")
 
-                        draw_custom_bar("❄️ Énergie & Bâtiments", sch_energie, tot_sch, "#4ade80")
-                        with st.expander("Détails Énergie (cliquez pour ouvrir)"):
-                            draw_custom_bar("• Électricité française", safe_get_val(school_data, "Electricité française"), sch_energie, "#22c55e", is_sub=True)
-                            draw_custom_bar("• Gaz Naturel", safe_get_val(school_data, "Gaz Naturel"), sch_energie, "#22c55e", is_sub=True)
-                            draw_custom_bar("• Fioul de chauffage", safe_get_val(school_data, "Fioul de chauffage"), sch_energie, "#22c55e", is_sub=True)
+                        draw_custom_bar("❄️ Énergie & Bâtiments", sch_energie, tot_sch, "#22c55e")
+                        with st.expander("Détails Énergie"):
+                            draw_custom_bar("• Électricité française", safe_get_val(school_data, "Electricité française"), sch_energie, "#4ade80", is_sub=True)
+                            draw_custom_bar("• Gaz Naturel", safe_get_val(school_data, "Gaz Naturel"), sch_energie, "#4ade80", is_sub=True)
+                            draw_custom_bar("• Fioul de chauffage", safe_get_val(school_data, "Fioul de chauffage"), sch_energie, "#4ade80", is_sub=True)
 
-                        draw_custom_bar("🍎 Alimentation & Cantine", sch_alimentation, tot_sch, "#fb923c")
-                        with st.expander("Détails Restauration (cliquez pour ouvrir)"):
-                            draw_custom_bar("• Repas Viande Rouge", safe_get_val(school_data, "Repas viande rouge"), sch_alimentation, "#f97316", is_sub=True)
-                            draw_custom_bar("• Repas Poisson", safe_get_val(school_data, "Repas POISSON"), sch_alimentation, "#f97316", is_sub=True)
-                            draw_custom_bar("• Repas Standard Moyen", safe_get_val(school_data, "Repas moyen"), sch_alimentation, "#f97316", is_sub=True)
-                            draw_custom_bar("• Repas Végétarien", safe_get_val(school_data, "Repas végétarien"), sch_alimentation, "#f97316", is_sub=True)
+                        draw_custom_bar("🍎 Alimentation & Cantine", sch_alimentation, tot_sch, "#ea580c")
+                        with st.expander("Détails Restauration"):
+                            draw_custom_bar("• Repas Viande Rouge", safe_get_val(school_data, "Repas viande rouge"), sch_alimentation, "#fb923c", is_sub=True)
+                            draw_custom_bar("• Repas Poisson", safe_get_val(school_data, "Repas POISSON"), sch_alimentation, "#fb923c", is_sub=True)
+                            draw_custom_bar("• Repas Standard Moyen", safe_get_val(school_data, "Repas moyen"), sch_alimentation, "#fb923c", is_sub=True)
+                            draw_custom_bar("• Repas Végétarien", safe_get_val(school_data, "Repas végétarien"), sch_alimentation, "#fb923c", is_sub=True)
 
-                        draw_custom_bar("🚌 Déplacements & Transports", sch_transport, tot_sch, "#60a5fa")
-                        with st.expander("Détails Transports (cliquez pour ouvrir)"):
-                            draw_custom_bar("• Voiture à essence", safe_get_val(school_data, "Voiture à essence"), sch_transport, "#3b82f6", is_sub=True)
-                            draw_custom_bar("• Autobus (sorties / voyages)", safe_get_val(school_data, "Autobus (sortie scolaire)"), sch_transport, "#3b82f6", is_sub=True)
+                        draw_custom_bar("🚌 Déplacements & Transports", sch_transport, tot_sch, "#2563eb")
+                        with st.expander("Détails Transports"):
+                            draw_custom_bar("• Voiture à essence", safe_get_val(school_data, "Voiture à essence"), sch_transport, "#60a5fa", is_sub=True)
+                            draw_custom_bar("• Autobus (sorties / voyages)", safe_get_val(school_data, "Autobus (sortie scolaire)"), sch_transport, "#60a5fa", is_sub=True)
 
-                        draw_custom_bar("📦 Biens, Consommables & Équipements", sch_biens, tot_sch, "#c084fc")
-                        draw_custom_bar("🗑️ Gestion des Déchets", sch_dechets, tot_sch, "#818cf8")
+                        draw_custom_bar("📦 Biens, Consommables & Équipements", sch_biens, tot_sch, "#a855f7")
+                        draw_custom_bar("🗑️ Gestion des Déchets", sch_dechets, tot_sch, "#6366f1")
 
             with col_mid2:
                 with st.container(border=True):
-                    st.markdown('<p class="inner-title" style="color: #cbd5e1; text-align: left; margin-bottom: 25px; font-size: 18px; font-weight: bold;">🌍 Global : Secteurs d\'impact du Réseau</p>', unsafe_allow_html=True)
+                    st.markdown('<p class="inner-title" style="color: #ffffff; text-align: left; margin-bottom: 25px; font-size: 18px; font-weight: bold;">🌍 Global : Secteurs d\'impact du Réseau</p>', unsafe_allow_html=True)
                     
                     tot_net = df_active[col_total].sum()
                     if tot_net >= 0:
@@ -322,11 +321,11 @@ with tab_dashboard:
                         net_biens = safe_sum_val(df_active, "Paper") + safe_sum_val(df_active, "Papier") + safe_sum_val(df_active, "Plastique") + safe_sum_val(df_active, "Ordinateur à écran plat")
                         net_dechets = safe_sum_val(df_active, "Déchets Papier") + safe_sum_val(df_active, "Déchets alimentaire") + safe_sum_val(df_active, "Déchets plastique")
 
-                        draw_custom_bar("❄️ Énergie & Bâtiments (Total Réseau)", net_energie, tot_net, "#4ade80")
-                        draw_custom_bar("🍎 Alimentation & Cantine (Total Réseau)", net_alimentation, tot_net, "#fb923c")
-                        draw_custom_bar("🚌 Déplacements & Transports (Total Réseau)", net_transport, tot_net, "#60a5fa")
-                        draw_custom_bar("📦 Biens & Équipements (Total Réseau)", net_biens, tot_net, "#c084fc")
-                        draw_custom_bar("🗑️ Élimination des Déchets (Total Réseau)", net_dechets, tot_net, "#818cf8")
+                        draw_custom_bar("❄️ Énergie & Bâtiments (Total Réseau)", net_energie, tot_net, "#22c55e")
+                        draw_custom_bar("🍎 Alimentation & Cantine (Total Réseau)", net_alimentation, tot_net, "#ea580c")
+                        draw_custom_bar("🚌 Déplacements & Transports (Total Réseau)", net_transport, tot_net, "#2563eb")
+                        draw_custom_bar("📦 Biens & Équipements (Total Réseau)", net_biens, tot_net, "#a855f7")
+                        draw_custom_bar("🗑️ Élimination des Déchets (Total Réseau)", net_dechets, tot_net, "#6366f1")
 
 # ==========================================
 # ---    2. ONGLET EMPREINTE CARBONNE    ---
@@ -334,7 +333,7 @@ with tab_dashboard:
 with tab_conso_graph:
     if not df.empty:
         with st.container(border=True):
-            st.markdown("<h2 style='text-align: center; color: #22d3ee;'>📊 Comparatif Graphique Interactif du Réseau</h2>", unsafe_allow_html=True)
+            st.markdown("<h2 style='text-align: center; color: #ffffff;'>📊 Comparatif Graphique Interactif du Réseau</h2>", unsafe_allow_html=True)
         
         with st.container(border=True):
             df_sorted_graph = df_active[[col_etab, col_conso]].sort_values(col_conso, ascending=True)
@@ -344,7 +343,7 @@ with tab_conso_graph:
                 y=df_sorted_graph[col_etab],
                 x=df_sorted_graph[col_conso],
                 orientation='h',
-                marker=dict(color='#22d3ee', line=dict(color='rgba(0,0,0,0.5)', width=1)),
+                marker=dict(color='#22d3ee', line=dict(color='rgba(255,255,255,0.3)', width=1)),
                 hovertemplate="<b>%{y}</b><br>Empreinte : <b>%{x:.1f} kg CO2e/pers</b><extra></extra>"
             ))
             
@@ -353,8 +352,8 @@ with tab_conso_graph:
                 height=450,
                 paper_bgcolor='rgba(0,0,0,0)',
                 plot_bgcolor='rgba(0,0,0,0)',
-                xaxis=dict(title="Consommation Carbone (kg / personne)", color="#cbd5e1", gridcolor="rgba(255,255,255,0.1)", showgrid=True),
-                yaxis=dict(color="#f1f5f9", tickfont=dict(size=12))
+                xaxis=dict(title="Consommation Carbone (kg / personne)", color="#ffffff", gridcolor="rgba(255,255,255,0.2)", showgrid=True),
+                yaxis=dict(color="#ffffff", tickfont=dict(size=12))
             )
             st.plotly_chart(fig_bar, use_container_width=True)
         
@@ -368,7 +367,7 @@ with tab_conso_graph:
 # ==========================================
 with tab_glossaire:
     with st.container(border=True):
-        st.markdown("<h2 style='color: #22d3ee; text-align: center;'>📖 Dictionnaire Carbone : Unités & Équivalents Enfants</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 style='color: #ffffff; text-align: center;'>📖 Dictionnaire Carbone : Unités & Équivalents Enfants</h2>", unsafe_allow_html=True)
     
     with st.container(border=True):
         g_tabs = st.tabs(["🍎 Cantine", "❄️ Énergie", "🚌 Transports"])
