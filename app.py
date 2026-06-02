@@ -19,7 +19,7 @@ def get_base64_image(file_name_without_ext):
 
 img_base64 = get_base64_image("image_1")
 
-# 2. STYLE CSS (Grand Bouclier Unique - Teinte Cristal Fumé Premium)
+# 2. STYLE CSS (Grand Bouclier Unique - Teinte Cristal Fumé +20% Contraste)
 def set_style(img_b64):
     bg_style = f"""
     [data-testid="stAppViewContainer"], .stAppViewContainer {{
@@ -45,25 +45,25 @@ def set_style(img_b64):
             background-color: transparent !important;
         }}
         
-        /* --- 💎 LE CADRE GLOSSY UNIQUE LÉGÈREMENT PLUS CONTRASTÉ (Master Glassmorphism) --- */
+        /* --- 💎 LE CADRE GLOSSY UNIQUE EXTENDED (+20% de Contraste & Densité) --- */
         .main .block-container {{
-            background-color: rgba(202, 214, 228, 0.44) !important; /* Dosé à 44% d'opacité fumée pour faire ressortir les éléments */
-            backdrop-filter: blur(28px) saturate(165%) !important; /* Flou de texture haute diffraction augmenté */
-            -webkit-backdrop-filter: blur(28px) saturate(165%) !important;
-            border: 1px solid rgba(255, 255, 255, 0.65) !important; /* Liseré cristal blanc pur brillant */
+            background-color: rgba(180, 192, 208, 0.55) !important; /* Ajusté à 55% d'opacité fumée pour un détachement parfait */
+            backdrop-filter: blur(30px) saturate(165%) !important; /* Flou monté à 30px pour un effet givré lourd */
+            -webkit-backdrop-filter: blur(30px) saturate(165%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.7) !important; /* Liseré cristal blanc pur encore plus net */
             padding: 2.5rem !important;
             border-radius: 24px !important;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.22) !important;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25) !important;
             margin-top: 1rem !important;
         }}
         
-        /* Sous-boîtes pour structurer l'espace interne sans alourdir */
+        /* Sous-boîtes internes subtilement contrastées */
         div[data-testid="stBorderedContainer"], 
         div[data-testid="stColumn"],
         [data-testid="stExpander"], 
         .stExpander {{
-            background-color: rgba(255, 255, 255, 0.2) !important;
-            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            background-color: rgba(255, 255, 255, 0.22) !important;
+            border: 1px solid rgba(255, 255, 255, 0.45) !important;
             border-radius: 14px !important;
             box-shadow: none !important;
             padding: 15px !important;
@@ -100,7 +100,7 @@ def set_style(img_b64):
         [data-baseweb="tab-border"] {{ display: none !important; }}
         div[role="tabpanel"] {{ border: none !important; }}
         
-        /* 🛡️ SÉCURISATION INTÉGRALE DES POLICES (Lisibilité Maximale) */
+        /* 🛡️ SECURISATION TEXTUELLE MAXIMALE */
         h1, h2, h3, label, .stMarkdown p, [data-testid="stWidgetLabel"] p, .pole-header, .sub-pole-header {{
             color: #0f172a !important;
             font-weight: bold !important;
@@ -109,11 +109,11 @@ def set_style(img_b64):
         .inner-title {{ text-align: center; font-weight: bold; font-size: 16px; color: #0284c7; margin-bottom: 12px; }}
         [data-testid="stHeader"] {{ height: 0px; }}
         
-        /* Ajustements des composants internes */
+        /* Composants informatifs internes */
         .anecdote {{ background-color: rgba(2, 132, 199, 0.15); padding: 12px 14px; border-left: 4px solid #0284c7; border-radius: 4px; color: #0f172a; font-size: 13px; }}
         .unit-box {{ background-color: rgba(255, 255, 255, 0.5) !important; padding: 10px; border-radius: 6px; border: 1px dashed rgba(15, 23, 42, 0.4); font-size: 13px; color: #0f172a; }}
         
-        /* Jauges et barres horizontales sur fond satiné */
+        /* Conteneurs des barres ADEME */
         .bar-container {{ background-color: rgba(15, 23, 42, 0.12); border-radius: 4px; height: 12px; width: 100%; margin-bottom: 8px; overflow: hidden; }}
         .sub-bar-container {{ background-color: rgba(15, 23, 42, 0.08); border-radius: 3px; height: 8px; width: 100%; margin-bottom: 6px; overflow: hidden; }}
         .stDataFrame div {{ background-color: transparent !important; }}
