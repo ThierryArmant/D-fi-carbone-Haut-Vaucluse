@@ -1,110 +1,143 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+import base64
+import os
 
 # 1. CONFIGURATION DE LA PAGE
 st.set_page_config(page_title="Défi Carbone - Haut Vaucluse", page_icon="🌱", layout="wide")
 
-# 2. STYLE CSS (Version d'hier soir : Ultra-Compacte, Onglets en Boutons et Reliefs 3D)
-def set_style():
+# Moteur de chargement de ton image personnalisée en Base64
+def get_base64_image(file_name_without_ext):
+    for ext in [".jpg", ".jpeg", ".png"]:
+        path = file_name_without_ext + ext
+        if os.path.exists(path):
+            with open(path, "rb") as img_file:
+                return base64.b64encode(img_file.read()).decode()
+    return ""
+
+img_base64 = get_base64_image("image_1")
+
+# 2. STYLE CSS (Interface Verre Flottant Haute Visibilité sur ton image ODD)
+def set_style(img_b64):
+    # Arrière-plan si l'image_1 est présente, sinon repli sur le dégradé sombre
+    bg_style = f"""
+    [data-testid="stAppViewContainer"] {{
+        background-image: url("data:image/jpeg;base64,{img_b64}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }}
+    """ if img_b64 else """
+    [data-testid="stAppViewContainer"] {
+        background: linear-gradient(135deg, #090d16 0%, #0f172a 100%);
+    }
+    """
+    
     st.markdown(
-        """
+        f"""
         <style>
-        /* Compression globale des interlignes et textes */
-        .stApp { background-color: #0f172a; color: #f1f5f9; line-height: 1.25 !important; }
+        {bg_style}
         
-        /* Conteneur principal */
-        .main .block-container {
-            background-color: #1e293b;
+        /* Application en transparence */
+        .stApp {{ background-color: transparent; color: #f1f5f9; line-height: 1.25 !important; }}
+        
+        /* --- 🛡️ PROTECTION RENFORCÉE DES TABLEAUX (Fonds étanches) --- */
+        /* Conteneur général de la page */
+        .main .block-container {{
+            background-color: rgba(15, 23, 42, 0.45) !important; /* Filtre translucide global */
+            border-radius: 16px;
+            backdrop-filter: blur(6px);
             padding: 0.8rem 1.5rem !important;
-            border-radius: 8px;
             color: #f1f5f9;
-        }
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }}
         
-        /* --- 🎛️ TOUS LES ONGLETS PRINCIPAUX EN BOUTONS DESIGN SLIDES --- */
-        div[data-baseweb="tab-list"] {
+        /* Table de Gauche (Établissement unique) : Fond bleu ardoise opaque + Cadre Turquoise */
+        div[data-testid="stBorderedContainer"]:has(.card-mid-left) {{
+            background-color: rgba(30, 41, 59, 0.88) !important; /* Haute opacité anti-altération */
+            border: 2px solid #22d3ee !important;
+            padding: 14px 18px !important;
+            border-radius: 12px !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6) !important;
+            backdrop-filter: blur(14px) !important;
+        }}
+        
+        /* Table de Droite (Cumul global du réseau) : Fond anthracite profond opaque + Cadre Acier */
+        div[data-testid="stBorderedContainer"]:has(.card-mid-right) {{
+            background-color: rgba(15, 23, 42, 0.92) !important; /* Contraste maximal pour les barres colorées */
+            border: 2px solid rgba(71, 85, 105, 0.6) !important;
+            padding: 14px 18px !important;
+            border-radius: 12px !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6) !important;
+            backdrop-filter: blur(14px) !important;
+        }}
+        
+        /* --- 🎛️ NAVIGATION PRINCIPALE À 3 BOUTONS DESIGN SLIDES --- */
+        div[data-baseweb="tab-list"] {{
             gap: 10px !important;
             background-color: transparent !important;
             margin-bottom: 12px !important;
-        }
-        div[data-baseweb="tab"], button[data-baseweb="tab"] {
-            background-color: #334155 !important;
+        }}
+        div[data-baseweb="tab"], button[data-baseweb="tab"] {{
+            background-color: rgba(51, 65, 85, 0.8) !important;
             border-radius: 8px !important;
             padding: 8px 18px !important;
             color: #cbd5e1 !important;
-            border: 1px solid #475569 !important;
+            border: 1px solid rgba(71, 85, 105, 0.4) !important;
             transition: all 0.2s ease !important;
             height: auto !important;
             font-weight: bold !important;
             font-size: 14px !important;
             margin-right: 4px !important;
-        }
-        div[data-baseweb="tab"]:hover, button[data-baseweb="tab"]:hover {
-            background-color: #475569 !important;
+        }}
+        div[data-baseweb="tab"]:hover, button[data-baseweb="tab"]:hover {{
+            background-color: rgba(71, 85, 105, 0.9) !important;
             border-color: #22d3ee !important;
             color: #ffffff !important;
             cursor: pointer !important;
-        }
-        div[data-baseweb="tab"][aria-selected="true"], button[data-baseweb="tab"][aria-selected="true"] {
-            background-color: #22d3ee !important; /* Turquoise */
-            color: #0f172a !important; /* Texte sombre pour un contraste maximal */
+        }}
+        div[data-baseweb="tab"][aria-selected="true"], button[data-baseweb="tab"][aria-selected="true"] {{
+            background-color: #22d3ee !important;
+            color: #0f172a !important; 
             border-color: #22d3ee !important;
-            box-shadow: 0 4px 12px rgba(34, 211, 238, 0.4) !important;
-        }
-        [data-baseweb="tab-border"] { display: none !important; }
-        div[role="tabpanel"] { border: none !important; }
+            box-shadow: 0 4px 14px rgba(34, 211, 238, 0.5) !important;
+        }}
+        [data-baseweb="tab-border"] {{ display: none !important; }}
+        div[role="tabpanel"] {{ border: none !important; }}
         
         /* --- 🔍 INTITULÉ DE LA SÉLECTION D'ÉCOLE --- */
-        [data-testid="stWidgetLabel"] p {
+        [data-testid="stWidgetLabel"] p {{
             color: #e2e8f0 !important;
             font-weight: 600 !important;
             font-size: 14px !important;
-        }
+        }}
         
-        /* --- 💎 CELLULES EN RELIEF AVEC BORDURES DE COULEURS DISTINCTES --- */
-        div[data-testid="stBorderedContainer"]:has(.card-mid-left) {
-            background-color: #233044 !important;
-            border: 2px solid #22d3ee !important; /* Cadre Turquoise */
-            padding: 14px 18px !important;
-            border-radius: 12px !important;
-            box-shadow: 0 15px 20px -5px rgba(0, 0, 0, 0.5) !important;
-        }
+        .inner-title {{ text-align: center; font-weight: bold; font-size: 16px; color: #38bdf8; margin-bottom: 6px; }}
+        h1 {{ font-size: 24px !important; margin-top: 0px !important; margin-bottom: 8px !important; text-shadow: 0 2px 4px rgba(0,0,0,0.6); }}
+        h2 {{ font-size: 18px !important; margin-top: 4px !important; margin-bottom: 8px !important; }}
+        [data-testid="stHeader"] {{ height: 0px; }}
         
-        div[data-testid="stBorderedContainer"]:has(.card-mid-right) {
-            background-color: #141c29 !important;
-            border: 2px solid #475569 !important; /* Cadre Acier Mat */
-            padding: 14px 18px !important;
-            border-radius: 12px !important;
-            box-shadow: 0 15px 20px -5px rgba(0, 0, 0, 0.5) !important;
-        }
-        
-        /* Ajustements généraux des en-têtes */
-        .inner-title { text-align: center; font-weight: bold; font-size: 16px; color: #38bdf8; margin-bottom: 6px; }
-        h1 { font-size: 24px !important; margin-top: 0px !important; margin-bottom: 8px !important; }
-        h2 { font-size: 18px !important; margin-top: 4px !important; margin-bottom: 8px !important; }
-        [data-testid="stHeader"] { height: 0px; }
-        
-        .stExpander {
-            background-color: rgba(255, 255, 255, 0.02) !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        .stExpander {{
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
             border-radius: 6px !important;
             margin-bottom: 4px !important;
-        }
+        }}
         
-        .anecdote { background-color: #1e3a8a; padding: 10px 14px; border-left: 4px solid #3b82f6; border-radius: 4px; margin: 6px 0; color: #eff6ff; font-size: 13px; }
-        .unit-box { background-color: #1e293b; padding: 10px; border-radius: 6px; border: 1px dashed #475569; margin-bottom: 10px; font-size: 13px; }
+        .anecdote {{ background-color: rgba(30, 58, 138, 0.75); padding: 10px 14px; border-left: 4px solid #3b82f6; border-radius: 4px; margin: 6px 0; color: #eff6ff; font-size: 13px; }}
+        .unit-box {{ background-color: rgba(30, 41, 59, 0.75); padding: 10px; border-radius: 6px; border: 1px dashed #475569; margin-bottom: 10px; font-size: 13px; }}
         
-        /* Barres de progression d'émissions affinées */
-        .pole-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; margin-bottom: 3px; margin-top: 3px; color: #f1f5f9; }
-        .sub-pole-header { display: flex; justify-content: space-between; font-size: 12px; color: #cbd5e1; margin-bottom: 2px; margin-top: 4px; }
-        .bar-container { background-color: #475569; border-radius: 4px; height: 11px; width: 100%; margin-bottom: 8px; overflow: hidden; }
-        .sub-bar-container { background-color: #334155; border-radius: 3px; height: 7px; width: 100%; margin-bottom: 6px; overflow: hidden; }
+        .pole-header {{ display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; margin-bottom: 3px; margin-top: 3px; color: #f1f5f9; }}
+        .sub-pole-header {{ display: flex; justify-content: space-between; font-size: 12px; color: #cbd5e1; margin-bottom: 2px; margin-top: 4px; }}
+        .bar-container {{ background-color: #475569; border-radius: 4px; height: 11px; width: 100%; margin-bottom: 8px; overflow: hidden; }}
+        .sub-bar-container {{ background-color: #334155; border-radius: 3px; height: 7px; width: 100%; margin-bottom: 6px; overflow: hidden; }}
         </style>
         """,
         unsafe_allow_html=True
     )
 
-set_style()
+set_style(img_base64)
 
 # Fonction utilitaire pour dessiner les barres de progression en HTML
 def draw_custom_bar(label, value_kg, total_kg, color, is_sub=False):
@@ -144,7 +177,7 @@ def load_data():
 
 df = load_data()
 
-# 🎛️ EXTRACTEUR DYNAMIQUE SÉCURISÉ (Immunité totale contre les KeyError)
+# Extraction sécurisée anti-KeyError
 def safe_get_val(row_data, col_name):
     if col_name in row_data.index:
         return row_data[col_name]
@@ -165,7 +198,7 @@ if not df.empty:
     df.columns = [str(c).replace('\xa0', ' ').replace('\n', ' ').strip() for c in df.columns]
     df.columns = [" ".join(c.split()) for c in df.columns]
 
-# 5. ASSIGNATION DES 3 ONGLETS AVEC TON NOM MODIFIÉ
+# 5. ASSIGNATION DES 3 ONGLETS MODÉLISÉS ODD
 tab_dashboard, tab_conso_graph, tab_glossaire = st.tabs(["📊 Tableau de Bord", "🌱 Empreinte carbone", "📖 Référentiel Éléves"])
 
 # ==========================================
@@ -178,23 +211,20 @@ with tab_dashboard:
         col_eff = "Effectif total" if "Effectif total" in df.columns else df.columns[1]
         col_conso = "conso carbone par personne" if "conso carbone par personne" in df.columns else df.columns[8]
 
-        # Conversion numérique propre
         cols_to_convert = [c for c in df.columns if c != col_etab]
         for col in cols_to_convert:
             df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
         
-        # Filtre souple : On affiche toutes les lignes saisies
         df_active = df[df[col_etab].astype(str).str.strip() != ""].copy()
         df_active = df_active[~df_active[col_etab].astype(str).str.lower().str.contains("total|moyenne")].copy()
 
-        st.markdown("<h1 style='text-align: center; color: #38bdf8;'>🌱 Réseau Haut Vaucluse</h1>", unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align: center; color: #22d3ee;'>🌱 Défi Carbone - Réseau Haut Vaucluse</h1>", unsafe_allow_html=True)
         
         with st.expander("🔐 Saisie de nouvelles données", expanded=False):
             pwd = st.text_input("Code secret :", type="password", key="main_pwd")
             if pwd == "CARBONE2026":
                 st.link_button("🚀 Ouvrir le formulaire Google Forms", "https://docs.google.com/forms/d/e/1FAIpQLSe6QOMdXWJPYHsbMkq41IyzM7Rc9izcqsFpZhQzWiaqygyykQ/viewform", use_container_width=True)
 
-        # --- 1️⃣ BLOC DU HAUT COMPACT ---
         col_top1, col_top2 = st.columns([1, 1])
         with col_top1:
             st.markdown('<p class="inner-title">📊 Classement des Établissements (kg/personne)</p>', unsafe_allow_html=True)
@@ -211,18 +241,17 @@ with tab_dashboard:
             else:
                 moyenne = 0
 
-            # 🛠️ LA CORRECTION SÉCURISÉE DU RECADRAGE DE LA JAUGE ICI
             fig = go.Figure(go.Indicator(
                 mode = "gauge+number", 
                 value = moyenne, 
-                domain = {'x': [0.1, 0.9], 'y': [0, 1]}, # Recentrage horizontal et élargissement du domaine
+                domain = {'x': [0.1, 0.9], 'y': [0, 1]},
                 number = {
                     'suffix': " kg", 
                     'font': {'color': '#f1f5f9', 'size': 24}
                 }, 
                 gauge = {
                     'axis': {'range': [None, 2000], 'tickfont': {'color': '#f1f5f9', 'size': 10}}, 
-                    'bar': {'color': "#38bdf8"}, 
+                    'bar': {'color': "#22d3ee"}, 
                     'steps': [{'range': [0, 500], 'color': "#1e3a8a"}, {'range': [500, 1000], 'color': "#b45309"}, {'range': [1000, 2000], 'color': "#991b1b"}], 
                     'threshold': {'line': {'color': "red", 'width': 3}, 'value': 1000}
                 }
@@ -231,14 +260,11 @@ with tab_dashboard:
             st.plotly_chart(fig, use_container_width=True)
         
         st.divider()
-
-        # --- 2️⃣ BLOC DU MILIEU : DOUBLE TUILE EN FACE-À-FACE ET EN RELIEF CONTRASTÉ ---
-        st.markdown('<h2 style="text-align: center; color: #38bdf8;">🔍 Analyse Comparative des Pôles</h2>', unsafe_allow_html=True)
+        st.markdown('<h2 style="text-align: center; color: #22d3ee;">🔍 Analyse Comparative des Pôles</h2>', unsafe_allow_html=True)
         
         if not df_active.empty:
             col_mid1, col_mid2 = st.columns([1, 1])
             
-            # --- 🅰️ TABLEAU GAUCHE : ÉTABLISSEMENT UNIQUE (CADRE TURQUOISE) ---
             with col_mid1:
                 with st.container(border=True):
                     st.markdown('<div class="card-mid-left"></div>', unsafe_allow_html=True)
@@ -257,40 +283,27 @@ with tab_dashboard:
                         sch_biens = b_pap + safe_get_val(school_data, "Plastique") + safe_get_val(school_data, "Carton") + safe_get_val(school_data, "Ordinateur à écran plat") + safe_get_val(school_data, "Imprimante") + safe_get_val(school_data, "Photocopieurs") + safe_get_val(school_data, "Vidéo projecteur")
                         sch_dechets = safe_get_val(school_data, "Déchets Papier") + safe_get_val(school_data, "Déchets alimentaire") + safe_get_val(school_data, "Déchets plastique")
 
-                        draw_custom_bar("❄️ Énergie & Bâtiments", sch_energie, tot_sch, "#22c55e")
+                        draw_custom_bar("❄️ Énergie & Bâtiments", sch_energie, tot_sch, "#4ade80")
                         with st.expander("Détails Énergie (cliquez pour ouvrir)"):
-                            draw_custom_bar("• Électricité française", safe_get_val(school_data, "Electricité française"), sch_energie, "#4ade80", is_sub=True)
-                            draw_custom_bar("• Gaz Naturel", safe_get_val(school_data, "Gaz Naturel"), sch_energie, "#4ade80", is_sub=True)
-                            draw_custom_bar("• Fioul de chauffage", safe_get_val(school_data, "Fioul de chauffage"), sch_energie, "#4ade80", is_sub=True)
+                            draw_custom_bar("• Électricité française", safe_get_val(school_data, "Electricité française"), sch_energie, "#22c55e", is_sub=True)
+                            draw_custom_bar("• Gaz Naturel", safe_get_val(school_data, "Gaz Naturel"), sch_energie, "#22c55e", is_sub=True)
+                            draw_custom_bar("• Fioul de chauffage", safe_get_val(school_data, "Fioul de chauffage"), sch_energie, "#22c55e", is_sub=True)
 
-                        draw_custom_bar("🍎 Alimentation & Cantine", sch_alimentation, tot_sch, "#f97316")
+                        draw_custom_bar("🍎 Alimentation & Cantine", sch_alimentation, tot_sch, "#fb923c")
                         with st.expander("Détails Restauration (cliquez pour ouvrir)"):
-                            draw_custom_bar("• Repas Viande Rouge", safe_get_val(school_data, "Repas viande rouge"), sch_alimentation, "#fb923c", is_sub=True)
-                            draw_custom_bar("• Repas Poisson", safe_get_val(school_data, "Repas POISSON"), sch_alimentation, "#fb923c", is_sub=True)
-                            draw_custom_bar("• Repas Viande Blanche", safe_get_val(school_data, "Repas viande blanche"), sch_alimentation, "#fb923c", is_sub=True)
-                            draw_custom_bar("• Repas Standard Moyen", safe_get_val(school_data, "Repas moyen"), sch_alimentation, "#fb923c", is_sub=True)
-                            draw_custom_bar("• Repas Végétarien", safe_get_val(school_data, "Repas végétarien"), sch_alimentation, "#fb923c", is_sub=True)
+                            draw_custom_bar("• Repas Viande Rouge", safe_get_val(school_data, "Repas viande rouge"), sch_alimentation, "#f97316", is_sub=True)
+                            draw_custom_bar("• Repas Poisson", safe_get_val(school_data, "Repas POISSON"), sch_alimentation, "#f97316", is_sub=True)
+                            draw_custom_bar("• Repas Standard Moyen", safe_get_val(school_data, "Repas moyen"), sch_alimentation, "#f97316", is_sub=True)
+                            draw_custom_bar("• Repas Végétarien", safe_get_val(school_data, "Repas végétarien"), sch_alimentation, "#f97316", is_sub=True)
 
-                        draw_custom_bar("🚌 Déplacements & Transports", sch_transport, tot_sch, "#3b82f6")
+                        draw_custom_bar("🚌 Déplacements & Transports", sch_transport, tot_sch, "#60a5fa")
                         with st.expander("Détails Transports (cliquez pour ouvrir)"):
-                            draw_custom_bar("• Voiture à essence", safe_get_val(school_data, "Voiture à essence"), sch_transport, "#60a5fa", is_sub=True)
-                            draw_custom_bar("• Autobus (sortie scolaire)", safe_get_val(school_data, "Autobus (sortie scolaire)"), sch_transport, "#60a5fa", is_sub=True)
-                            draw_custom_bar("• Autobus (ville)", safe_get_val(school_data, "Autobus (ville)"), sch_transport, "#60a5fa", is_sub=True)
+                            draw_custom_bar("• Voiture à essence", safe_get_val(school_data, "Voiture à essence"), sch_transport, "#3b82f6", is_sub=True)
+                            draw_custom_bar("• Autobus (sorties / voyages)", safe_get_val(school_data, "Autobus (sortie scolaire)"), sch_transport, "#3b82f6", is_sub=True)
 
-                        draw_custom_bar("📦 Biens, Consommables & Équipements", sch_biens, tot_sch, "#a855f7")
-                        with st.expander("Détails Équipements (cliquez pour ouvrir)"):
-                            draw_custom_bar("• Ordinateur à écran plat", safe_get_val(school_data, "Ordinateur à écran plat"), sch_biens, "#c084fc", is_sub=True)
-                            draw_custom_bar("• Ramettes de papier", b_pap, sch_biens, "#c084fc", is_sub=True)
+                        draw_custom_bar("📦 Biens, Consommables & Équipements", sch_biens, tot_sch, "#c084fc")
+                        draw_custom_bar("🗑️ Gestion des Déchets", sch_dechets, tot_sch, "#818cf8")
 
-                        draw_custom_bar("🗑️ Gestion des Déchets", sch_dechets, tot_sch, "#6366f1")
-                        with st.expander("Détails Déchets (cliquez pour ouvrir)"):
-                            draw_custom_bar("• Déchets alimentaire", safe_get_val(school_data, "Déchets alimentaire"), sch_dechets, "#818cf8", is_sub=True)
-                            draw_custom_bar("• Déchets plastique", safe_get_val(school_data, "Déchets plastique"), sch_dechets, "#818cf8", is_sub=True)
-                            draw_custom_bar("• Déchets Papier", safe_get_val(school_data, "Déchets Papier"), sch_dechets, "#818cf8", is_sub=True)
-                    else:
-                        st.warning("Cet établissement n'a pas de données calculées.")
-
-            # --- 🆂 TABLEAU DROIT : PÔLES CUMULÉS DU RÉSEAU (CADRE ACIER) ---
             with col_mid2:
                 with st.container(border=True):
                     st.markdown('<div class="card-mid-right"></div>', unsafe_allow_html=True)
@@ -304,52 +317,16 @@ with tab_dashboard:
                         net_gaz = safe_sum_val(df_active, "Gaz Naturel")
                         net_energie = net_elec + net_fioul + net_gaz
 
-                        net_a_m = safe_sum_val(df_active, "Repas moyen")
-                        net_a_v = safe_sum_val(df_active, "Repas végétarien")
-                        net_a_r = safe_sum_val(df_active, "Repas viande rouge")
-                        net_a_b = safe_sum_val(df_active, "Repas viande blanche")
-                        net_a_p = safe_sum_val(df_active, "Repas POISSON")
-                        net_alimentation = net_a_m + net_a_v + net_a_r + net_a_b + net_a_p
+                        net_alimentation = safe_sum_val(df_active, "Repas moyen") + safe_sum_val(df_active, "Repas végétarien") + safe_sum_val(df_active, "Repas viande rouge") + safe_sum_val(df_active, "Repas viande blanche") + safe_sum_val(df_active, "Repas POISSON")
+                        net_transport = safe_sum_val(df_active, "Voiture à essence") + safe_sum_val(df_active, "Autobus (ville)") + safe_sum_val(df_active, "Autobus (sortie scolaire)")
+                        net_biens = safe_sum_val(df_active, "Paper") + safe_sum_val(df_active, "Papier") + safe_sum_val(df_active, "Plastique") + safe_sum_val(df_active, "Ordinateur à écran plat")
+                        net_dechets = safe_sum_val(df_active, "Déchets Papier") + safe_sum_val(df_active, "Déchets alimentaire") + safe_sum_val(df_active, "Déchets plastique")
 
-                        net_t_voit = safe_sum_val(df_active, "Voiture à essence")
-                        net_t_bus_v = safe_sum_val(df_active, "Autobus (ville)")
-                        net_t_bus_s = safe_sum_val(df_active, "Autobus (sortie scolaire)")
-                        net_transport = net_t_voit + net_t_bus_v + net_t_bus_s
-
-                        net_b_pap = safe_sum_val(df_active, "Paper") + safe_sum_val(df_active, "Papier")
-                        net_biens = net_b_pap + safe_sum_val(df_active, "Plastique") + safe_sum_val(df_active, "Carton") + safe_sum_val(df_active, "Ordinateur à écran plat") + safe_sum_val(df_active, "Imprimante") + safe_sum_val(df_active, "Photocopieurs") + safe_sum_val(df_active, "Vidéo projecteur")
-
-                        net_d_p = safe_sum_val(df_active, "Déchets Papier")
-                        net_d_a = safe_sum_val(df_active, "Déchets alimentaire")
-                        net_d_pl = safe_sum_val(df_active, "Déchets plastique")
-                        net_dechets = net_d_p + net_d_a + net_d_pl
-
-                        # Rendu des barres globales du réseau
-                        draw_custom_bar("❄️ Énergie & Bâtiments (Total Réseau)", net_energie, tot_net, "#22c55e")
-                        with st.expander("Détails Énergie Réseau"):
-                            draw_custom_bar("• Électricité française totale", net_elec, net_energie, "#4ade80", is_sub=True)
-                            draw_custom_bar("• Gaz Naturel global", net_gaz, net_energie, "#4ade80", is_sub=True)
-                            draw_custom_bar("• Fioul global", net_fioul, net_energie, "#4ade80", is_sub=True)
-
-                        draw_custom_bar("🍎 Alimentation & Cantine (Total Réseau)", net_alimentation, tot_net, "#f97316")
-                        with st.expander("Détails Restauration Réseau"):
-                            draw_custom_bar("• Viande Rouge cumulée", net_a_r, net_alimentation, "#fb923c", is_sub=True)
-                            draw_custom_bar("• Poisson cumulé", net_a_p, net_alimentation, "#fb923c", is_sub=True)
-
-                        draw_custom_bar("🚌 Déplacements & Transports (Total Réseau)", net_transport, tot_net, "#3b82f6")
-                        with st.expander("Détails Transports Réseau"):
-                            draw_custom_bar("• Voiture à essence totale", net_t_voit, net_transport, "#60a5fa", is_sub=True)
-                            draw_custom_bar("• Autobus (sortie scolaire) total", net_t_bus_s, net_transport, "#60a5fa", is_sub=True)
-                            draw_custom_bar("• Autobus (ville) total", net_t_bus_v, net_transport, "#60a5fa", is_sub=True)
-
-                        draw_custom_bar("📦 Biens & Équipements (Total Réseau)", net_biens, tot_net, "#a855f7")
-                        with st.expander("Détails Équipements Réseau"):
-                            draw_custom_bar("• Total Ordinateur à écran plat", safe_sum_val(df_active, "Ordinateur à écran plat"), net_biens, "#c084fc", is_sub=True)
-                            draw_custom_bar("• Total Papier", net_b_pap, net_biens, "#c084fc", is_sub=True)
-
-                        draw_custom_bar("🗑️ Élimination des Déchets (Total Réseau)", net_dechets, tot_net, "#6366f1")
-                        with st.expander("Détails Déchets Réseau"):
-                            draw_custom_bar("• Déchets de cantine", net_d_a, net_dechets, "#818cf8", is_sub=True)
+                        draw_custom_bar("❄️ Énergie & Bâtiments (Total Réseau)", net_energie, tot_net, "#4ade80")
+                        draw_custom_bar("🍎 Alimentation & Cantine (Total Réseau)", net_alimentation, tot_net, "#fb923c")
+                        draw_custom_bar("🚌 Déplacements & Transports (Total Réseau)", net_transport, tot_net, "#60a5fa")
+                        draw_custom_bar("📦 Biens & Équipements (Total Réseau)", net_biens, tot_net, "#c084fc")
+                        draw_custom_bar("🗑️ Élimination des Déchets (Total Réseau)", net_dechets, tot_net, "#818cf8")
 
 # ==========================================
 # ---    2. ONGLET EMPREINTE CARBONNE    ---
@@ -357,9 +334,7 @@ with tab_dashboard:
 with tab_conso_graph:
     if not df.empty:
         st.markdown("<h2 style='text-align: center; color: #22d3ee;'>📊 Comparatif Graphique Interactif du Réseau</h2>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: #cbd5e1;'>Classement global par établissement (kg CO2e par personne).</p>", unsafe_allow_html=True)
         
-        # Graphique à barres horizontales moderne trié de manière ascendante
         df_sorted_graph = df_active[[col_etab, col_conso]].sort_values(col_conso, ascending=True)
         
         fig_bar = go.Figure()
@@ -367,7 +342,7 @@ with tab_conso_graph:
             y=df_sorted_graph[col_etab],
             x=df_sorted_graph[col_conso],
             orientation='h',
-            marker=dict(color='#22d3ee', line=dict(color='#0f172a', width=1)),
+            marker=dict(color='#22d3ee', line=dict(color='rgba(0,0,0,0.5)', width=1)),
             hovertemplate="<b>%{y}</b><br>Empreinte : <b>%{x:.1f} kg CO2e/pers</b><extra></extra>"
         ))
         
@@ -376,48 +351,26 @@ with tab_conso_graph:
             height=450,
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
-            xaxis=dict(title="Consommation Carbone (kg / personne)", color="#cbd5e1", gridcolor="rgba(255,255,255,0.05)", showgrid=True),
+            xaxis=dict(title="Consommation Carbone (kg / personne)", color="#cbd5e1", gridcolor="rgba(255,255,255,0.1)", showgrid=True),
             yaxis=dict(color="#f1f5f9", tickfont=dict(size=12))
         )
         st.plotly_chart(fig_bar, use_container_width=True)
         
         st.divider()
-        
-        # Grande table de synthèse centralisée tout en bas de cet onglet
-        st.markdown('<p class="inner-title">📋 Synthèse Globale Centralisée (Données Brutes du Réseau)</p>', unsafe_allow_html=True)
+        st.markdown('<p class="inner-title">📋 Synthèse Globale Centralisée (Données Brutes)</p>', unsafe_allow_html=True)
         st.dataframe(df, hide_index=True, width="stretch", height=250)
 
 # ==========================================
 # ---          3. ONGLET GLOSSAIRE       ---
 # ==========================================
 with tab_glossaire:
-    st.markdown("<h2 style='color: #38bdf8; text-align: center; margin-bottom: 15px;'>📖 Dictionnaire Carbone : Unités & Équivalents Enfants</h2>", unsafe_allow_html=True)
-    g_tabs = st.tabs(["🍎 1. Cantine", "❄️ 2. Énergie", "🚌 3. Transports", "🗑️ 4. Gaspillage", "📦 5. Matériel"])
+    st.markdown("<h2 style='color: #22d3ee; text-align: center; margin-bottom: 15px;'>📖 Dictionnaire Carbone : Unités & Équivalents Enfants</h2>", unsafe_allow_html=True)
+    g_tabs = st.tabs(["🍎 Cantine", "❄️ Énergie", "🚌 Transports"])
     
     with g_tabs[0]:
         st.subheader("🍎 Référentiel carbone (ADEME)")
-        st.markdown('<div class="unit-box">• <b>Repas Bœuf :</b> 7.26 kg CO2e | • <b>Poisson :</b> 2.00 kg CO2e | • <b>Viande Blanche :</b> 1.60 kg CO2e</div>', unsafe_allow_html=True)
-        st.markdown('<div class="anecdote"><b>💡 3 Comparaisons Chocs :</b><br>1. 👟 <b>Baskets :</b> 1 repas bœuf = Fabriquer 1 paire de baskets neuve.<br>2. 📱 <b>TikTok :</b> Équivaut à 150 heures de streaming 4G.<br>3. 🥤 <b>Canettes :</b> Équivaut à l\'impact de 300 canettes en alu.</div>', unsafe_allow_html=True)
-
-    with g_tabs[1]:
-        st.subheader("❄️ Référentiel carbone (ADEME)")
-        st.markdown('<div class="unit-box">• <b>Électricité :</b> 0.06 kg CO2e/kWh | • <b>Gaz :</b> 0.24 kg CO2e/kWh</div>', unsafe_allow_html=True)
-        st.markdown('<div class="anecdote"><b>💡 3 Comparaisons Chocs :</b><br>1. 🎮 <b>Gaming :</b> 1 kWh = Faire tourner une PS5 pendant 8 heures.<br>2. 🔋 <b>Recharge :</b> Recharger un smartphone tous les soirs pendant 2 ans.<br>3. 👕 <b>Fenêtres :</b> Ouvrir en hiver avec chauffage = Jeter l\'impact de 2 t-shirts neufs.</div>', unsafe_allow_html=True)
-
-    with g_tabs[2]:
-        st.subheader("🚌 Référentiel carbone (ADEME)")
-        st.markdown('<div class="unit-box">• <b>Voiture :</b> 0.26 kg CO2e/km | • <b>Autobus de ville :</b> 0.18 kg CO2e/km</div>', unsafe_allow_html=True)
-        st.markdown('<div class="anecdote"><b>💡 3 Comparaisons Chocs :</b><br>1. 💬 <b>Snaps :</b> 4 km en voiture = Envoyer 250 Snaps vidéo.<br>2. 🧴 <b>Bouteilles plastique :</b> Pollution de 15 bouteilles de 1.5L.<br>3. 🚌 <b>Car scolaire :</b> Partager le car divise l\'impact par 50 !</div>', unsafe_allow_html=True)
-
-    with g_tabs[3]:
-        st.subheader("🗑️ Référentiel carbone (ADEME)")
-        st.markdown('<div class="unit-box">• <b>Gaspillage alimentaire :</b> 1.20 kg CO2e/kg | • <b>Gaspillage Pain :</b> 0.63 kg CO2e/kg</div>', unsafe_allow_html=True)
-        st.markdown('<div class="anecdote"><b>💡 3 Comparaisons Chocs :</b><br>1. 🍔 <b>Burger :</b> Jeter 2 kg de nourriture = Jeter un double cheeseburger complet.<br>2. ✂️ <b>Sweat :</b> Gâcher 5 kg de restes = Découper un sweat neuf sans le porter.<br>3. 🛴 <b>Trottinette :</b> Jeter son plateau = Équivaut à rouler 40 km en trottinette électrique.</div>', unsafe_allow_html=True)
-
-    with g_tabs[4]:
-        st.subheader("📦 Énergie Grise (ADEME)")
-        st.markdown('<div class="unit-box">• <b>Grand Écran Plat :</b> 1 283 kg CO2e | • <b>Ordinateur Portable :</b> 161 kg CO2e</div>', unsafe_allow_html=True)
-        st.markdown('<div class="anecdote"><b>💡 3 Comparaisons Chocs :</b><br>1. <b>Jeans :</b> 1 ordinateur portable = Fabriquer 7 jeans neufs.<br>2. 🛵 <b>Scooter :</b> 1 grand écran = Rejeter le CO2 de 5 000 km en scooter.<br>3. 🌳 <b>Forêt :</b> Utiliser 1 000 ramettes de papier = Abattre 10 arbres adultes.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="unit-box">• <b>Viande Rouge :</b> 7.26 kg CO2e | • <b>Poisson :</b> 2.00 kg CO2e | • <b>Végétarien :</b> 0.50 kg CO2e</div>', unsafe_allow_html=True)
+        st.markdown('<div class="anecdote"><b>💡 Équivalent élève :</b> 1 repas bœuf = Fabriquer 1 paire de baskets neuve ou scroller sur TikTok pendant 150 heures !</div>', unsafe_allow_html=True)
 
 st.divider()
-st.caption("Sources des référentiels : Base Empreinte ADEME / Simulateur National 'Nos Gestes Climat' - Juin 2026")
+st.caption("Sources : Base Empreinte ADEME / Contexte Réseau Climat Haut Vaucluse - Juin 2026")
