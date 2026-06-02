@@ -5,12 +5,12 @@ import plotly.graph_objects as go
 # 1. CONFIGURATION DE LA PAGE
 st.set_page_config(page_title="Défi Carbone - Haut Vaucluse", page_icon="🌱", layout="wide")
 
-# 2. STYLE CSS (Mode Sombre / Ultra-Compact avec boutons universels et cadres contrastés)
+# 2. STYLE CSS (Version d'hier soir : Ultra-Compacte, Onglets en Boutons et Cadres 3D contrastés)
 def set_style():
     st.markdown(
         """
         <style>
-        /* Compression globale des interlignes et textes */
+        /* Compression globale des interlignes et textes pour éviter le scrolling */
         .stApp { background-color: #0f172a; color: #f1f5f9; line-height: 1.25 !important; }
         
         /* Conteneur principal */
@@ -61,7 +61,7 @@ def set_style():
             font-size: 14px !important;
         }
         
-        /* --- 💎 CELLULES EN RELIEF ÉTANCHE STYLE DIAPOSITIVES --- */
+        /* --- 💎 DEUX TUILES EN RELIEF ÉTANCHE STYLE DIAPOSITIVES --- */
         div[data-testid="stBorderedContainer"]:has(.card-mid-left) {
             background-color: #233044 !important;
             border: 2px solid #22d3ee !important; /* Cadre Turquoise */
@@ -126,7 +126,7 @@ def draw_custom_bar(label, value_kg, total_kg, color, is_sub=False):
 votre_gid = "169103083" 
 url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid={votre_gid}"
 
-# 4. CHARGEMENT UNIVERSEL DES DONNÉES (Anti-Coupures de lignes d'en-têtes)
+# 4. CHARGEMENT UNIVERSEL DES DONNÉES
 @st.cache_data(ttl=30)
 def load_data():
     try:
@@ -144,15 +144,15 @@ def load_data():
 
 df = load_data()
 
-# 🎛️ FONCTION RECHERCHE UNIVERSELLE PROTECTRICE (Élimine à 100% les risques de KeyError)
-def safe_get(source, include_all, exclude_any=None):
+# 🎛️ EXTRACTEUR DYNAMIQUE SÉCURISÉ (Immunité totale contre les KeyError)
+def safe_get(source, keywords, exclude_any=None):
     is_df = isinstance(source, pd.DataFrame)
     cols = source.columns if is_df else source.index
     for c in cols:
         c_clean = str(c).lower().replace('é','e').replace('è','e').replace('à','a').replace('â','a').replace('ô','o').strip()
         if exclude_any and any(ex in c_clean for ex in exclude_any):
             continue
-        if all(inc in c_clean for inc in include_all):
+        if any(k.lower() in c_clean for k in keywords):
             return source[c].sum() if is_df else source[c]
     return 0.0
 
@@ -173,7 +173,7 @@ if not df.empty:
     for col in cols_to_convert:
         df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
     
-    # Préservation de l'intégralité des lignes d'écoles saisies
+    # FILTRE SOUPLÉ (On accepte toutes les lignes ayant un nom pour afficher les nouvelles saisies)
     df_active = df[df[col_etab].astype(str).str.strip() != ""].copy()
     df_active = df_active[~df_active[col_etab].astype(str).str.lower().str.contains("total|moyenne")].copy()
 
@@ -232,26 +232,26 @@ with tab_dashboard:
                     tot_sch = school_data[col_total]
                     
                     if tot_sch >= 0:
-                        # Extractions individuelles 100% sécurisées via safe_get
+                        # Extractions individuelles via safe_get
                         e_elec = safe_get(school_data, ["electricit"])
-                        e_fioul = safe_get(school_data, ["fioul"]) + safe_get(school_data, ["fuel"])
+                        e_fioul = safe_get(school_data, ["fioul", "fuel"])
                         e_gaz = safe_get(school_data, ["gaz"])
                         sch_energie = e_elec + e_fioul + e_gaz
 
-                        a_m = safe_get(school_data, ["repas", "moyen"]) + safe_get(school_data, ["repas", "standard"])
-                        a_v = safe_get(school_data, ["vegeta"]) + safe_get(school_data, ["vege"])
-                        a_r = safe_get(school_data, ["rouge"]) + safe_get(school_data, ["boeuf"]) + safe_get(school_data, ["bœuf"])
-                        a_b = safe_get(school_data, ["blanche"]) + safe_get(school_data, ["poulet"])
+                        a_m = safe_get(school_data, ["repas moyen", "repas standard"])
+                        a_v = safe_get(school_data, ["vegeta", "vege"])
+                        a_r = safe_get(school_data, ["rouge", "boeuf", "bœuf"])
+                        a_b = safe_get(school_data, ["blanche", "poulet"])
                         a_p = safe_get(school_data, ["poisson"])
                         sch_alimentation = a_m + a_v + a_r + a_b + a_p
 
                         t_voit = safe_get(school_data, ["voiture"])
                         t_bus_v = safe_get(school_data, ["ville"])
-                        t_bus_s = safe_get(school_data, ["sortie"]) + safe_get(school_data, ["scolaire"])
+                        t_bus_s = safe_get(school_data, ["sortie", "scolaire"])
                         sch_transport = t_voit + t_bus_v + t_bus_s
 
-                        b_pap = safe_get(school_data, ["papier"], exclude_any=["dechet"]) + safe_get(school_data, ["paper"], exclude_any=["dechet"])
-                        b_ord = safe_get(school_data, ["ordinateur"]) + safe_get(school_data, ["ecran"]) + safe_get(school_data, ["écran"])
+                        b_pap = safe_get(school_data, ["papier", "paper"], exclude_any=["dechet"])
+                        b_ord = safe_get(school_data, ["ordinateur", "ecran", "écran"])
                         sch_biens = b_pap + b_ord
 
                         d_p = safe_get(school_data, ["dechet", "papier"])
@@ -288,7 +288,7 @@ with tab_dashboard:
                             draw_custom_bar("• Restes alimentaires", d_a, sch_dechets, "#818cf8", is_sub=True)
                             draw_custom_bar("• Déchets plastique", d_pl, sch_dechets, "#818cf8", is_sub=True)
 
-            # --- 🆂 TABLEAU DROIT : PÔLES CUMULÉS DU RÉSEAU (CADRE ACIER) ---
+            # --- 🆂 TABLEAU DROIT : PÔLES CUMULÉS DU RÉSEAU (CADRE ACIER SOMBRE) ---
             with col_mid2:
                 with st.container(border=True):
                     st.markdown('<div class="card-mid-right"></div>', unsafe_allow_html=True)
@@ -297,26 +297,26 @@ with tab_dashboard:
                     tot_net = df_active[col_total].sum()
                     
                     if tot_net >= 0:
-                        # Calculs cumulés du réseau 100% sécurisés via safe_get
+                        # Sommes globales du réseau via safe_get
                         net_elec = safe_get(df_active, ["electricit"])
-                        net_fioul = safe_get(df_active, ["fioul"]) + safe_get(df_active, ["fuel"])
+                        net_fioul = safe_get(df_active, ["fioul", "fuel"])
                         net_gaz = safe_get(df_active, ["gaz"])
                         net_energie = net_elec + net_fioul + net_gaz
 
                         net_a_m = safe_get(df_active, ["repas", "moyen"]) + safe_get(df_active, ["repas", "standard"])
-                        net_a_v = safe_get(df_active, ["vegeta"]) + safe_get(df_active, ["vege"])
-                        net_a_r = safe_get(df_active, ["rouge"]) + safe_get(df_active, ["boeuf"]) + safe_get(df_active, ["bœuf"])
-                        net_a_b = safe_get(df_active, ["blanche"]) + safe_get(df_active, ["poulet"])
+                        net_a_v = safe_get(df_active, ["vegeta", "vege"])
+                        net_a_r = safe_get(df_active, ["rouge", "boeuf", "bœuf"])
+                        net_a_b = safe_get(df_active, ["blanche", "poulet"])
                         net_a_p = safe_get(df_active, ["poisson"])
                         net_alimentation = net_a_m + net_a_v + net_a_r + net_a_b + net_a_p
 
                         net_t_voit = safe_get(df_active, ["voiture"])
                         net_t_bus_v = safe_get(df_active, ["ville"])
-                        net_t_bus_s = safe_get(df_active, ["sortie"]) + safe_get(df_active, ["scolaire"])
+                        net_t_bus_s = safe_get(df_active, ["sortie", "scolaire"])
                         net_transport = net_t_voit + net_t_bus_v + net_t_bus_s
 
-                        net_b_pap = safe_get(df_active, ["papier"], exclude_any=["dechet"]) + safe_get(df_active, ["paper"], exclude_any=["dechet"])
-                        net_b_ord = safe_get(df_active, ["ordinateur"]) + safe_get(df_active, ["ecran"]) + safe_get(df_active, ["écran"])
+                        net_b_pap = safe_get(df_active, ["papier", "paper"], exclude_any=["dechet"])
+                        net_b_ord = safe_get(df_active, ["ordinateur", "ecran", "écran"])
                         net_biens = net_b_pap + net_b_ord
 
                         net_d_p = safe_get(df_active, ["dechet", "papier"])
@@ -349,7 +349,7 @@ with tab_dashboard:
                             draw_custom_bar("• Restes de cantine globaux", net_d_a, net_dechets, "#818cf8", is_sub=True)
 
 # ==========================================
-# ---        2. ONGLET EMPREINTE CARBONNE   ---
+# ---    2. ONGLET EMPREINTE CARBONNE    ---
 # ==========================================
 with tab_conso_graph:
     if not df.empty:
@@ -370,7 +370,7 @@ with tab_conso_graph:
         
         fig_bar.update_layout(
             margin=dict(l=20, r=20, t=10, b=10),
-            height=400,
+            height=450,
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
             xaxis=dict(title="Consommation Carbone (kg / personne)", color="#cbd5e1", gridcolor="rgba(255,255,255,0.05)", showgrid=True),
@@ -380,7 +380,7 @@ with tab_conso_graph:
         
         st.divider()
         
-        # Grande table de synthèse centralisée
+        # Grande table de synthèse centralisée tout en bas de cet onglet
         st.markdown('<p class="inner-title">📋 Synthèse Globale Centralisée (Données Brutes du Réseau)</p>', unsafe_allow_html=True)
         st.dataframe(df, hide_index=True, width="stretch", height=250)
 
