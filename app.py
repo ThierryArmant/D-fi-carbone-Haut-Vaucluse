@@ -19,7 +19,7 @@ def get_base64_image(file_name_without_ext):
 
 img_base64 = get_base64_image("image_1")
 
-# 2. STYLE CSS (Moteur Pure Glassmorphism - Cristal Givré Blanc Lumineux)
+# 2. STYLE CSS (Le Bouclier Unique Satin Givré Contrasté)
 def set_style(img_b64):
     bg_style = f"""
     [data-testid="stAppViewContainer"], .stAppViewContainer {{
@@ -40,29 +40,29 @@ def set_style(img_b64):
         <style>
         {bg_style}
         
-        /* Nettoyage complet de tous les voiles opaques par défaut de Streamlit */
+        /* Nettoyage intégral des voiles natifs de Streamlit */
         .stApp, [data-testid="stMain"], .main, [data-testid="stVerticalBlock"], [data-testid="stVerticalBlockContainer"] {{
             background-color: transparent !important;
         }}
         
-        /* --- 💎 LE CADRE GLOSSY UNIQUE "SATIN GIVRÉ BLANC" LUNINEUX --- */
+        /* --- 💎 LA GRANDE DALLE CRYSTAL SÉCURISÉE (Master Glassmorphism +20% Contraste) --- */
         .main .block-container {{
-            background-color: rgba(255, 255, 255, 0.48) !important; /* Transparence blanche cristalline et lumineuse */
-            backdrop-filter: blur(25px) saturate(150%) !important; /* Magnifique effet givré translucide */
-            -webkit-backdrop-filter: blur(25px) saturate(150%) !important;
-            border: 1px solid rgba(255, 255, 255, 0.7) !important; /* Liseré blanc pur très net */
+            background-color: rgba(228, 235, 245, 0.58) !important; /* Teinte nacre légèrement enrichie pour le contraste */
+            backdrop-filter: blur(25px) saturate(160%) !important; /* Flou dépoli lourd ultra-pro */
+            -webkit-backdrop-filter: blur(25px) saturate(160%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.75) !important; /* Liseré blanc pur très net */
             padding: 2.5rem !important;
             border-radius: 24px !important;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1) !important;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15) !important;
             margin-top: 1rem !important;
         }}
         
-        /* Sous-boîtes internes translucides pour structurer l'espace sans assombrir */
+        /* Sous-boîtes pour l'organisation interne de l'onglet 1 */
         div[data-testid="stBorderedContainer"], 
         div[data-testid="stColumn"],
         [data-testid="stExpander"], 
         .stExpander {{
-            background-color: rgba(255, 255, 255, 0.2) !important;
+            background-color: rgba(255, 255, 255, 0.22) !important;
             border: 1px solid rgba(255, 255, 255, 0.4) !important;
             border-radius: 14px !important;
             box-shadow: none !important;
@@ -70,25 +70,25 @@ def set_style(img_b64):
             margin-bottom: 10px !important;
         }}
         
-        /* --- 🎛️ STYLE DES BOUTONS DE NAVIGATION INTER-ONGLETS --- */
+        /* --- 🎛️ STYLE DES BOUTONS DE NAVIGATION DES ONGLET PRINCIPAUX --- */
         div[data-baseweb="tab-list"] {{
             gap: 12px !important;
             background-color: transparent !important;
             margin-bottom: 20px !important;
         }}
         div[data-baseweb="tab"], button[data-baseweb="tab"] {{
-            background-color: rgba(255, 255, 255, 0.3) !important;
+            background-color: rgba(255, 255, 255, 0.35) !important;
             backdrop-filter: blur(10px) !important;
             border-radius: 8px !important;
             padding: 10px 22px !important;
             color: #0f172a !important;
-            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            border: 1px solid rgba(255, 255, 255, 0.45) !important;
             transition: all 0.2s ease !important;
             font-weight: bold !important;
             font-size: 14px !important;
         }}
         div[data-baseweb="tab"]:hover, button[data-baseweb="tab"]:hover {{
-            background-color: rgba(255, 255, 255, 0.55) !important;
+            background-color: rgba(255, 255, 255, 0.6) !important;
             border-color: #22d3ee !important;
         }}
         div[data-baseweb="tab"][aria-selected="true"], button[data-baseweb="tab"][aria-selected="true"] {{
@@ -100,7 +100,7 @@ def set_style(img_b64):
         [data-baseweb="tab-border"] {{ display: none !important; }}
         div[role="tabpanel"] {{ border: none !important; }}
         
-        /* 🛡️ TEXTES ULTRA-NETS EN NOIR ARDOISE PROFOND SUR LE FOND CLAIR */
+        /* 🛡️ VERROUILLAGE DES TEXTES EN NOIR ARDOISE PROFOND */
         h1, h2, h3, label, .stMarkdown p, [data-testid="stWidgetLabel"] p, .pole-header, .sub-pole-header {{
             color: #0f172a !important;
             font-weight: bold !important;
@@ -109,11 +109,11 @@ def set_style(img_b64):
         .inner-title {{ text-align: center; font-weight: bold; font-size: 16px; color: #0284c7; margin-bottom: 12px; }}
         [data-testid="stHeader"] {{ height: 0px; }}
         
-        /* Composants internes */
+        /* Éléments internes aux fiches */
         .anecdote {{ background-color: rgba(2, 132, 199, 0.12); padding: 12px 14px; border-left: 4px solid #0284c7; border-radius: 4px; color: #0f172a; font-size: 13px; }}
         .unit-box {{ background-color: rgba(255, 255, 255, 0.5) !important; padding: 10px; border-radius: 6px; border: 1px dashed rgba(15, 23, 42, 0.35); font-size: 13px; color: #0f172a; }}
         
-        /* Jauges et barres horizontales */
+        /* Conteneurs pour les jauges ADEME */
         .bar-container {{ background-color: rgba(15, 23, 42, 0.08); border-radius: 4px; height: 12px; width: 100%; margin-bottom: 8px; overflow: hidden; }}
         .sub-bar-container {{ background-color: rgba(15, 23, 42, 0.05); border-radius: 3px; height: 8px; width: 100%; margin-bottom: 6px; overflow: hidden; }}
         .stDataFrame div {{ background-color: transparent !important; }}
@@ -124,7 +124,7 @@ def set_style(img_b64):
 
 set_style(img_base64)
 
-# Dessin HTML des barres de progression
+# Dessin HTML des barres de progression ADEME
 def draw_custom_bar(label, value_kg, total_kg, color, is_sub=False):
     pct = (value_kg / total_kg * 100) if total_kg > 0 else 0
     display_weight = f"{value_kg/1000:.2f} t" if value_kg >= 1000 else f"{value_kg:.1f} kg"
@@ -182,7 +182,7 @@ if not df.empty:
     df.columns = [str(c).replace('\xa0', ' ').replace('\n', ' ').strip() for c in df.columns]
     df.columns = [" ".join(c.split()) for c in df.columns]
 
-# 5. ASSIGNATION DES ONGLETS PRINCIPAUX
+# 5. INITIALISATION DES ONGLETS
 tab_dashboard, tab_conso_graph, tab_glossaire = st.tabs(["📊 Tableau de Bord", "🌱 Empreinte carbone", "📖 Référentiel Éléves"])
 
 # ==========================================
