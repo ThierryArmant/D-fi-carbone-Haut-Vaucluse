@@ -20,7 +20,7 @@ def get_base64_image(file_name_without_ext):
 # Chargement immédiat de la ressource image pour écarter les NameError
 img_base64 = get_base64_image("image_1")
 
-# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (Glossy calibré à 20%)
+# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (Glossy calibré à 20% + Correction Graphique)
 def inject_glass_theme(img_b64):
     bg_style = f"""
     [data-testid="stAppViewContainer"], .stAppViewContainer {{
@@ -51,13 +51,13 @@ def inject_glass_theme(img_b64):
             padding: 1.5rem 2.5rem !important;
         }}
 
-        /* 💎 LE COCKPIT DE VERRE SATELLITE (Opacité fixée à 20% selon tes directives) */
+        /* 💎 LE COCKPIT DE VERRE SATELLITE (Opacité fixée à 20% ultra-légère) */
         div[data-testid="stColumn"], 
         div[data-testid="stBorderedContainer"],
         .stDataFrame,
         div[role="tabpanel"] {{
             background-color: rgba(22, 32, 49, 0.20) !important; /* Verre pur glossy à 20% d'opacité */
-            backdrop-filter: blur(20px) saturate(130%) !important; /* Effet givré cristallin */
+            backdrop-filter: blur(20px) saturate(130%) !important; /* Effet givré cristalline */
             -webkit-backdrop-filter: blur(20px) saturate(130%) !important;
             border: 1px solid rgba(255, 255, 255, 0.18) !important; /* Liseré cristal bien net */
             padding: 22px !important;
@@ -66,7 +66,7 @@ def inject_glass_theme(img_b64):
             margin-bottom: 16px !important;
         }}
 
-        /* 🛡️ SÉCURISATION DES EXPANDERS ET DE LEURS CHEVRONS (Taille d'origine préservée) */
+        /* 🛡️ SÉCURISATION DES EXPANDERS ET DE LEURS CHEVRONS */
         div[data-testid="stExpander"], .stExpander {{
             background-color: rgba(17, 24, 39, 0.6) !important;
             border: 1px solid rgba(255, 255, 255, 0.12) !important;
@@ -111,7 +111,7 @@ def inject_glass_theme(img_b64):
             box-shadow: 0 4px 14px rgba(34, 211, 238, 0.4) !important;
         }}
 
-        /* 🛡️ TEXTES BLANCS SÉCURISÉS CONTRE LES SAUTS DE LIGNE */
+        /* 🛡️ TEXTES BLANCS REHAUSSÉS CONTRE LES SAUTS DE LIGNE */
         h1, h2, h3, h4, h5, h6, label, p, .stMarkdown p, [data-testid="stWidgetLabel"] p, summary {{
             color: #f8fafc !important;
             font-weight: bold !important;
@@ -129,6 +129,18 @@ def inject_glass_theme(img_b64):
         
         .inner-title {{ text-align: center; font-weight: bold; font-size: 16px; color: #38bdf8 !important; margin-bottom: 12px; }}
         [data-testid="stHeader"] {{ height: 0px; }}
+        
+        /* ⚡ BLINDAGE CHIRURGICAL DES ÉCRITURES DES ÉTABLISSEMENTS (ONGLET 2) VIA CSS */
+        .js-plotly-plot .plotly .yaxislayer-above .tick text {{
+            fill: #ffffff !important;
+            font-weight: 900 !important;
+            font-size: 13px !important;
+            font-family: 'Helvetica Neue', Arial, sans-serif !important;
+        }}
+        .js-plotly-plot .plotly .xaxislayer-above .tick text {{
+            fill: #cbd5e1 !important;
+            font-weight: bold !important;
+        }}
         
         /* Éléments de structure internes */
         .anecdote {{ background-color: rgba(2, 132, 199, 0.25); padding: 12px 14px; border-left: 4px solid #0284c7; border-radius: 4px; color: #ffffff !important; font-size: 13px; margin-top: 6px; }}
@@ -305,14 +317,14 @@ with tab_dashboard:
                         draw_custom_bar("• Voiture à essence", safe_get_val(school_data, "Voiture à essence"), sch_transport, "#3b82f6", is_sub=True)
                         draw_custom_bar("• Autobus (sorties / voyages)", safe_get_val(school_data, "Autobus (sortie scolaire)"), sch_transport, "#3b82f6", is_sub=True)
 
-                    # Biens & Équipements avec Expanders
+                    # Biens & Équipements
                     draw_custom_bar("📦 Biens, Consommables & Équipements", sch_biens, tot_sch, "#c084fc")
                     with st.expander("🔍 Détails Consommables & Matériel (cliquer pour ouvrir)"):
                         draw_custom_bar("• Papier & Carton", b_pap + safe_get_val(school_data, "Carton"), sch_biens, "#a855f7", is_sub=True)
                         draw_custom_bar("• Plastiques & Fournitures", safe_get_val(school_data, "Plastique"), sch_biens, "#a855f7", is_sub=True)
                         draw_custom_bar("• Appareils Numériques", safe_get_val(school_data, "Ordinateur à écran plat") + safe_get_val(school_data, "Imprimante") + safe_get_val(school_data, "Photocopieurs") + safe_get_val(school_data, "Vidéo projecteur"), sch_biens, "#a855f7", is_sub=True)
 
-                    # Déchets avec Expanders
+                    # Déchets
                     draw_custom_bar("🗑️ Gestion des Déchets", sch_dechets, tot_sch, "#818cf8")
                     with st.expander("🔍 Détails Élimination Déchets (cliquer pour ouvrir)"):
                         draw_custom_bar("• Déchets Papier / Carton", safe_get_val(school_data, "Déchets Papier"), sch_dechets, "#6366f1", is_sub=True)
@@ -365,14 +377,14 @@ with tab_dashboard:
                         draw_custom_bar("• Voiture à essence", safe_sum_val(df_active, "Voiture à essence"), net_transport, "#3b82f6", is_sub=True)
                         draw_custom_bar("• Autobus", safe_sum_val(df_active, "Autobus (sortie scolaire)") + safe_sum_val(df_active, "Autobus (ville)"), net_transport, "#3b82f6", is_sub=True)
 
-                    # Biens Globaux avec Expanders
+                    # Biens Globaux
                     draw_custom_bar("📦 Biens & Équipements (Total Réseau)", net_biens, tot_net, "#c084fc")
                     with st.expander("🔍 Détails Biens Globaux (cliquer pour ouvrir)"):
                         draw_custom_bar("• Papier & Carton", net_pap + net_carton, net_biens, "#a855f7", is_sub=True)
                         draw_custom_bar("• Plastiques consommables", net_plast, net_biens, "#a855f7", is_sub=True)
                         draw_custom_bar("• Parc informatique & numérique", net_num, net_biens, "#a855f7", is_sub=True)
 
-                    # Déchets Globaux avec Expanders
+                    # Déchets Globaux
                     draw_custom_bar("🗑️ Élimination des Déchets (Total Réseau)", net_dechets, tot_net, "#818cf8")
                     with st.expander("🔍 Détails Déchets Globaux (cliquer pour ouvrir)"):
                         draw_custom_bar("• Déchets Papier / Carton", net_dec_pap, net_dechets, "#6366f1", is_sub=True)
@@ -399,12 +411,11 @@ with tab_conso_graph:
         
         fig_bar.update_layout(
             margin=dict(l=20, r=20, t=10, b=10),
-            height=500,
+            height=520,
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
             xaxis=dict(title="Consommation Carbone (kg / personne)", color="#f1f5f9", gridcolor="rgba(255,255,255,0.1)", showgrid=True),
-            # 🛡️ APPLICAION DU BLANC PUR SUR LES ÉCRITURES DES ÉTABLISSEMENTS (AXE Y)
-            yaxis=dict(color="#ffffff", tickfont=dict(size=12, weight="bold"))
+            yaxis=dict(color="#ffffff", showgrid=False) # Configuration nettoyée pour laisser le CSS forcer le Blanc Pur
         )
         st.plotly_chart(fig_bar, use_container_width=True)
         
