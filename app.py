@@ -20,7 +20,7 @@ def get_base64_image(file_name_without_ext):
 # Chargement immédiat de la ressource image pour écarter les NameError
 img_base64 = get_base64_image("image_1")
 
-# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (Glossy 15% + Format Centré)
+# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (Format Couloir Resserre à 40%)
 def inject_glass_theme(img_b64):
     bg_style = f"""
     [data-testid="stAppViewContainer"], .stAppViewContainer {{
@@ -46,21 +46,21 @@ def inject_glass_theme(img_b64):
             background-color: transparent !important;
         }}
         
-        /* 📐 CORRECTION FORMAT DE LECTURE : Largeur réduite de moitié et centrée pour laisser voir le fond sur les côtés */
+        /* 📐 LE COULOIR DE LECTURE PILE ENTRE LES TRAITS JAUNES */
         .main .block-container {{
             background-color: transparent !important;
             padding: 1.5rem 1rem !important;
-            max-width: 55% !important; /* Limite le champ de vision à environ la moitié de l'écran */
-            margin: 0 auto !important;  /* Centre parfaitement la zone de lecture */
+            max-width: 40% !important; /* Resserre la lecture à 40% pour s'aligner sur tes repères */
+            margin: 0 auto !important;  /* Centre parfaitement le couloir sur l'écran */
         }}
 
-        /* 💎 LE COCKPIT DE VERRE SATELLITE (Opacité fixée à 15% ultra-légère) */
+        /* 💎 LE COCKPIT DE VERRE SATELLITE (Opacité glossy 15% conservée) */
         div[data-testid="stColumn"], 
         div[data-testid="stBorderedContainer"],
         .stDataFrame,
         div[role="tabpanel"] {{
-            background-color: rgba(22, 32, 49, 0.15) !important; /* Verre pur glossy à 15% d'opacité */
-            backdrop-filter: blur(20px) saturate(130%) !important; /* Effet givré cristallin */
+            background-color: rgba(22, 32, 49, 0.15) !important; /* Éclat glossy à 15% */
+            backdrop-filter: blur(20px) saturate(130%) !important; 
             -webkit-backdrop-filter: blur(20px) saturate(130%) !important;
             border: 1px solid rgba(255, 255, 255, 0.18) !important; /* Liseré cristal net */
             padding: 22px !important;
@@ -79,7 +79,6 @@ def inject_glass_theme(img_b64):
             box-shadow: none !important;
         }}
         
-        /* Protection absolue de l'affichage des flèches et icônes SVG */
         div[data-testid="stExpander"] svg, .stExpander svg, [data-testid="stExpanderToggleIcon"] {{
             fill: #ffffff !important;
             color: #ffffff !important;
@@ -133,7 +132,7 @@ def inject_glass_theme(img_b64):
         .inner-title {{ text-align: center; font-weight: bold; font-size: 16px; color: #38bdf8 !important; margin-bottom: 12px; }}
         [data-testid="stHeader"] {{ height: 0px; }}
         
-        /* ⚡ BLINDAGE CHIRURGICAL : POLICES FORCÉES EN NOIR ARDOISE PROFOND SUR LE GRAPH (ONGLET 2) */
+        /* ⚡ BLINDAGE CHIRURGICAL : POLICES EN NOIR ARDOISE POUR LE GRAPH DE L'ONGLET 2 */
         .js-plotly-plot .plotly .yaxislayer-above .tick text {{
             fill: #0f172a !important;
             font-weight: 900 !important;
