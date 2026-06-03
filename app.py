@@ -92,26 +92,27 @@ def inject_glass_theme(img_b64):
             display: inline-block !important;
         }}
 
-        /* --- 🎛️ ACCESSIBILITÉ DES BOUTONS DE NAVIGATION DU HAUT --- */
-        div[data-baseweb="tab-list"] {{
+        /* --- 🎛️ NAVIGATION DES ONGLETS (Corrigé pour rester dans le flux de la page) --- */
+        div[data-baseweb="tab-list"] {
             gap: 8px !important;
             background-color: transparent !important;
-            margin-bottom: 10px !important;
-            position: fixed !important; /* Fixe les boutons en haut de l'écran */
-            top: 45px !important; /* Aligné juste sous la barre de contrôle */
-            right: 2% !important;
-            width: 48% !important;
-            z-index: 99999 !important; 
-        }}
-        div[data-baseweb="tab-list"] button {{
+            margin-bottom: 20px !important;
+            position: relative !important; /* On passe en 'relative' au lieu de 'fixed' */
+            top: 0px !important; 
+            width: 100% !important; /* Prend toute la largeur disponible */
+            z-index: 10 !important; 
+        }
+        
+        div[data-baseweb="tab-list"] button {
             background-color: rgba(22, 32, 49, 0.85) !important;
             backdrop-filter: blur(10px) !important;
             border-radius: 8px 8px 0 0 !important;
-            padding: 6px 16px !important;
+            padding: 8px 20px !important;
             color: #cbd5e1 !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
             transition: all 0.2s ease !important;
             font-weight: bold !important;
+        };
         }}
         div[data-baseweb="tab-list"] button:hover {{
             background-color: rgba(55, 65, 81, 0.9) !important;
