@@ -29,7 +29,7 @@ def inject_glass_theme(img_b64):
         background-position: center !important;
         background-attachment: fixed !important;
         background-repeat: no-repeat !important;
-        zoom: 0.8;
+        zoom: 1.1;
     }}
     """ if img_b64 else """
     [data-testid="stAppViewContainer"] {{
