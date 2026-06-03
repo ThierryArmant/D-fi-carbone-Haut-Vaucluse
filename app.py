@@ -443,7 +443,7 @@ with tab_conso_graph:
         st.plotly_chart(fig_bar, use_container_width=True)
         
         st.divider()
-        st.markdown('<p class="inner-title" style="color:#38bdf8;">📋 Synthèse Globale Centralisée (Données Brutes)</p>', unsafe_allow_html=True)
+        st.markdown('<p class="inner-title" style="color:#38bdf8;">📋 Synthèse Globale Centralisée KgCo2e</p>', unsafe_allow_html=True)
         st.dataframe(df, hide_index=True, width="stretch", height=220)
 
 # ==========================================
