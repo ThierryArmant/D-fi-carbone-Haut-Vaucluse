@@ -47,18 +47,18 @@ def inject_glass_theme(img_b64):
             background-color: transparent !important;
         }}
         
-        /* 📐 AMÉNAGEMENT DU CADRE : Hauteur tassée et marges hautes pour libérer les onglets du haut */
+        /* 📐 AMÉNAGEMENT DU CADRE : Élargi à 58% pour les 5 boutons et allongé en bas pour le défilement */
         [data-testid="stMainBlockContainer"], .main .block-container, .block-container {{
             background-color: transparent !important;
             padding-top: 0rem !important; 
-            padding-bottom: 0.5rem !important;
+            padding-bottom: 10rem !important; /* Allongement vertical pour descendre jusqu'au Manage App */
             padding-left: 1rem !important;
             padding-right: 1rem !important;
-            max-width: 50% !important; 
-            width: 50% !important;
+            max-width: 58% !important; /* Élargi pour faire tenir confortablement tes 5 onglets */
+            width: 58% !important;
             margin-left: auto !important; 
             margin-right: 2% !important;  
-            margin-top: 3.5rem !important; /* Crée l'espace parfait sous la barre blanche Streamlit */
+            margin-top: 6.5rem !important; /* Descendu pour libérer totalement la barre supérieure */
         }}
 
         /* 💎 LE COCKPIT DE VERRE SATELLITE COMPACT (Opacité 15%, Espacements resserrés) */
@@ -98,10 +98,10 @@ def inject_glass_theme(img_b64):
             gap: 8px !important;
             background-color: transparent !important;
             margin-bottom: 10px !important;
-            position: fixed !important; /* Fixe les boutons en haut de l'écran */
-            top: 45px !important; /* Aligné juste sous la barre de contrôle */
+            position: fixed !important; 
+            top: 75px !important; /* Descendu sous la barre blanche de Streamlit */
             right: 2% !important;
-            width: 48% !important;
+            width: 56% !important; /* Aligné proportionnellement sur la nouvelle largeur */
             z-index: 99999 !important; 
         }}
         div[data-baseweb="tab-list"] button {{
@@ -452,7 +452,7 @@ with tab_conso_graph:
 with tab_glossaire:
     st.markdown("<h2 style='color: #22d3ee; text-align: center; margin-bottom: 12px;'>📖 Dictionnaire Carbone : Unités & Équivalents Enfants</h2>", unsafe_allow_html=True)
     
-    # Ajout des onglets manquants ici
+    # Ajout des 5 onglets thématiques fonctionnels
     g_tabs = st.tabs(["🍎 Cantine", "❄️ Énergie", "🚌 Transports", "📦 Biens & Équipements", "🗑️ Déchets"])
     
     with g_tabs[0]:
@@ -476,7 +476,7 @@ with tab_glossaire:
     with g_tabs[3]:
         st.subheader("📦 Biens, Consommables & Équipements")
         st.markdown('<p class="inner-title" style="text-align:left;">📊 Empreinte du matériel :</p>', unsafe_allow_html=True)
-        st.markdown('<div class="unit-box">• <b>Papier (neuf) :</b> 1.2 kg CO2e par kg<br>• <b>Ordinateur portable :</b> ~250 kg CO2e (fabrication)<br>• <b>Vidéo projecteur :</b> ~180 kg CO2e (fabrication)</div>', unsafe_allow_html=True)
+        st.markdown('<div class="unit-box">• <b>Paper (neuf) :</b> 1.20 kg CO2e par kg<br>• <b>Ordinateur portable :</b> ~250 kg CO2e (fabrication)<br>• <b>Vidéo projecteur :</b> ~180 kg CO2e (fabrication)</div>', unsafe_allow_html=True)
         st.markdown('<div class="anecdote"><b>💡 Équivalent élève :</b> Fabriquer un ordinateur demande autant d\'énergie que de laisser une ampoule allumée pendant des mois !</div>', unsafe_allow_html=True)
 
     with g_tabs[4]:
