@@ -20,7 +20,7 @@ def get_base64_image(file_name_without_ext):
 # Chargement immédiat de la ressource image pour écarter les NameError
 img_base64 = get_base64_image("image_1")
 
-# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (Format Couloir Strict & Glossy 15%)
+# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (Format Cadre Jaune à Droite)
 def inject_glass_theme(img_b64):
     bg_style = f"""
     [data-testid="stAppViewContainer"], .stAppViewContainer {{
@@ -46,13 +46,17 @@ def inject_glass_theme(img_b64):
             background-color: transparent !important;
         }}
         
-        /* 📐 LE CADRAGE CHIRURGICAL : Forcé à 38% sur tous les conteneurs possibles pour s'aligner sur tes traits jaunes */
+        /* 📐 AMÉNAGEMENT DU CADRE JAUNE : Largeur fixée à 50% et calée sur la droite de l'écran */
         [data-testid="stMainBlockContainer"], .main .block-container, .block-container {{
             background-color: transparent !important;
-            padding: 1.5rem 1rem !important;
-            max-width: 38% !important; /* Largeur ultra-focalisée entre tes lignes */
-            width: 38% !important;
-            margin: 0 auto !important;  /* Centrage horizontal parfait */
+            padding-top: 0.5rem !important; /* Hauteur réduite pour remonter les éléments */
+            padding-bottom: 1.5rem !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+            max-width: 50% !important; /* Largeur augmentée pour le confort visuel */
+            width: 50% !important;
+            margin-left: auto !important; /* Pousse l'ensemble vers la droite */
+            margin-right: 2% !important;  /* Laisse une micro-marge proprement à droite */
         }}
 
         /* 💎 LE COCKPIT DE VERRE SATELLITE (Opacité glossy fixée à 15%) */
@@ -60,14 +64,14 @@ def inject_glass_theme(img_b64):
         div[data-testid="stBorderedContainer"],
         .stDataFrame,
         div[role="tabpanel"] {{
-            background-color: rgba(22, 32, 49, 0.15) !important; /* Verre cristal à 15% */
+            background-color: rgba(22, 32, 49, 0.15) !important; /* Éclat glossy à 15% */
             backdrop-filter: blur(20px) saturate(130%) !important; 
             -webkit-backdrop-filter: blur(20px) saturate(130%) !important;
             border: 1px solid rgba(255, 255, 255, 0.18) !important; /* Liseré cristal net */
-            padding: 22px !important;
+            padding: 20px !important;
             border-radius: 12px !important;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25) !important;
-            margin-bottom: 16px !important;
+            margin-bottom: 14px !important;
         }}
 
         /* 🛡️ SÉCURISATION DES EXPANDERS ET DE LEURS CHEVRONS */
@@ -86,17 +90,19 @@ def inject_glass_theme(img_b64):
             display: inline-block !important;
         }}
 
-        /* --- 🎛️ EN-TÊTES DES ONGLETS DE SÉLECTION --- */
+        /* --- 🎛️ SÉCURISATION ET ACCESSIBILITÉ DES BOUTONS DE NAVIGATION DU HAUT --- */
         div[data-baseweb="tab-list"] {{
-            gap: 12px !important;
+            gap: 8px !important;
             background-color: transparent !important;
-            margin-bottom: 20px !important;
+            margin-bottom: 15px !important;
+            position: relative !important;
+            z-index: 99999 !important; /* Force les boutons à être cliquables et au premier plan */
         }}
         div[data-baseweb="tab-list"] button {{
             background-color: rgba(22, 32, 49, 0.85) !important;
             backdrop-filter: blur(10px) !important;
             border-radius: 8px 8px 0 0 !important;
-            padding: 10px 24px !important;
+            padding: 8px 20px !important;
             color: #cbd5e1 !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
             transition: all 0.2s ease !important;
