@@ -20,7 +20,7 @@ def get_base64_image(file_name_without_ext):
 # Chargement immédiat de la ressource image pour éviter les NameError
 img_base64 = get_base64_image("image_1")
 
-# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (3 PAGES SYNC)
+# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (Gris Transparent Équilibré)
 def inject_glass_theme(img_b64):
     bg_style = f"""
     [data-testid="stAppViewContainer"], .stAppViewContainer {{
@@ -32,7 +32,7 @@ def inject_glass_theme(img_b64):
     }}
     """ if img_b64 else """
     [data-testid="stAppViewContainer"] {{
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+        background: linear-gradient(135deg, #111827 0%, #1f2937 100%) !important;
     }}
     """
     
@@ -51,55 +51,55 @@ def inject_glass_theme(img_b64):
             padding: 1.5rem 2.5rem !important;
         }}
 
-        /* 💎 LE COCKPIT DE VERRE SATELLITE (S'applique partout sur les 3 onglets) */
+        /* 💎 LE COCKPIT DE VERRE SATELLITE (Filtre Gris Transparent Jouable) */
         div[data-testid="stColumn"], 
         div[data-testid="stBorderedContainer"],
         .stDataFrame,
         div[role="tabpanel"] {{
-            background-color: rgba(20, 32, 53, 0.74) !important; /* Ardoise glossy dense protecteur */
-            backdrop-filter: blur(24px) saturate(140%) !important; /* Finition givrée cristalline */
-            -webkit-backdrop-filter: blur(24px) saturate(140%) !important;
-            border: 1px solid rgba(255, 255, 255, 0.14) !important; /* Liseré haute lumière */
+            background-color: rgba(31, 41, 55, 0.68) !important; /* Gris Crystal Fumé Neutre */
+            backdrop-filter: blur(16px) saturate(120%) !important; /* Finition givrée cristalline */
+            -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important; /* Liseré haute lumière */
             padding: 22px !important;
-            border-radius: 16px !important;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
             margin-bottom: 16px !important;
         }}
 
-        /* 🛡️ ARCHITECTURE SÉCURISÉE DES EXPANDERS NATIFS (Préservation des flèches et comportements) */
+        /* 🛡️ ARCHITECTURE DES EXPANDERS (Taille d'origine et flèches préservées) */
         div[data-testid="stExpander"], .stExpander {{
-            background-color: rgba(13, 21, 36, 0.5) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            background-color: rgba(17, 24, 39, 0.45) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
             border-radius: 8px !important;
             padding: 8px 14px !important;
             margin-top: 6px !important;
             box-shadow: none !important;
         }}
         
-        /* Forcer les flèches des expanders à rester blanches et cliquables */
+        /* Maintien visuel des flèches d'expanders */
         div[data-testid="stExpander"] svg, .stExpander svg {{
             fill: #ffffff !important;
             color: #ffffff !important;
         }}
 
-        /* --- 🎛️ DESIGN PREMIUM DES ONGLETS DE NAVIGATION --- */
+        /* --- 🎛️ NAVIGATION DES ONGLETS SYNCHRONISÉE EN GRIS --- */
         div[data-baseweb="tab-list"] {{
             gap: 12px !important;
             background-color: transparent !important;
             margin-bottom: 20px !important;
         }}
         div[data-baseweb="tab-list"] button {{
-            background-color: rgba(22, 32, 53, 0.85) !important;
+            background-color: rgba(31, 41, 55, 0.8) !important;
             backdrop-filter: blur(10px) !important;
             border-radius: 8px 8px 0 0 !important;
             padding: 10px 24px !important;
             color: #cbd5e1 !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
             transition: all 0.2s ease !important;
             font-weight: bold !important;
         }}
         div[data-baseweb="tab-list"] button:hover {{
-            background-color: rgba(51, 65, 85, 0.95) !important;
+            background-color: rgba(55, 65, 81, 0.9) !important;
             border-color: #22d3ee !important;
             color: #ffffff !important;
         }}
@@ -110,7 +110,7 @@ def inject_glass_theme(img_b64):
             box-shadow: 0 4px 14px rgba(34, 211, 238, 0.4) !important;
         }}
 
-        /* 🛡️ LISIBILITÉ TEXTUELLE MAXIMALE (Blanc argenté texturé) */
+        /* 🛡️ SÉCURISATION INTÉGRALE DES TEXTES (Blanc Pur Éclatant) */
         h1, h2, h3, h4, h5, h6, label, p, .stMarkdown p, [data-testid="stWidgetLabel"] p, .pole-header, .sub-pole-header, summary {{
             color: #f8fafc !important;
             font-weight: bold !important;
@@ -120,15 +120,15 @@ def inject_glass_theme(img_b64):
         .inner-title {{ text-align: center; font-weight: bold; font-size: 16px; color: #38bdf8 !important; margin-bottom: 12px; }}
         [data-testid="stHeader"] {{ height: 0px; }}
         
-        /* Blocs intérieurs */
-        .anecdote {{ background-color: rgba(2, 132, 199, 0.25); padding: 12px 14px; border-left: 4px solid #0284c7; border-radius: 4px; color: #ffffff !important; font-size: 13px; margin-top: 6px; }}
-        .unit-box {{ background-color: rgba(13, 22, 38, 0.5) !important; padding: 10px; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.2); font-size: 13px; color: #ffffff !important; margin-bottom: 6px; }}
+        /* Éléments informatifs internes */
+        .anecdote {{ background-color: rgba(2, 132, 199, 0.2); padding: 12px 14px; border-left: 4px solid #0284c7; border-radius: 4px; color: #ffffff !important; font-size: 13px; margin-top: 6px; }}
+        .unit-box {{ background-color: rgba(17, 24, 39, 0.5) !important; padding: 10px; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.15); font-size: 13px; color: #ffffff !important; margin-bottom: 6px; }}
         
-        /* Barres ADEME horizontales */
-        .bar-container {{ background-color: rgba(255, 255, 255, 0.15); border-radius: 4px; height: 12px; width: 100%; margin-bottom: 8px; overflow: hidden; }}
-        .sub-bar-container {{ background-color: rgba(255, 255, 255, 0.08); border-radius: 3px; height: 8px; width: 100%; margin-bottom: 6px; overflow: hidden; }}
+        /* Barres de progression horizontales */
+        .bar-container {{ background-color: rgba(255, 255, 255, 0.12); border-radius: 4px; height: 12px; width: 100%; margin-bottom: 8px; overflow: hidden; }}
+        .sub-bar-container {{ background-color: rgba(255, 255, 255, 0.06); border-radius: 3px; height: 8px; width: 100%; margin-bottom: 6px; overflow: hidden; }}
         
-        /* Intégration transparente des graphiques et tables */
+        /* Intégration des graphiques et tables */
         .js-plotly-plot .plotly .main-svg {{ background: transparent !important; }}
         .stDataFrame div {{ background-color: transparent !important; }}
         </style>
@@ -138,7 +138,7 @@ def inject_glass_theme(img_b64):
 
 inject_glass_theme(img_base64)
 
-# 3. FONCTION UNIFIÉE DE RENDU DES BARRES ADEME
+# 3. GRAPHISME DES BARRES ADEME
 def draw_custom_bar(label, value_kg, total_kg, color, is_sub=False):
     pct = (value_kg / total_kg * 100) if total_kg > 0 else 0
     display_weight = f"{value_kg/1000:.2f} t" if value_kg >= 1000 else f"{value_kg:.1f} kg"
@@ -154,7 +154,7 @@ def draw_custom_bar(label, value_kg, total_kg, color, is_sub=False):
             <div class="sub-bar-container"><div style="background-color: {color}; height: 100%; width: {pct}%;"></div></div>
         """, unsafe_allow_html=True)
 
-# 4. TUNNEL DE SÉCURITÉ GOOGLE SHEETS
+# 4. VARIABLES DE CONNEXION GOOGLE SHEETS
 votre_gid = "169103083" 
 url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid={votre_gid}"
 
@@ -170,7 +170,7 @@ def load_data():
                 data.columns = new_cols
                 return data.loc[:, ~data.columns.duplicated()].reset_index(drop=True)
     except Exception as e:
-        st.error(f"Erreur de communication Sheets : {e}")
+        st.error(f"Erreur de connexion Sheets : {e}")
     return pd.DataFrame()
 
 df = load_data()
@@ -195,7 +195,7 @@ if not df.empty:
     df.columns = [str(c).replace('\xa0', ' ').replace('\n', ' ').strip() for c in df.columns]
     df.columns = [" ".join(c.split()) for c in df.columns]
 
-# 5. ASSIGNATION VECTORIELLE DES 3 PAGES
+# 5. ASSIGNATION DES 3 ONGLETS
 tab_dashboard, tab_conso_graph, tab_glossaire = st.tabs(["📊 Tableau de Bord", "🌱 Empreinte carbone", "📖 Référentiel Éléves"])
 
 # ==========================================
@@ -351,7 +351,7 @@ with tab_conso_graph:
         
         fig_bar.update_layout(
             margin=dict(l=20, r=20, t=10, b=10),
-            height=530,
+            height=500,
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
             xaxis=dict(title="Consommation Carbone (kg / personne)", color="#f1f5f9", gridcolor="rgba(255,255,255,0.1)", showgrid=True),
