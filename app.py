@@ -20,7 +20,7 @@ def get_base64_image(file_name_without_ext):
 # Chargement immédiat de la ressource image pour éviter les NameError
 img_base64 = get_base64_image("image_1")
 
-# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (Gris Transparent Équilibré)
+# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (Gris Transparent Allégé de 20%)
 def inject_glass_theme(img_b64):
     bg_style = f"""
     [data-testid="stAppViewContainer"], .stAppViewContainer {{
@@ -51,38 +51,39 @@ def inject_glass_theme(img_b64):
             padding: 1.5rem 2.5rem !important;
         }}
 
-        /* 💎 LE COCKPIT DE VERRE SATELLITE (Filtre Gris Transparent Jouable) */
+        /* 💎 LE COCKPIT DE VERRE GRIS CRISTAL (Opacité ajustée à 48% pour plus de transparence) */
         div[data-testid="stColumn"], 
         div[data-testid="stBorderedContainer"],
         .stDataFrame,
         div[role="tabpanel"] {{
-            background-color: rgba(31, 41, 55, 0.68) !important; /* Gris Crystal Fumé Neutre */
-            backdrop-filter: blur(16px) saturate(120%) !important; /* Finition givrée cristalline */
+            background-color: rgba(31, 41, 55, 0.48) !important; /* Gris allégé et très transparent */
+            backdrop-filter: blur(16px) saturate(120%) !important;
             -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
-            border: 1px solid rgba(255, 255, 255, 0.12) !important; /* Liseré haute lumière */
+            border: 1px solid rgba(255, 255, 255, 0.15) !important; /* Liseré haute lumière préservé */
             padding: 22px !important;
             border-radius: 12px !important;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
             margin-bottom: 16px !important;
         }}
 
-        /* 🛡️ ARCHITECTURE DES EXPANDERS (Taille d'origine et flèches préservées) */
+        /* 🛡️ SÉCURISATION DES EXPANDERS ET DE LEURS CHEVRONS */
         div[data-testid="stExpander"], .stExpander {{
-            background-color: rgba(17, 24, 39, 0.45) !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            background-color: rgba(17, 24, 39, 0.55) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
             border-radius: 8px !important;
-            padding: 8px 14px !important;
-            margin-top: 6px !important;
+            padding: 10px 14px !important;
+            margin-top: 8px !important;
             box-shadow: none !important;
         }}
         
-        /* Maintien visuel des flèches d'expanders */
-        div[data-testid="stExpander"] svg, .stExpander svg {{
+        /* Protection absolue de l'affichage des flèches et icônes SVG */
+        div[data-testid="stExpander"] svg, .stExpander svg, [data-testid="stExpanderToggleIcon"] {{
             fill: #ffffff !important;
             color: #ffffff !important;
+            display: inline-block !important;
         }}
 
-        /* --- 🎛️ NAVIGATION DES ONGLETS SYNCHRONISÉE EN GRIS --- */
+        /* --- 🎛️ EN-TÊTES DES ONGLETS DE SÉLECTION --- */
         div[data-baseweb="tab-list"] {{
             gap: 12px !important;
             background-color: transparent !important;
@@ -110,25 +111,34 @@ def inject_glass_theme(img_b64):
             box-shadow: 0 4px 14px rgba(34, 211, 238, 0.4) !important;
         }}
 
-        /* 🛡️ SÉCURISATION INTÉGRALE DES TEXTES (Blanc Pur Éclatant) */
-        h1, h2, h3, h4, h5, h6, label, p, .stMarkdown p, [data-testid="stWidgetLabel"] p, .pole-header, .sub-pole-header, summary {{
+        /* 🛡️ TEXTES BLANCS SÉCURISÉS CONTRE LES SUTS DE LIGNE EN BAS */
+        h1, h2, h3, h4, h5, h6, label, p, .stMarkdown p, [data-testid="stWidgetLabel"] p, summary {{
             color: #f8fafc !important;
             font-weight: bold !important;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6) !important;
         }}
         
+        /* Flexibilisation des lignes ADEME pour éviter le chevauchement ou la perte d'éléments en bas */
+        .pole-header, .sub-pole-header {{ 
+            display: flex !important; 
+            justify-content: space-between !important; 
+            flex-wrap: wrap !important;
+            gap: 4px !important;
+            color: #f8fafc !important; 
+            font-weight: bold !important; 
+        }}
+        
         .inner-title {{ text-align: center; font-weight: bold; font-size: 16px; color: #38bdf8 !important; margin-bottom: 12px; }}
         [data-testid="stHeader"] {{ height: 0px; }}
         
-        /* Éléments informatifs internes */
+        /* Éléments de structure internes */
         .anecdote {{ background-color: rgba(2, 132, 199, 0.2); padding: 12px 14px; border-left: 4px solid #0284c7; border-radius: 4px; color: #ffffff !important; font-size: 13px; margin-top: 6px; }}
         .unit-box {{ background-color: rgba(17, 24, 39, 0.5) !important; padding: 10px; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.15); font-size: 13px; color: #ffffff !important; margin-bottom: 6px; }}
         
-        /* Barres de progression horizontales */
+        /* Barres de progression */
         .bar-container {{ background-color: rgba(255, 255, 255, 0.12); border-radius: 4px; height: 12px; width: 100%; margin-bottom: 8px; overflow: hidden; }}
         .sub-bar-container {{ background-color: rgba(255, 255, 255, 0.06); border-radius: 3px; height: 8px; width: 100%; margin-bottom: 6px; overflow: hidden; }}
         
-        /* Intégration des graphiques et tables */
         .js-plotly-plot .plotly .main-svg {{ background: transparent !important; }}
         .stDataFrame div {{ background-color: transparent !important; }}
         </style>
@@ -138,7 +148,7 @@ def inject_glass_theme(img_b64):
 
 inject_glass_theme(img_base64)
 
-# 3. GRAPHISME DES BARRES ADEME
+# 3. INTERFACE DE CONSTRUCION DES JAUGE ADEME
 def draw_custom_bar(label, value_kg, total_kg, color, is_sub=False):
     pct = (value_kg / total_kg * 100) if total_kg > 0 else 0
     display_weight = f"{value_kg/1000:.2f} t" if value_kg >= 1000 else f"{value_kg:.1f} kg"
@@ -154,7 +164,7 @@ def draw_custom_bar(label, value_kg, total_kg, color, is_sub=False):
             <div class="sub-bar-container"><div style="background-color: {color}; height: 100%; width: {pct}%;"></div></div>
         """, unsafe_allow_html=True)
 
-# 4. VARIABLES DE CONNEXION GOOGLE SHEETS
+# 4. TUNNEL D'ACCÈS GOOGLE SHEETS
 votre_gid = "169103083" 
 url = f"https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid={votre_gid}"
 
@@ -170,7 +180,7 @@ def load_data():
                 data.columns = new_cols
                 return data.loc[:, ~data.columns.duplicated()].reset_index(drop=True)
     except Exception as e:
-        st.error(f"Erreur de connexion Sheets : {e}")
+        st.error(f"Erreur de synchronisation Google Sheets : {e}")
     return pd.DataFrame()
 
 df = load_data()
@@ -195,7 +205,7 @@ if not df.empty:
     df.columns = [str(c).replace('\xa0', ' ').replace('\n', ' ').strip() for c in df.columns]
     df.columns = [" ".join(c.split()) for c in df.columns]
 
-# 5. ASSIGNATION DES 3 ONGLETS
+# 5. INITIALISATION DES ONGLETS DE NAVIGATION
 tab_dashboard, tab_conso_graph, tab_glossaire = st.tabs(["📊 Tableau de Bord", "🌱 Empreinte carbone", "📖 Référentiel Éléves"])
 
 # ==========================================
