@@ -20,7 +20,7 @@ def get_base64_image(file_name_without_ext):
 # Chargement immédiat de la ressource image pour écarter les NameError
 img_base64 = get_base64_image("image_1")
 
-# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (Calibré sur tes limites jaunes)
+# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL
 def inject_glass_theme(img_b64):
     bg_style = f"""
     [data-testid="stAppViewContainer"], .stAppViewContainer {{
@@ -46,11 +46,11 @@ def inject_glass_theme(img_b64):
             background-color: transparent !important;
         }}
         
-        /* 📐 AMÉNAGEMENT DU CADRE (Largeur calée sur ta limite jaune verticale) */
+        /* 📐 AMÉNAGEMENT DU CADRE */
         [data-testid="stMainBlockContainer"], .main .block-container, .block-container {{
             background-color: transparent !important;
             padding-top: 0rem !important; 
-            padding-bottom: 6rem !important; /* Laisse l'espace parfait avant le bandeau du bas */
+            padding-bottom: 6rem !important; 
             padding-left: 1rem !important;
             padding-right: 1rem !important;
             max-width: 54% !important; 
@@ -60,7 +60,7 @@ def inject_glass_theme(img_b64):
             margin-top: 5.5rem !important; 
         }}
 
-        /* 💎 LES BLOCS DE VERRE (Opacité 15%, sans scrollbars internes parasites) */
+        /* 💎 LES BLOCS DE VERRE */
         div[data-testid="stColumn"], 
         div[data-testid="stBorderedContainer"],
         .stDataFrame,
@@ -265,7 +265,6 @@ with tab_dashboard:
             st.markdown('<p class="inner-title">📊 Classement des Établissements (kg/personne)</p>', unsafe_allow_html=True)
             if not df_active.empty:
                 df_ranking = df_active[[col_etab, col_conso]].sort_values(col_conso, ascending=False)
-                # Hauteur augmentée à 215 pour afficher toutes les écoles sans scroll local coupé
                 st.dataframe(df_ranking, hide_index=True, width="stretch", height=215)
             else:
                 st.info("En attente de données...")
@@ -442,7 +441,6 @@ with tab_conso_graph:
         
         st.divider()
         st.markdown('<p class="inner-title" style="color:#38bdf8;">📋 Synthèse Globale Centralisée KgCo2e</p>', unsafe_allow_html=True)
-        # Augmenté à 280 pour afficher l'intégralité du tableau de données brutes sans clipping
         st.dataframe(df, hide_index=True, width="stretch", height=280)
 
 # ==========================================
@@ -457,31 +455,56 @@ with tab_glossaire:
         st.subheader("🍎 Référentiel Restauration (ADEME)")
         st.markdown('<p class="inner-title" style="text-align:left;">📊 Valeurs d\'empreinte de la Cantine :</p>', unsafe_allow_html=True)
         st.markdown('<div class="unit-box">• <b>Repas viande rouge (bœuf) :</b> 7.26 kg CO2e<br>• <b>Repas poisson :</b> 2.00 kg CO2e<br>• <b>Repas moyen / standard :</b> 2.10 kg CO2e<br>• <b>Repas végétarien :</b> 0.50 kg CO2e</div>', unsafe_allow_html=True)
-        st.markdown('<div class="anecdote"><b>💡 Équivalent élève :</b> 1 repas avec du bœuf équivaut à fabriquer une paire de baskets neuve ou à scroller sur TikTok pendant 150 heures !</div>', unsafe_allow_html=True)
+        st.markdown("""<div class="anecdote">
+            <b>💡 Équivalents frappants pour un élève :</b><br>
+            • <b>1 seul repas au bœuf (7,2 kg)</b> = Fabriquer une paire de baskets de marque neuve 👟<br>
+            • <b>1 seul repas au bœuf</b> = Envoyer 15 000 SMS ou scroller non-stop 150 heures sur TikTok 📱<br>
+            • <b>Prendre le repas Végétarien</b> = Économiser le carbone d'un trajet de 30 km en voiture familiale 🚗
+            </div>""", unsafe_allow_html=True)
 
     with g_tabs[1]:
         st.subheader("❄️ Référentiel Énergie & Fluides (ADEME)")
         st.markdown('<p class="inner-title" style="text-align:left;">📊 Facteurs d\'émissions des Bâtiments :</p>', unsafe_allow_html=True)
         st.markdown('<div class="unit-box">• <b>Fioul de chauffage :</b> 3.24 kg CO2e par litre<br>• <b>Gaz naturel :</b> 0.24 kg CO2e par kWh<br>• <b>Électricité française :</b> 0.06 kg CO2e par kWh</div>', unsafe_allow_html=True)
-        st.markdown('<div class="anecdote"><b>💡 Équivalent élève :</b> Chauffer une classe au fioul pendant une journée émet autant de carbone que de rouler 80 km en grosse voiture !</div>', unsafe_allow_html=True)
+        st.markdown("""<div class="anecdote">
+            <b>💡 Équivalents frappants pour un élève :</b><br>
+            • <b>Chauffer une classe au fioul pendant 1 jour</b> = Parcourir 80 km en voiture thermique 🚘<br>
+            • <b>Laisser un radiateur tourner avec la fenêtre ouverte 1h</b> = Laisser une console PS5 allumée pendant 6 mois 🎮<br>
+            • <b>1 kWh d'Électricité en France (très bas)</b> = Regarder 25 heures de vidéos YouTube en Haute Définition 🎬
+            </div>""", unsafe_allow_html=True)
 
     with g_tabs[2]:
         st.subheader("🚌 Référentiel Déplacements (ADEME)")
         st.markdown('<p class="inner-title" style="text-align:left;">📊 Empreinte des Transports :</p>', unsafe_allow_html=True)
         st.markdown('<div class="unit-box">• <b>Voiture thermique (Moyenne) :</b> 0.22 kg CO2e par km<br>• <b>Autobus (Sortie scolaire / Voyage) :</b> 0.11 kg CO2e par km et par élève</div>', unsafe_allow_html=True)
-        st.markdown('<div class="anecdote"><b>💡 Équivalent élève :</b> Venir au collège à vélo ou à pied à l\'année économise l\'équivalent carbone de la plantation de 5 arbres !</div>', unsafe_allow_html=True)
+        st.markdown("""<div class="anecdote">
+            <b>💡 Équivalents frappants pour un élève :</b><br>
+            • <b>Venir au collège à pied ou à vélo à l'année</b> = Économiser la capacité d'absorption de 5 arbres plantés 🌳<br>
+            • <b>Un trajet de 15 km en voiture (3,3 kg)</b> = Regarder 30 heures de séries en streaming HD sur sa tablette 📺<br>
+            • <b>Partir en voyage scolaire en bus blindé</b> = Diviser par deux sa pollution carbone par rapport au covoiturage 🚌
+            </div>""", unsafe_allow_html=True)
 
     with g_tabs[3]:
         st.subheader("📦 Biens, Consommables & Équipements")
         st.markdown('<p class="inner-title" style="text-align:left;">📊 Empreinte du matériel :</p>', unsafe_allow_html=True)
         st.markdown('<div class="unit-box">• <b>Paper (neuf) :</b> 1.20 kg CO2e par kg<br>• <b>Ordinateur portable :</b> ~250 kg CO2e (fabrication)<br>• <b>Vidéo projecteur :</b> ~180 kg CO2e (fabrication)</div>', unsafe_allow_html=True)
-        st.markdown('<div class="anecdote"><b>💡 Équivalent élève :</b> Fabriquer un ordinateur demande autant d\'énergie que de laisser une ampoule allumée pendant des mois !</div>', unsafe_allow_html=True)
+        st.markdown("""<div class="anecdote">
+            <b>💡 Équivalents frappants pour un élève :</b><br>
+            • <b>Fabriquer un seul ordinateur portable (250 kg)</b> = Rouler 1200 km en voiture ou fabriquer 150 t-shirts en coton 💻<br>
+            • <b>Garder son smartphone 4 ans au lieu de 2 ans</b> = Éviter l'équivalent carbone de 400 repas végétariens 📱<br>
+            • <b>Gâcher une ramette de papier blanc (3 kg)</b> = Laisser la lumière de sa chambre allumée pendant 2 mois non-stop 💡
+            </div>""", unsafe_allow_html=True)
 
     with g_tabs[4]:
         st.subheader("🗑️ Gestion des Déchets")
         st.markdown('<p class="inner-title" style="text-align:left;">📊 Empreinte des déchets :</p>', unsafe_allow_html=True)
         st.markdown('<div class="unit-box">• <b>Déchets papier/carton :</b> 0.15 kg CO2e par kg (trié)<br>• <b>Déchets plastiques :</b> 0.30 kg CO2e par kg (trié)<br>• <b>Déchets alimentaires :</b> 0.20 kg CO2e par kg</div>', unsafe_allow_html=True)
-        st.markdown('<div class="anecdote"><b>💡 Équivalent élève :</b> Trier ses déchets permet d\'éviter l\'incinération et de valoriser les matières pour de nouveaux objets !</div>', unsafe_allow_html=True)
+        st.markdown("""<div class="anecdote">
+            <b>💡 Équivalents frappants pour un élève :</b><br>
+            • <b>Trier 1 kg de bouteilles en plastique (0,30 kg évités)</b> = Économiser l'énergie de 3 cycles complets de machine à laver 🧺<br>
+            • <b>Jeter un plateau repas entier à la poubelle</b> = Gaspiller l'équivalent en carbone d'une douche chaude de 6 minutes 🚿<br>
+            • <b>Recycler le carton et le papier du collège</b> = Éviter l'incinération directe qui rejette des nuages de CO2 dans l'atmosphère 🗑️
+            </div>""", unsafe_allow_html=True)
 
 st.divider()
 st.caption("Sources : Base Empreinte ADEME / Contexte Réseau Climat Haut Vaucluse - Juin 2026")
