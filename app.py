@@ -20,7 +20,7 @@ def get_base64_image(file_name_without_ext):
 # Chargement immédiat de la ressource image pour écarter les NameError
 img_base64 = get_base64_image("image_1")
 
-# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (Format Cadre Compact à Droite)
+# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (Format Densité Compacte Spéciale)
 def inject_glass_theme(img_b64):
     bg_style = f"""
     [data-testid="stAppViewContainer"], .stAppViewContainer {{
@@ -29,7 +29,6 @@ def inject_glass_theme(img_b64):
         background-position: center !important;
         background-attachment: fixed !important;
         background-repeat: no-repeat !important;
-        zoom: 0.9;
     }}
     """ if img_b64 else """
     [data-testid="stAppViewContainer"] {{
@@ -47,21 +46,21 @@ def inject_glass_theme(img_b64):
             background-color: transparent !important;
         }}
         
-        /* 📐 AMÉNAGEMENT DU CADRE : Élargi à 58% pour les 5 boutons et allongé en bas pour le défilement */
+        /* 📐 COMPACTAGE DU CADRE PRINCIPAL (Densité 80% sans distorsion) */
         [data-testid="stMainBlockContainer"], .main .block-container, .block-container {{
             background-color: transparent !important;
             padding-top: 0rem !important; 
-            padding-bottom: 10rem !important; /* Allongement vertical pour descendre jusqu'au Manage App */
+            padding-bottom: 8rem !important; /* Laisse de l'air pour défiler confortablement en bas */
             padding-left: 1rem !important;
             padding-right: 1rem !important;
-            max-width: 58% !important; /* Élargi pour faire tenir confortablement tes 5 onglets */
-            width: 58% !important;
+            max-width: 54% !important; /* Élargi idéalement pour aligner les 5 boutons du glossaire */
+            width: 54% !important;
             margin-left: auto !important; 
             margin-right: 2% !important;  
-            margin-top: 6.5rem !important; /* Descendu pour libérer totalement la barre supérieure */
+            margin-top: 5.5rem !important; /* Descend le bloc pour éviter la collision avec le menu */
         }}
 
-        /* 💎 LE COCKPIT DE VERRE SATELLITE COMPACT (Opacité 15%, Espacements resserrés) */
+        /* 💎 LES BLOCS DE VERRE EN FORMAT DENSITÉ RÉDUITE (Paddings et marges resserrés) */
         div[data-testid="stColumn"], 
         div[data-testid="stBorderedContainer"],
         .stDataFrame,
@@ -70,20 +69,19 @@ def inject_glass_theme(img_b64):
             backdrop-filter: blur(20px) saturate(130%) !important; 
             -webkit-backdrop-filter: blur(20px) saturate(130%) !important;
             border: 1px solid rgba(255, 255, 255, 0.18) !important; 
-            padding: 12px !important; /* Espacement interne compacté */
-            border-radius: 12px !important;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25) !important;
-            margin-bottom: 8px !important; /* Espacement entre les lignes divisé par deux */
+            padding: 10px !important; /* Moins d'espace perdu à l'intérieur des dalles */
+            border-radius: 10px !important;
+            margin-bottom: 6px !important; /* Rapproche les blocs verticalement */
         }}
 
-        /* 🛡️ SÉCURISATION DES EXPANDERS ET DE LEURS CHEVRONS */
+        /* 🛡️ SÉCURISATION DES EXPANDERS ET DE LEURS CHEVRONS (Format compact) */
         div[data-testid="stExpander"], .stExpander {{
             background-color: rgba(17, 24, 39, 0.6) !important;
             border: 1px solid rgba(255, 255, 255, 0.12) !important;
-            border-radius: 8px !important;
-            padding: 8px 12px !important;
-            margin-top: 4px !important;
-            margin-bottom: 4px !important;
+            border-radius: 6px !important;
+            padding: 6px 10px !important;
+            margin-top: 3px !important;
+            margin-bottom: 3px !important;
             box-shadow: none !important;
         }}
         
@@ -93,26 +91,27 @@ def inject_glass_theme(img_b64):
             display: inline-block !important;
         }}
 
-        /* --- 🎛️ ACCESSIBILITÉ DES BOUTONS DE NAVIGATION DU HAUT --- */
+        /* --- 🎛️ BOUTONS DE NAVIGATION DU HAUT CALIBRÉS POUR TOUT FAIRE TENIR --- */
         div[data-baseweb="tab-list"] {{
-            gap: 8px !important;
+            gap: 6px !important;
             background-color: transparent !important;
             margin-bottom: 10px !important;
             position: fixed !important; 
-            top: 75px !important; /* Descendu sous la barre blanche de Streamlit */
+            top: 55px !important; /* Positionné proprement sous la zone système */
             right: 2% !important;
-            width: 56% !important; /* Aligné proportionnellement sur la nouvelle largeur */
+            width: 52% !important; 
             z-index: 99999 !important; 
         }}
         div[data-baseweb="tab-list"] button {{
             background-color: rgba(22, 32, 49, 0.85) !important;
             backdrop-filter: blur(10px) !important;
-            border-radius: 8px 8px 0 0 !important;
-            padding: 6px 16px !important;
+            border-radius: 6px 6px 0 0 !important;
+            padding: 5px 12px !important; /* Boutons légèrement plus denses */
             color: #cbd5e1 !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
             transition: all 0.2s ease !important;
             font-weight: bold !important;
+            font-size: 13px !important; /* Taille ajustée pour le mode 80% */
         }}
         div[data-baseweb="tab-list"] button:hover {{
             background-color: rgba(55, 65, 81, 0.9) !important;
@@ -123,55 +122,55 @@ def inject_glass_theme(img_b64):
             background-color: #22d3ee !important;
             color: #0f172a !important;
             border-color: #22d3ee !important;
-            box-shadow: 0 4px 14px rgba(34, 211, 238, 0.4) !important;
+            box-shadow: 0 4px 12px rgba(34, 211, 238, 0.4) !important;
         }}
 
-        /* 🛡️ TEXTES BLANCS GÉNÉRAUX SÉCURISÉS */
+        /* 🛡️ TEXTES ET TITRES AJUSTÉS SANS EFFET DE SURCHARGE */
         h1, h2, h3, h4, h5, h6, label, p, .stMarkdown p, [data-testid="stWidgetLabel"] p, summary {{
             color: #f8fafc !important;
             font-weight: bold !important;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7) !important;
         }}
         
-        h1 {{ font-size: 22px !important; margin-bottom: 8px !important; }}
-        h2 {{ font-size: 18px !important; margin-bottom: 6px !important; }}
+        h1 {{ font-size: 20px !important; margin-bottom: 6px !important; }}
+        h2 {{ font-size: 16px !important; margin-bottom: 4px !important; }}
         
         .pole-header, .sub-pole-header {{ 
             display: flex !important; 
             justify-content: space-between !important; 
             flex-wrap: wrap !important;
-            gap: 4px !important;
+            gap: 2px !important;
             color: #f8fafc !important; 
             font-weight: bold !important; 
+            font-size: 13px !important;
         }}
         
-        .inner-title {{ text-align: center; font-weight: bold; font-size: 14px; color: #38bdf8 !important; margin-bottom: 6px; }}
+        .inner-title {{ text-align: center; font-weight: bold; font-size: 13px; color: #38bdf8 !important; margin-bottom: 4px; }}
         [data-testid="stHeader"] {{ height: 0px; }}
         
-        /* ⚡ BLINDAGE DES POLICES SUR LE GRAPHIQUE INTERACTIF DE L'ONGLET 2 */
+        /* ⚡ LABELS PLOTLY SÉCURISÉS */
         .js-plotly-plot .plotly .yaxislayer-above .tick text {{
-            fill: #0f172a !important;
-            font-weight: 900 !important;
-            font-size: 13px !important;
-            font-family: 'Helvetica Neue', Arial, sans-serif !important;
-        }}
-        .js-plotly-plot .plotly .xaxislayer-above .tick text {{
             fill: #0f172a !important;
             font-weight: 900 !important;
             font-size: 12px !important;
         }}
+        .js-plotly-plot .plotly .xaxislayer-above .tick text {{
+            fill: #0f172a !important;
+            font-weight: 900 !important;
+            font-size: 11px !important;
+        }}
         
-        /* Éléments de structure internes */
-        .anecdote {{ background-color: rgba(2, 132, 199, 0.25); padding: 10px 12px; border-left: 4px solid #0284c7; border-radius: 4px; color: #ffffff !important; font-size: 13px; margin-top: 4px; }}
-        .unit-box {{ background-color: rgba(17, 24, 39, 0.55) !important; padding: 8px; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.2); font-size: 13px; color: #ffffff !important; margin-bottom: 4px; }}
+        /* Éléments internes */
+        .anecdote {{ background-color: rgba(2, 132, 199, 0.25); padding: 8px 10px; border-left: 4px solid #0284c7; border-radius: 4px; color: #ffffff !important; font-size: 12px; margin-top: 3px; }}
+        .unit-box {{ background-color: rgba(17, 24, 39, 0.55) !important; padding: 6px 8px; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.2); font-size: 12px; color: #ffffff !important; margin-bottom: 3px; }}
         
-        /* Barres de progression */
-        .bar-container {{ background-color: rgba(255, 255, 255, 0.15); border-radius: 4px; height: 10px; width: 100%; margin-bottom: 6px; overflow: hidden; }}
-        .sub-bar-container {{ background-color: rgba(255, 255, 255, 0.08); border-radius: 3px; height: 7px; width: 100%; margin-bottom: 4px; overflow: hidden; }}
+        /* Jauges ADEME affinées */
+        .bar-container {{ background-color: rgba(255, 255, 255, 0.15); border-radius: 4px; height: 8px; width: 100%; margin-bottom: 4px; overflow: hidden; }}
+        .sub-bar-container {{ background-color: rgba(255, 255, 255, 0.08); border-radius: 3px; height: 6px; width: 100%; margin-bottom: 3px; overflow: hidden; }}
         
         .js-plotly-plot .plotly .main-svg {{ background: transparent !important; }}
         .stDataFrame div {{ background-color: transparent !important; }}
-        hr {{ margin-top: 8px !important; margin-bottom: 8px !important; }}
+        hr {{ margin-top: 6px !important; margin-bottom: 6px !important; }}
         </style>
         """,
         unsafe_allow_html=True
@@ -285,7 +284,7 @@ with tab_dashboard:
                 domain = {'x': [0.1, 0.9], 'y': [0, 1]},
                 number = {
                     'suffix': " kg", 
-                    'font': {'color': '#f1f5f9', 'size': 20}
+                    'font': {'color': '#f1f5f9', 'size': 18}
                 }, 
                 gauge = {
                     'axis': {'range': [None, 2000], 'tickfont': {'color': '#cbd5e1', 'size': 9}}, 
@@ -306,7 +305,7 @@ with tab_dashboard:
             # --- 🏫 COLONNE DE GAUCHE : ÉTABLISSEMENT UNIQUE ---
             with col_mid1:
                 selected_school = st.selectbox("Établissement audité :", df_active[col_etab].unique(), key="left_school_selector")
-                st.markdown(f'<p class="inner-title" style="color: #38bdf8; text-align: left; font-size: 16px; margin-bottom: 4px;">🏫 Établissement Audité : {selected_school}</p>', unsafe_allow_html=True)
+                st.markdown(f'<p class="inner-title" style="color: #38bdf8; text-align: left; font-size: 15px; margin-bottom: 4px;">🏫 Établissement Audité : {selected_school}</p>', unsafe_allow_html=True)
                 
                 school_data = df_active[df_active[col_etab] == selected_school].iloc[0]
                 tot_sch = school_data[col_total]
@@ -356,7 +355,7 @@ with tab_dashboard:
 
             # --- 🌍 COLONNE DE DROITE : TOTAL RÉSEAU CENTRALISÉ ---
             with col_mid2:
-                st.markdown('<p class="inner-title" style="color: #38bdf8; text-align: left; font-size: 16px;">🌍 Global : Secteurs d\'impact du Réseau</p>', unsafe_allow_html=True)
+                st.markdown('<p class="inner-title" style="color: #38bdf8; text-align: left; font-size: 15px;">🌍 Global : Secteurs d\'impact du Réseau</p>', unsafe_allow_html=True)
                 
                 tot_net = df_active[col_total].sum()
                 if tot_net >= 0:
@@ -452,7 +451,7 @@ with tab_conso_graph:
 with tab_glossaire:
     st.markdown("<h2 style='color: #22d3ee; text-align: center; margin-bottom: 12px;'>📖 Dictionnaire Carbone : Unités & Équivalents Enfants</h2>", unsafe_allow_html=True)
     
-    # Ajout des 5 onglets thématiques fonctionnels
+    # Structure stabilisée à 5 onglets, étalée et compacte pour éviter tout scroll
     g_tabs = st.tabs(["🍎 Cantine", "❄️ Énergie", "🚌 Transports", "📦 Biens & Équipements", "🗑️ Déchets"])
     
     with g_tabs[0]:
