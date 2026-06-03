@@ -4,8 +4,8 @@ import plotly.graph_objects as go
 import base64
 import os
 
-# 1. CONFIGURATION
-st.set_page_config(page_title="Défi Carbone", page_icon="🌱", layout="wide")
+# 1. CONFIGURATION INITIALE
+st.set_page_config(page_title="Défi Carbone - Haut Vaucluse", page_icon="🌱", layout="wide")
 
 def get_base64_image(file_name_without_ext):
     current_dir = os.path.dirname(__file__)
@@ -18,58 +18,50 @@ def get_base64_image(file_name_without_ext):
 
 img_base64 = get_base64_image("image_1")
 
-# 2. DESIGN FINAL (Cadre flottant avec marges)
-st.markdown(f"""
-<style>
-    [data-testid="stAppViewContainer"] {{
-        background-image: url("data:image/jpeg;base64,{img_base64}");
-        background-size: cover;
+# 2. STYLE CSS FONCTIONNEL ET STABLE
+def set_style(img_b64):
+    bg_style = f"""
+    [data-testid="stAppViewContainer"], .stAppViewContainer {{
+        background-image: url("data:image/jpeg;base64,{img_b64}") !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-attachment: fixed !important;
+        background-repeat: no-repeat !important;
+    }}
+    """
+    
+    st.markdown(f"""
+    <style>
+    {bg_style}
+    .stApp {{ background: transparent !important; }}
+    
+    /* Style Ardoise Profond pour les conteneurs */
+    div[data-testid="stBorderedContainer"], div[data-testid="stExpander"], .stExpander {{
+        background-color: rgba(30, 41, 59, 0.85) !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        border-radius: 12px !important;
     }}
     
-    /* Le cadre global devient flottant avec des marges */
-    .main .block-container {{
-        background-color: rgba(228, 235, 245, 0.58) !important;
-        backdrop-filter: blur(15px);
-        border: 1px solid rgba(255,255,255,0.5) !important;
-        border-radius: 20px !important;
-        margin: 20px !important; /* Marge autour du cadre */
-        padding: 20px !important;
-        margin-top: 80px !important; /* Dégagement suffisant pour les onglets en haut */
-    }}
-    
-    /* Style des expanders */
-    div[data-testid="stExpander"] {{
-        background-color: rgba(255, 255, 255, 0.3) !important;
-        border: 1px solid rgba(255,255,255,0.4) !important;
-        border-radius: 10px !important;
-    }}
-    
-    /* Onglets de navigation */
-    div[data-baseweb="tab-list"] {{
-        margin-top: 10px !important;
-        margin-bottom: 20px !important;
-    }}
-    button[data-baseweb="tab"] {{
-        background: rgba(255,255,255,0.4) !important;
-        border-radius: 8px !important;
-        padding: 8px 20px !important;
-    }}
+    /* Assurer que les textes restent lisibles */
+    h1, h2, h3, p, label, .pole-header, .sub-pole-header {{ color: #f1f5f9 !important; }}
+    </style>
+    """, unsafe_allow_html=True)
 
-    h1, h2, p, label {{ color: #0f172a !important; font-weight: bold !important; }}
-</style>
-""", unsafe_allow_html=True)
+set_style(img_base64)
 
-# 3. STRUCTURE DES ONGLETS (Réinsère ici ton code de chargement et tes calculs)
+# 3. FONCTIONS UTILITAIRES
+def draw_custom_bar(label, value_kg, total_kg, color, is_sub=False):
+    pct = (value_kg / total_kg * 100) if total_kg > 0 else 0
+    display_weight = f"{value_kg/1000:.2f} t" if value_kg >= 1000 else f"{value_kg:.1f} kg"
+    
+    if not is_sub:
+        st.markdown(f"**{label}** : {display_weight} ({pct:.1f}%)")
+        st.progress(pct/100)
+    else:
+        st.markdown(f"&nbsp;&nbsp;&nbsp;• {label} : {display_weight}")
+
+# 4. CHARGEMENT DONNÉES ET STRUCTURE (Reprends ton code ici)
+# Assure-toi de bien conserver ton `load_data()` et la structure de tes tabs
 tab1, tab2, tab3 = st.tabs(["📊 Tableau de Bord", "🌱 Empreinte carbone", "📖 Référentiel Éléves"])
 
-with tab1:
-    st.title("🌱 Défi Carbone - Réseau Haut Vaucluse")
-    # ... le contenu de ton onglet 1 ...
-
-with tab2:
-    st.header("Analyse graphique")
-    # ... le contenu de ton onglet 2 ...
-
-with tab3:
-    st.header("Référentiel")
-    # ... le contenu de ton onglet 3 ...
+# ... (Réinsère ici tout ton code fonctionnel qui suit normalement)
