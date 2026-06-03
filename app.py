@@ -20,7 +20,7 @@ def get_base64_image(file_name_without_ext):
 # Chargement immédiat de la ressource image pour écarter les NameError
 img_base64 = get_base64_image("image_1")
 
-# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (Format Densité Compacte Spéciale)
+# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (Calibré sur tes limites jaunes)
 def inject_glass_theme(img_b64):
     bg_style = f"""
     [data-testid="stAppViewContainer"], .stAppViewContainer {{
@@ -46,21 +46,21 @@ def inject_glass_theme(img_b64):
             background-color: transparent !important;
         }}
         
-        /* 📐 COMPACTAGE DU CADRE PRINCIPAL (Densité 80% sans distorsion) */
+        /* 📐 AMÉNAGEMENT DU CADRE (Largeur calée sur ta limite jaune verticale) */
         [data-testid="stMainBlockContainer"], .main .block-container, .block-container {{
             background-color: transparent !important;
             padding-top: 0rem !important; 
-            padding-bottom: 8rem !important; /* Laisse de l'air pour défiler confortablement en bas */
+            padding-bottom: 6rem !important; /* Laisse l'espace parfait avant le bandeau du bas */
             padding-left: 1rem !important;
             padding-right: 1rem !important;
-            max-width: 54% !important; /* Élargi idéalement pour aligner les 5 boutons du glossaire */
+            max-width: 54% !important; 
             width: 54% !important;
             margin-left: auto !important; 
             margin-right: 2% !important;  
-            margin-top: 5.5rem !important; /* Descend le bloc pour éviter la collision avec le menu */
+            margin-top: 5.5rem !important; 
         }}
 
-        /* 💎 LES BLOCS DE VERRE EN FORMAT DENSITÉ RÉDUITE (Paddings et marges resserrés) */
+        /* 💎 LES BLOCS DE VERRE (Opacité 15%, sans scrollbars internes parasites) */
         div[data-testid="stColumn"], 
         div[data-testid="stBorderedContainer"],
         .stDataFrame,
@@ -69,12 +69,12 @@ def inject_glass_theme(img_b64):
             backdrop-filter: blur(20px) saturate(130%) !important; 
             -webkit-backdrop-filter: blur(20px) saturate(130%) !important;
             border: 1px solid rgba(255, 255, 255, 0.18) !important; 
-            padding: 10px !important; /* Moins d'espace perdu à l'intérieur des dalles */
+            padding: 10px !important; 
             border-radius: 10px !important;
-            margin-bottom: 6px !important; /* Rapproche les blocs verticalement */
+            margin-bottom: 6px !important;
         }}
 
-        /* 🛡️ SÉCURISATION DES EXPANDERS ET DE LEURS CHEVRONS (Format compact) */
+        /* 🛡️ SÉCURISATION DES EXPANDERS ET DE LEURS CHEVRONS */
         div[data-testid="stExpander"], .stExpander {{
             background-color: rgba(17, 24, 39, 0.6) !important;
             border: 1px solid rgba(255, 255, 255, 0.12) !important;
@@ -91,13 +91,13 @@ def inject_glass_theme(img_b64):
             display: inline-block !important;
         }}
 
-        /* --- 🎛️ BOUTONS DE NAVIGATION DU HAUT CALIBRÉS POUR TOUT FAIRE TENIR --- */
+        /* --- 🎛️ BOUTONS DE NAVIGATION DU HAUT --- */
         div[data-baseweb="tab-list"] {{
             gap: 6px !important;
             background-color: transparent !important;
             margin-bottom: 10px !important;
             position: fixed !important; 
-            top: 55px !important; /* Positionné proprement sous la zone système */
+            top: 55px !important; 
             right: 2% !important;
             width: 52% !important; 
             z-index: 99999 !important; 
@@ -106,12 +106,12 @@ def inject_glass_theme(img_b64):
             background-color: rgba(22, 32, 49, 0.85) !important;
             backdrop-filter: blur(10px) !important;
             border-radius: 6px 6px 0 0 !important;
-            padding: 5px 12px !important; /* Boutons légèrement plus denses */
+            padding: 5px 12px !important; 
             color: #cbd5e1 !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
             transition: all 0.2s ease !important;
             font-weight: bold !important;
-            font-size: 13px !important; /* Taille ajustée pour le mode 80% */
+            font-size: 13px !important; 
         }}
         div[data-baseweb="tab-list"] button:hover {{
             background-color: rgba(55, 65, 81, 0.9) !important;
@@ -125,7 +125,7 @@ def inject_glass_theme(img_b64):
             box-shadow: 0 4px 12px rgba(34, 211, 238, 0.4) !important;
         }}
 
-        /* 🛡️ TEXTES ET TITRES AJUSTÉS SANS EFFET DE SURCHARGE */
+        /* 🛡️ TEXTES ET TITRES GÉNÉRAUX */
         h1, h2, h3, h4, h5, h6, label, p, .stMarkdown p, [data-testid="stWidgetLabel"] p, summary {{
             color: #f8fafc !important;
             font-weight: bold !important;
@@ -148,7 +148,7 @@ def inject_glass_theme(img_b64):
         .inner-title {{ text-align: center; font-weight: bold; font-size: 13px; color: #38bdf8 !important; margin-bottom: 4px; }}
         [data-testid="stHeader"] {{ height: 0px; }}
         
-        /* ⚡ LABELS PLOTLY SÉCURISÉS */
+        /* ⚡ LABELS GRAPHIQUE */
         .js-plotly-plot .plotly .yaxislayer-above .tick text {{
             fill: #0f172a !important;
             font-weight: 900 !important;
@@ -160,11 +160,9 @@ def inject_glass_theme(img_b64):
             font-size: 11px !important;
         }}
         
-        /* Éléments internes */
         .anecdote {{ background-color: rgba(2, 132, 199, 0.25); padding: 8px 10px; border-left: 4px solid #0284c7; border-radius: 4px; color: #ffffff !important; font-size: 12px; margin-top: 3px; }}
         .unit-box {{ background-color: rgba(17, 24, 39, 0.55) !important; padding: 6px 8px; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.2); font-size: 12px; color: #ffffff !important; margin-bottom: 3px; }}
         
-        /* Jauges ADEME affinées */
         .bar-container {{ background-color: rgba(255, 255, 255, 0.15); border-radius: 4px; height: 8px; width: 100%; margin-bottom: 4px; overflow: hidden; }}
         .sub-bar-container {{ background-color: rgba(255, 255, 255, 0.08); border-radius: 3px; height: 6px; width: 100%; margin-bottom: 3px; overflow: hidden; }}
         
@@ -267,7 +265,8 @@ with tab_dashboard:
             st.markdown('<p class="inner-title">📊 Classement des Établissements (kg/personne)</p>', unsafe_allow_html=True)
             if not df_active.empty:
                 df_ranking = df_active[[col_etab, col_conso]].sort_values(col_conso, ascending=False)
-                st.dataframe(df_ranking, hide_index=True, width="stretch", height=160)
+                # Hauteur augmentée à 215 pour afficher toutes les écoles sans scroll local coupé
+                st.dataframe(df_ranking, hide_index=True, width="stretch", height=215)
             else:
                 st.info("En attente de données...")
                 
@@ -443,7 +442,8 @@ with tab_conso_graph:
         
         st.divider()
         st.markdown('<p class="inner-title" style="color:#38bdf8;">📋 Synthèse Globale Centralisée KgCo2e</p>', unsafe_allow_html=True)
-        st.dataframe(df, hide_index=True, width="stretch", height=220)
+        # Augmenté à 280 pour afficher l'intégralité du tableau de données brutes sans clipping
+        st.dataframe(df, hide_index=True, width="stretch", height=280)
 
 # ==========================================
 # ---          3. ONGLET GLOSSAIRE       ---
@@ -451,7 +451,6 @@ with tab_conso_graph:
 with tab_glossaire:
     st.markdown("<h2 style='color: #22d3ee; text-align: center; margin-bottom: 12px;'>📖 Dictionnaire Carbone : Unités & Équivalents Enfants</h2>", unsafe_allow_html=True)
     
-    # Structure stabilisée à 5 onglets, étalée et compacte pour éviter tout scroll
     g_tabs = st.tabs(["🍎 Cantine", "❄️ Énergie", "🚌 Transports", "📦 Biens & Équipements", "🗑️ Déchets"])
     
     with g_tabs[0]:
