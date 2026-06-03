@@ -20,7 +20,7 @@ def get_base64_image(file_name_without_ext):
 # Chargement immédiat de la ressource image pour écarter les NameError
 img_base64 = get_base64_image("image_1")
 
-# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (Glossy calibré à 20% + Correction Graphique)
+# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (Glossy calibré à 15%)
 def inject_glass_theme(img_b64):
     bg_style = f"""
     [data-testid="stAppViewContainer"], .stAppViewContainer {{
@@ -51,13 +51,13 @@ def inject_glass_theme(img_b64):
             padding: 1.5rem 2.5rem !important;
         }}
 
-        /* 💎 LE COCKPIT DE VERRE SATELLITE (Opacité fixée à 20% ultra-légère) */
+        /* 💎 LE COCKPIT DE VERRE SATELLITE (Opacité fixée à 15% ultra-légère) */
         div[data-testid="stColumn"], 
         div[data-testid="stBorderedContainer"],
         .stDataFrame,
         div[role="tabpanel"] {{
-            background-color: rgba(22, 32, 49, 0.20) !important; /* Verre pur glossy à 20% d'opacité */
-            backdrop-filter: blur(20px) saturate(130%) !important; /* Effet givré cristalline */
+            background-color: rgba(22, 32, 49, 0.15) !important; /* Verre pur glossy à 15% d'opacité */
+            backdrop-filter: blur(20px) saturate(130%) !important; /* Effet givré cristallin */
             -webkit-backdrop-filter: blur(20px) saturate(130%) !important;
             border: 1px solid rgba(255, 255, 255, 0.18) !important; /* Liseré cristal bien net */
             padding: 22px !important;
@@ -111,7 +111,7 @@ def inject_glass_theme(img_b64):
             box-shadow: 0 4px 14px rgba(34, 211, 238, 0.4) !important;
         }}
 
-        /* 🛡️ TEXTES BLANCS REHAUSSÉS CONTRE LES SAUTS DE LIGNE */
+        /* 🛡️ TEXTES BLANCS GENERAUX SÉCURISÉS */
         h1, h2, h3, h4, h5, h6, label, p, .stMarkdown p, [data-testid="stWidgetLabel"] p, summary {{
             color: #f8fafc !important;
             font-weight: bold !important;
@@ -130,16 +130,17 @@ def inject_glass_theme(img_b64):
         .inner-title {{ text-align: center; font-weight: bold; font-size: 16px; color: #38bdf8 !important; margin-bottom: 12px; }}
         [data-testid="stHeader"] {{ height: 0px; }}
         
-        /* ⚡ BLINDAGE CHIRURGICAL DES ÉCRITURES DES ÉTABLISSEMENTS (ONGLET 2) VIA CSS */
+        /* ⚡ BLINDAGE CHIRURGICAL : POLICES FORCÉES EN NOIR ARDOISE PROFOND SUR LE GRAPH (ONGLET 2) */
         .js-plotly-plot .plotly .yaxislayer-above .tick text {{
-            fill: #ffffff !important;
+            fill: #0f172a !important;
             font-weight: 900 !important;
             font-size: 13px !important;
             font-family: 'Helvetica Neue', Arial, sans-serif !important;
         }}
         .js-plotly-plot .plotly .xaxislayer-above .tick text {{
-            fill: #cbd5e1 !important;
-            font-weight: bold !important;
+            fill: #0f172a !important;
+            font-weight: 900 !important;
+            font-size: 12px !important;
         }}
         
         /* Éléments de structure internes */
@@ -396,7 +397,7 @@ with tab_dashboard:
 # ==========================================
 with tab_conso_graph:
     if not df.empty:
-        st.markdown("<h2 style='text-align: center; color: #22d3ee; margin-bottom: 20px;'>📊 Comparatif Graphique Interactif du Réseau</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align: center; color: #22d3ee; margin-bottom: 20px;'>📊 Comparatif Graphic Interactif du Réseau</h2>", unsafe_allow_html=True)
         
         df_sorted_graph = df_active[[col_etab, col_conso]].sort_values(col_conso, ascending=True)
         
@@ -411,11 +412,12 @@ with tab_conso_graph:
         
         fig_bar.update_layout(
             margin=dict(l=20, r=20, t=10, b=10),
-            height=520,
+            height=500,
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
-            xaxis=dict(title="Consommation Carbone (kg / personne)", color="#f1f5f9", gridcolor="rgba(255,255,255,0.1)", showgrid=True),
-            yaxis=dict(color="#ffffff", showgrid=False) # Configuration nettoyée pour laisser le CSS forcer le Blanc Pur
+            # Des valeurs d'axes sombres configurées en Plotly pour doubler le blindage CSS
+            xaxis=dict(title="Consommation Carbone (kg / personne)", color="#0f172a", gridcolor="rgba(0,0,0,0.1)", showgrid=True),
+            yaxis=dict(color="#0f172a", showgrid=False)
         )
         st.plotly_chart(fig_bar, use_container_width=True)
         
