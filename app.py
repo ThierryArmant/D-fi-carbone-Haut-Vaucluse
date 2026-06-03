@@ -20,7 +20,7 @@ def get_base64_image(file_name_without_ext):
 # Chargement immédiat de la ressource image pour écarter les NameError
 img_base64 = get_base64_image("image_1")
 
-# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (Glossy calibré à 15%)
+# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (Glossy 15% + Format Centré)
 def inject_glass_theme(img_b64):
     bg_style = f"""
     [data-testid="stAppViewContainer"], .stAppViewContainer {{
@@ -46,9 +46,12 @@ def inject_glass_theme(img_b64):
             background-color: transparent !important;
         }}
         
+        /* 📐 CORRECTION FORMAT DE LECTURE : Largeur réduite de moitié et centrée pour laisser voir le fond sur les côtés */
         .main .block-container {{
             background-color: transparent !important;
-            padding: 1.5rem 2.5rem !important;
+            padding: 1.5rem 1rem !important;
+            max-width: 55% !important; /* Limite le champ de vision à environ la moitié de l'écran */
+            margin: 0 auto !important;  /* Centre parfaitement la zone de lecture */
         }}
 
         /* 💎 LE COCKPIT DE VERRE SATELLITE (Opacité fixée à 15% ultra-légère) */
@@ -59,7 +62,7 @@ def inject_glass_theme(img_b64):
             background-color: rgba(22, 32, 49, 0.15) !important; /* Verre pur glossy à 15% d'opacité */
             backdrop-filter: blur(20px) saturate(130%) !important; /* Effet givré cristallin */
             -webkit-backdrop-filter: blur(20px) saturate(130%) !important;
-            border: 1px solid rgba(255, 255, 255, 0.18) !important; /* Liseré cristal bien net */
+            border: 1px solid rgba(255, 255, 255, 0.18) !important; /* Liseré cristal net */
             padding: 22px !important;
             border-radius: 12px !important;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25) !important;
@@ -111,7 +114,7 @@ def inject_glass_theme(img_b64):
             box-shadow: 0 4px 14px rgba(34, 211, 238, 0.4) !important;
         }}
 
-        /* 🛡️ TEXTES BLANCS GENERAUX SÉCURISÉS */
+        /* 🛡️ TEXTES BLANCS GÉNÉRAUX SÉCURISÉS */
         h1, h2, h3, h4, h5, h6, label, p, .stMarkdown p, [data-testid="stWidgetLabel"] p, summary {{
             color: #f8fafc !important;
             font-weight: bold !important;
@@ -397,7 +400,7 @@ with tab_dashboard:
 # ==========================================
 with tab_conso_graph:
     if not df.empty:
-        st.markdown("<h2 style='text-align: center; color: #22d3ee; margin-bottom: 20px;'>📊 Comparatif Graphic Interactif du Réseau</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align: center; color: #22d3ee; margin-bottom: 20px;'>📊 Comparatif Graphique Interactif du Réseau</h2>", unsafe_allow_html=True)
         
         df_sorted_graph = df_active[[col_etab, col_conso]].sort_values(col_conso, ascending=True)
         
@@ -415,7 +418,6 @@ with tab_conso_graph:
             height=500,
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
-            # Des valeurs d'axes sombres configurées en Plotly pour doubler le blindage CSS
             xaxis=dict(title="Consommation Carbone (kg / personne)", color="#0f172a", gridcolor="rgba(0,0,0,0.1)", showgrid=True),
             yaxis=dict(color="#0f172a", showgrid=False)
         )
