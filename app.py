@@ -20,7 +20,7 @@ def get_base64_image(file_name_without_ext):
 # Chargement immédiat de la ressource image pour écarter les NameError
 img_base64 = get_base64_image("image_1")
 
-# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (Gris Transparent Ultra-Léger à 28%)
+# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (Glossy calibré à 20%)
 def inject_glass_theme(img_b64):
     bg_style = f"""
     [data-testid="stAppViewContainer"], .stAppViewContainer {{
@@ -51,25 +51,25 @@ def inject_glass_theme(img_b64):
             padding: 1.5rem 2.5rem !important;
         }}
 
-        /* 💎 LE COCKPIT DE VERRE GRIS CRISTAL (Opacité fixée à 28% pour un effet aérien maximal) */
+        /* 💎 LE COCKPIT DE VERRE SATELLITE (Opacité fixée à 20% selon tes directives) */
         div[data-testid="stColumn"], 
         div[data-testid="stBorderedContainer"],
         .stDataFrame,
         div[role="tabpanel"] {{
-            background-color: rgba(31, 41, 55, 0.28) !important; /* Gris cristal ultra-léger et transparent */
-            backdrop-filter: blur(16px) saturate(120%) !important;
-            -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important; /* Liseré haute lumière */
+            background-color: rgba(22, 32, 49, 0.20) !important; /* Verre pur glossy à 20% d'opacité */
+            backdrop-filter: blur(20px) saturate(130%) !important; /* Effet givré cristallin */
+            -webkit-backdrop-filter: blur(20px) saturate(130%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.18) !important; /* Liseré cristal bien net */
             padding: 22px !important;
             border-radius: 12px !important;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25) !important;
             margin-bottom: 16px !important;
         }}
 
-        /* 🛡️ SÉCURISATION DES EXPANDERS ET DE LEURS CHEVRONS */
+        /* 🛡️ SÉCURISATION DES EXPANDERS ET DE LEURS CHEVRONS (Taille d'origine préservée) */
         div[data-testid="stExpander"], .stExpander {{
-            background-color: rgba(17, 24, 39, 0.55) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            background-color: rgba(17, 24, 39, 0.6) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
             border-radius: 8px !important;
             padding: 10px 14px !important;
             margin-top: 8px !important;
@@ -90,12 +90,12 @@ def inject_glass_theme(img_b64):
             margin-bottom: 20px !important;
         }}
         div[data-baseweb="tab-list"] button {{
-            background-color: rgba(31, 41, 55, 0.8) !important;
+            background-color: rgba(22, 32, 49, 0.85) !important;
             backdrop-filter: blur(10px) !important;
             border-radius: 8px 8px 0 0 !important;
             padding: 10px 24px !important;
             color: #cbd5e1 !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
             transition: all 0.2s ease !important;
             font-weight: bold !important;
         }}
@@ -111,11 +111,11 @@ def inject_glass_theme(img_b64):
             box-shadow: 0 4px 14px rgba(34, 211, 238, 0.4) !important;
         }}
 
-        /* 🛡️ TEXTES BLANCS SÉCURISÉS */
+        /* 🛡️ TEXTES BLANCS SÉCURISÉS CONTRE LES SAUTS DE LIGNE */
         h1, h2, h3, h4, h5, h6, label, p, .stMarkdown p, [data-testid="stWidgetLabel"] p, summary {{
             color: #f8fafc !important;
             font-weight: bold !important;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6) !important;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7) !important;
         }}
         
         .pole-header, .sub-pole-header {{ 
@@ -131,12 +131,12 @@ def inject_glass_theme(img_b64):
         [data-testid="stHeader"] {{ height: 0px; }}
         
         /* Éléments de structure internes */
-        .anecdote {{ background-color: rgba(2, 132, 199, 0.2); padding: 12px 14px; border-left: 4px solid #0284c7; border-radius: 4px; color: #ffffff !important; font-size: 13px; margin-top: 6px; }}
-        .unit-box {{ background-color: rgba(17, 24, 39, 0.5) !important; padding: 10px; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.15); font-size: 13px; color: #ffffff !important; margin-bottom: 6px; }}
+        .anecdote {{ background-color: rgba(2, 132, 199, 0.25); padding: 12px 14px; border-left: 4px solid #0284c7; border-radius: 4px; color: #ffffff !important; font-size: 13px; margin-top: 6px; }}
+        .unit-box {{ background-color: rgba(17, 24, 39, 0.55) !important; padding: 10px; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.2); font-size: 13px; color: #ffffff !important; margin-bottom: 6px; }}
         
         /* Barres de progression */
-        .bar-container {{ background-color: rgba(255, 255, 255, 0.12); border-radius: 4px; height: 12px; width: 100%; margin-bottom: 8px; overflow: hidden; }}
-        .sub-bar-container {{ background-color: rgba(255, 255, 255, 0.06); border-radius: 3px; height: 8px; width: 100%; margin-bottom: 6px; overflow: hidden; }}
+        .bar-container {{ background-color: rgba(255, 255, 255, 0.15); border-radius: 4px; height: 12px; width: 100%; margin-bottom: 8px; overflow: hidden; }}
+        .sub-bar-container {{ background-color: rgba(255, 255, 255, 0.08); border-radius: 3px; height: 8px; width: 100%; margin-bottom: 6px; overflow: hidden; }}
         
         .js-plotly-plot .plotly .main-svg {{ background: transparent !important; }}
         .stDataFrame div {{ background-color: transparent !important; }}
@@ -310,7 +310,7 @@ with tab_dashboard:
                     with st.expander("🔍 Détails Consommables & Matériel (cliquer pour ouvrir)"):
                         draw_custom_bar("• Papier & Carton", b_pap + safe_get_val(school_data, "Carton"), sch_biens, "#a855f7", is_sub=True)
                         draw_custom_bar("• Plastiques & Fournitures", safe_get_val(school_data, "Plastique"), sch_biens, "#a855f7", is_sub=True)
-                        draw_custom_bar("• Appareils Numériques (Écrans, Vidéo, Impr.)", safe_get_val(school_data, "Ordinateur à écran plat") + safe_get_val(school_data, "Imprimante") + safe_get_val(school_data, "Photocopieurs") + safe_get_val(school_data, "Vidéo projecteur"), sch_biens, "#a855f7", is_sub=True)
+                        draw_custom_bar("• Appareils Numériques", safe_get_val(school_data, "Ordinateur à écran plat") + safe_get_val(school_data, "Imprimante") + safe_get_val(school_data, "Photocopieurs") + safe_get_val(school_data, "Vidéo projecteur"), sch_biens, "#a855f7", is_sub=True)
 
                     # Déchets avec Expanders
                     draw_custom_bar("🗑️ Gestion des Déchets", sch_dechets, tot_sch, "#818cf8")
@@ -403,7 +403,8 @@ with tab_conso_graph:
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
             xaxis=dict(title="Consommation Carbone (kg / personne)", color="#f1f5f9", gridcolor="rgba(255,255,255,0.1)", showgrid=True),
-            yaxis=dict(color="#f1f5f9", tickfont=dict(size=12, weight="bold"))
+            # 🛡️ APPLICAION DU BLANC PUR SUR LES ÉCRITURES DES ÉTABLISSEMENTS (AXE Y)
+            yaxis=dict(color="#ffffff", tickfont=dict(size=12, weight="bold"))
         )
         st.plotly_chart(fig_bar, use_container_width=True)
         
