@@ -17,10 +17,10 @@ def get_base64_image(file_name_without_ext):
                 return base64.b64encode(img_file.read()).decode()
     return ""
 
-# Chargement immédiat de la ressource image pour éviter les NameError
+# Chargement immédiat de la ressource image pour écarter les NameError
 img_base64 = get_base64_image("image_1")
 
-# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (Gris Transparent Allégé de 20%)
+# 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL (Gris Transparent Allégé à 38%)
 def inject_glass_theme(img_b64):
     bg_style = f"""
     [data-testid="stAppViewContainer"], .stAppViewContainer {{
@@ -51,15 +51,15 @@ def inject_glass_theme(img_b64):
             padding: 1.5rem 2.5rem !important;
         }}
 
-        /* 💎 LE COCKPIT DE VERRE GRIS CRISTAL (Opacité ajustée à 48% pour plus de transparence) */
+        /* 💎 LE COCKPIT DE VERRE GRIS CRISTAL (Opacité descendue à 38%) */
         div[data-testid="stColumn"], 
         div[data-testid="stBorderedContainer"],
         .stDataFrame,
         div[role="tabpanel"] {{
-            background-color: rgba(31, 41, 55, 0.48) !important; /* Gris allégé et très transparent */
+            background-color: rgba(31, 41, 55, 0.38) !important; /* Gris allégé très transparent et épuré */
             backdrop-filter: blur(16px) saturate(120%) !important;
             -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important; /* Liseré haute lumière préservé */
+            border: 1px solid rgba(255, 255, 255, 0.15) !important; /* Liseré haute lumière */
             padding: 22px !important;
             border-radius: 12px !important;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
@@ -111,14 +111,13 @@ def inject_glass_theme(img_b64):
             box-shadow: 0 4px 14px rgba(34, 211, 238, 0.4) !important;
         }}
 
-        /* 🛡️ TEXTES BLANCS SÉCURISÉS CONTRE LES SUTS DE LIGNE EN BAS */
+        /* 🛡️ TEXTES BLANCS SÉCURISÉS CONTRE LES SAUTS DE LIGNE */
         h1, h2, h3, h4, h5, h6, label, p, .stMarkdown p, [data-testid="stWidgetLabel"] p, summary {{
             color: #f8fafc !important;
             font-weight: bold !important;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6) !important;
         }}
         
-        /* Flexibilisation des lignes ADEME pour éviter le chevauchement ou la perte d'éléments en bas */
         .pole-header, .sub-pole-header {{ 
             display: flex !important; 
             justify-content: space-between !important; 
@@ -148,7 +147,7 @@ def inject_glass_theme(img_b64):
 
 inject_glass_theme(img_base64)
 
-# 3. INTERFACE DE CONSTRUCION DES JAUGE ADEME
+# 3. INTERFACE DE CONSTRUCTION DES JAUGE ADEME
 def draw_custom_bar(label, value_kg, total_kg, color, is_sub=False):
     pct = (value_kg / total_kg * 100) if total_kg > 0 else 0
     display_weight = f"{value_kg/1000:.2f} t" if value_kg >= 1000 else f"{value_kg:.1f} kg"
@@ -269,6 +268,7 @@ with tab_dashboard:
         if not df_active.empty:
             col_mid1, col_mid2 = st.columns([1, 1])
             
+            # --- 🏫 COLONNE DE GAUCHE : ÉTABLISSEMENT UNIQUE ---
             with col_mid1:
                 selected_school = st.selectbox("Établissement audité :", df_active[col_etab].unique(), key="left_school_selector")
                 st.markdown(f'<p class="inner-title" style="color: #38bdf8; text-align: left; font-size: 18px;">🏫 Établissement Audité : {selected_school}</p>', unsafe_allow_html=True)
@@ -284,12 +284,14 @@ with tab_dashboard:
                     sch_biens = b_pap + safe_get_val(school_data, "Plastique") + safe_get_val(school_data, "Carton") + safe_get_val(school_data, "Ordinateur à écran plat") + safe_get_val(school_data, "Imprimante") + safe_get_val(school_data, "Photocopieurs") + safe_get_val(school_data, "Vidéo projecteur")
                     sch_dechets = safe_get_val(school_data, "Déchets Papier") + safe_get_val(school_data, "Déchets alimentaire") + safe_get_val(school_data, "Déchets plastique")
 
+                    # Énergie
                     draw_custom_bar("❄️ Énergie & Bâtiments", sch_energie, tot_sch, "#4ade80")
                     with st.expander("🔍 Détails Énergie (cliquer pour ouvrir)"):
                         draw_custom_bar("• Électricité française", safe_get_val(school_data, "Electricité française"), sch_energie, "#22c55e", is_sub=True)
                         draw_custom_bar("• Gaz Naturel", safe_get_val(school_data, "Gaz Naturel"), sch_energie, "#22c55e", is_sub=True)
                         draw_custom_bar("• Fioul de chauffage", safe_get_val(school_data, "Fioul de chauffage"), sch_energie, "#22c55e", is_sub=True)
 
+                    # Alimentation
                     draw_custom_bar("🍎 Alimentation & Cantine", sch_alimentation, tot_sch, "#fb923c")
                     with st.expander("🔍 Détails Restauration (cliquer pour ouvrir)"):
                         draw_custom_bar("• Repas Viande Rouge", safe_get_val(school_data, "Repas viande rouge"), sch_alimentation, "#f97316", is_sub=True)
@@ -297,35 +299,59 @@ with tab_dashboard:
                         draw_custom_bar("• Repas Standard Moyen", safe_get_val(school_data, "Repas moyen"), sch_alimentation, "#f97316", is_sub=True)
                         draw_custom_bar("• Repas Végétarien", safe_get_val(school_data, "Repas végétarien"), sch_alimentation, "#f97316", is_sub=True)
 
+                    # Transports
                     draw_custom_bar("🚌 Déplacements & Transports", sch_transport, tot_sch, "#60a5fa")
                     with st.expander("🔍 Détails Transports (cliquer pour ouvrir)"):
                         draw_custom_bar("• Voiture à essence", safe_get_val(school_data, "Voiture à essence"), sch_transport, "#3b82f6", is_sub=True)
                         draw_custom_bar("• Autobus (sorties / voyages)", safe_get_val(school_data, "Autobus (sortie scolaire)"), sch_transport, "#3b82f6", is_sub=True)
 
+                    # Biens & Équipements Restaurés avec Expanders
                     draw_custom_bar("📦 Biens, Consommables & Équipements", sch_biens, tot_sch, "#c084fc")
-                    draw_custom_bar("🗑️ Gestion des Déchets", sch_dechets, tot_sch, "#818cf8")
+                    with st.expander("🔍 Détails Consommables & Matériel (cliquer pour ouvrir)"):
+                        draw_custom_bar("• Papier & Carton", b_pap + safe_get_val(school_data, "Carton"), sch_biens, "#a855f7", is_sub=True)
+                        draw_custom_bar("• Plastiques & Fournitures", safe_get_val(school_data, "Plastique"), sch_biens, "#a855f7", is_sub=True)
+                        draw_custom_bar("• Appareils Numériques (Écrans, Vidéo, Impr.)", safe_get_val(school_data, "Ordinateur à écran plat") + safe_get_val(school_data, "Imprimante") + safe_get_val(school_data, "Photocopieurs") + safe_get_val(school_data, "Vidéo projecteur"), sch_biens, "#a855f7", is_sub=True)
 
+                    # Déchets Restaurés avec Expanders
+                    draw_custom_bar("🗑️ Gestion des Déchets", sch_dechets, tot_sch, "#818cf8")
+                    with st.expander("🔍 Détails Élimination Déchets (cliquer pour ouvrir)"):
+                        draw_custom_bar("• Déchets Papier / Carton", safe_get_val(school_data, "Déchets Papier"), sch_dechets, "#6366f1", is_sub=True)
+                        draw_custom_bar("• Déchets Alimentaires", safe_get_val(school_data, "Déchets alimentaire"), sch_dechets, "#6366f1", is_sub=True)
+                        draw_custom_bar("• Déchets Plastiques", safe_get_val(school_data, "Déchets plastique"), sch_dechets, "#6366f1", is_sub=True)
+
+            # --- 🌍 COLONNE DE DROITE : TOTAL RÉSEAU CENTRALISÉ ---
             with col_mid2:
                 st.markdown('<p class="inner-title" style="color: #38bdf8; text-align: left; font-size: 18px;">🌍 Global : Secteurs d\'impact du Réseau</p>', unsafe_allow_html=True)
                 
                 tot_net = df_active[col_total].sum()
                 if tot_net >= 0:
                     net_elec = safe_sum_val(df_active, "Electricité française")
-                    net_fioul = safe_sum_val(df_active, "Fioul")
+                    net_fioul = safe_sum_val(df_active, "Fioul") + safe_sum_val(df_active, "Fioul de chauffage")
                     net_gaz = safe_sum_val(df_active, "Gaz Naturel")
                     net_energie = net_elec + net_fioul + net_gaz
 
                     net_alimentation = safe_sum_val(df_active, "Repas moyen") + safe_sum_val(df_active, "Repas végétarien") + safe_sum_val(df_active, "Repas viande rouge") + safe_sum_val(df_active, "Repas viande blanche") + safe_sum_val(df_active, "Repas POISSON")
                     net_transport = safe_sum_val(df_active, "Voiture à essence") + safe_sum_val(df_active, "Autobus (ville)") + safe_sum_val(df_active, "Autobus (sortie scolaire)")
-                    net_biens = safe_sum_val(df_active, "Paper") + safe_sum_val(df_active, "Papier") + safe_sum_val(df_active, "Plastique") + safe_sum_val(df_active, "Ordinateur à écran plat")
-                    net_dechets = safe_sum_val(df_active, "Déchets Papier") + safe_sum_val(df_active, "Déchets alimentaire") + safe_sum_val(df_active, "Déchets plastique")
+                    
+                    net_pap = safe_sum_val(df_active, "Paper") + safe_sum_val(df_active, "Papier")
+                    net_carton = safe_sum_val(df_active, "Carton")
+                    net_plast = safe_sum_val(df_active, "Plastique")
+                    net_num = safe_sum_val(df_active, "Ordinateur à écran plat") + safe_sum_val(df_active, "Imprimante") + safe_sum_val(df_active, "Photocopieurs") + safe_sum_val(df_active, "Vidéo projecteur")
+                    net_biens = net_pap + net_carton + net_plast + net_num
+                    
+                    net_dec_pap = safe_sum_val(df_active, "Déchets Papier")
+                    net_dec_alim = safe_sum_val(df_active, "Déchets alimentaire")
+                    net_dec_plast = safe_sum_val(df_active, "Déchets plastique")
+                    net_dechets = net_dec_pap + net_dec_alim + net_dec_plast
 
+                    # Énergie Globale
                     draw_custom_bar("❄️ Énergie & Bâtiments (Total Réseau)", net_energie, tot_net, "#4ade80")
                     with st.expander("🔍 Détails Énergie Globaux"):
                         draw_custom_bar("• Électricité française", net_elec, net_energie, "#22c55e", is_sub=True)
                         draw_custom_bar("• Gaz Naturel", net_gaz, net_energie, "#22c55e", is_sub=True)
                         draw_custom_bar("• Fioul de chauffage", net_fioul, net_energie, "#22c55e", is_sub=True)
 
+                    # Alimentation Globale
                     draw_custom_bar("🍎 Alimentation & Cantine (Total Réseau)", net_alimentation, tot_net, "#fb923c")
                     with st.expander("🔍 Détails Restauration Globaux"):
                         draw_custom_bar("• Repas Viande Rouge", safe_sum_val(df_active, "Repas viande rouge"), net_alimentation, "#f97316", is_sub=True)
@@ -333,13 +359,25 @@ with tab_dashboard:
                         draw_custom_bar("• Repas Standard Moyen", safe_sum_val(df_active, "Repas moyen"), net_alimentation, "#f97316", is_sub=True)
                         draw_custom_bar("• Repas Végétarien", safe_sum_val(df_active, "Repas végétarien"), net_alimentation, "#f97316", is_sub=True)
 
+                    # Transports Globaux
                     draw_custom_bar("🚌 Déplacements & Transports (Total Réseau)", net_transport, tot_net, "#60a5fa")
                     with st.expander("🔍 Détails Transports Globaux"):
                         draw_custom_bar("• Voiture à essence", safe_sum_val(df_active, "Voiture à essence"), net_transport, "#3b82f6", is_sub=True)
-                        draw_custom_bar("• Autobus", safe_sum_val(df_active, "Autobus (sortie scolaire)"), net_transport, "#3b82f6", is_sub=True)
+                        draw_custom_bar("• Autobus", safe_sum_val(df_active, "Autobus (sortie scolaire)") + safe_sum_val(df_active, "Autobus (ville)"), net_transport, "#3b82f6", is_sub=True)
 
+                    # Biens Globaux avec Expanders Restaurés
                     draw_custom_bar("📦 Biens & Équipements (Total Réseau)", net_biens, tot_net, "#c084fc")
+                    with st.expander("🔍 Détails Biens Globaux (cliquer pour ouvrir)"):
+                        draw_custom_bar("• Papier & Carton", net_pap + net_carton, net_biens, "#a855f7", is_sub=True)
+                        draw_custom_bar("• Plastiques consommables", net_plast, net_biens, "#a855f7", is_sub=True)
+                        draw_custom_bar("• Parc informatique & numérique", net_num, net_biens, "#a855f7", is_sub=True)
+
+                    # Déchets Globaux avec Expanders Restaurés
                     draw_custom_bar("🗑️ Élimination des Déchets (Total Réseau)", net_dechets, tot_net, "#818cf8")
+                    with st.expander("🔍 Détails Déchets Globaux (cliquer pour ouvrir)"):
+                        draw_custom_bar("• Déchets Papier / Carton", net_dec_pap, net_dechets, "#6366f1", is_sub=True)
+                        draw_custom_bar("• Déchets Alimentaires", net_dec_alim, net_dechets, "#6366f1", is_sub=True)
+                        draw_custom_bar("• Déchets Plastiques", net_dec_plast, net_dechets, "#6366f1", is_sub=True)
 
 # ==========================================
 # ---    2. ONGLET EMPREINTE CARBONNE    ---
