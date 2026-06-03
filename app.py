@@ -451,8 +451,7 @@ with tab_conso_graph:
 with tab_glossaire:
     st.markdown("<h2 style='color: #22d3ee; text-align: center; margin-bottom: 12px;'>📖 Dictionnaire Carbone : Unités & Équivalents Enfants</h2>", unsafe_allow_html=True)
     
-    # Ajout des onglets manquants ici
-    g_tabs = st.tabs(["🍎 Cantine", "❄️ Énergie", "🚌 Transports", "📦 Biens & Équipements", "🗑️ Déchets"])
+    g_tabs = st.tabs(["🍎 Cantine", "❄️ Énergie", "🚌 Transports"])
     
     with g_tabs[0]:
         st.subheader("🍎 Référentiel Restauration (ADEME)")
@@ -471,18 +470,6 @@ with tab_glossaire:
         st.markdown('<p class="inner-title" style="text-align:left;">📊 Empreinte des Transports :</p>', unsafe_allow_html=True)
         st.markdown('<div class="unit-box">• <b>Voiture thermique (Moyenne) :</b> 0.22 kg CO2e par km<br>• <b>Autobus (Sortie scolaire / Voyage) :</b> 0.11 kg CO2e par km et par élève</div>', unsafe_allow_html=True)
         st.markdown('<div class="anecdote"><b>💡 Équivalent élève :</b> Venir au collège à vélo ou à pied à l\'année économise l\'équivalent carbone de la plantation de 5 arbres !</div>', unsafe_allow_html=True)
-
-    with g_tabs[3]:
-        st.subheader("📦 Biens, Consommables & Équipements")
-        st.markdown('<p class="inner-title" style="text-align:left;">📊 Empreinte du matériel :</p>', unsafe_allow_html=True)
-        st.markdown('<div class="unit-box">• <b>Papier (neuf) :</b> 1.2 kg CO2e par kg<br>• <b>Ordinateur portable :</b> ~250 kg CO2e (fabrication)<br>• <b>Vidéo projecteur :</b> ~180 kg CO2e (fabrication)</div>', unsafe_allow_html=True)
-        st.markdown('<div class="anecdote"><b>💡 Équivalent élève :</b> Fabriquer un ordinateur demande autant d\'énergie que de laisser une ampoule allumée pendant des mois !</div>', unsafe_allow_html=True)
-
-    with g_tabs[4]:
-        st.subheader("🗑️ Gestion des Déchets")
-        st.markdown('<p class="inner-title" style="text-align:left;">📊 Empreinte des déchets :</p>', unsafe_allow_html=True)
-        st.markdown('<div class="unit-box">• <b>Déchets papier/carton :</b> 0.15 kg CO2e par kg (trié)<br>• <b>Déchets plastiques :</b> 0.30 kg CO2e par kg (trié)<br>• <b>Déchets alimentaires :</b> 0.20 kg CO2e par kg</div>', unsafe_allow_html=True)
-        st.markdown('<div class="anecdote"><b>💡 Équivalent élève :</b> Trier ses déchets permet d\'éviter l\'incinération et de valoriser les matières pour de nouveaux objets !</div>', unsafe_allow_html=True)
 
 st.divider()
 st.caption("Sources : Base Empreinte ADEME / Contexte Réseau Climat Haut Vaucluse - Juin 2026")
