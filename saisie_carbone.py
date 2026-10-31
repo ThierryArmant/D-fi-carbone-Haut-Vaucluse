@@ -133,7 +133,7 @@ def afficher_saisie_carbone(df):
     schools = [str(v) for v in df[school_col].dropna().unique()
                if str(v).strip() and not re.search(r'total|moyenne', str(v), re.I)]
     st.info('Cet envoi ajoute une réponse aux totaux existants ; il ne corrige pas une réponse antérieure. Ne renvoyez pas des consommations déjà transmises.')
-    with st.form('saisie_carbone_native'):
+    with st.container(border=True):
         school = st.selectbox('Sélectionnez votre établissement', schools, index=None,
                               placeholder='Choisir dans la liste du bilan carbone')
         values = {}
@@ -147,9 +147,10 @@ def afficher_saisie_carbone(df):
                     values[entry] = st.text_input(label, key='carbone_' + entry,
                                                   placeholder='Non renseigné',
                                                   help='Nombre entier' if integer else 'Virgule ou point acceptés. Unité indiquée dans la question.')
-        checked = st.form_submit_button('Vérifier ma saisie')
+        checked = st.button('Vérifier ma saisie', key='carbone_verifier')
     if checked:
         st.session_state.pop('carbone_a_confirmer', None)
+        st.session_state['carbone_confirmation'] = False
         try:
             payload, recap = build_payload(school, schools, values)
             st.session_state['carbone_a_confirmer'] = {'payload': payload, 'recap': recap}
@@ -189,6 +190,6 @@ def afficher_saisie_carbone(df):
             return False
         sent[signature] = 'ok'
         st.success('Google a confirmé l’enregistrement. Actualisez les données du bilan pour voir les résultats.')
-        st.caption('L’eau est collectée en m³ ; sa conversion carbone reste à valider. Les repas viande blanche doivent aussi être reliés au bilan avant d’y apparaître.')
+        st.caption('L’eau est collectée en m³ ; sa conversion carbone reste à valider. Les repas viande blanche sont reliés au bilan existant.')
         return True
     return False
