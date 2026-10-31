@@ -181,8 +181,18 @@ if st.button("↻ Actualiser les données", key="actualiser_donnees"):
 if df.empty:
     st.info("Aucune donnée disponible pour le moment. Vous pouvez consulter le référentiel et réessayer avec le bouton Actualiser.")
 
+# Saisie native : réutilise les établissements et le code de collecte existants.
+with st.expander("📝 Saisir mes consommations", expanded=False):
+    code_saisie = st.text_input("Code de saisie du réseau", type="password", key="main_pwd")
+    if code_saisie == "CARBONE2026":
+        if afficher_saisie_carbone(df):
+            load_data.clear()
+    else:
+        st.caption("Utilisez le code de collecte habituel du réseau pour renseigner les consommations.")
+
+
 # 5. INITIALISATION DES ONGLETS DE NAVIGATION
-tab_dashboard, tab_conso_graph, tab_saisie, tab_glossaire = st.tabs(["📊 Tableau de bord", "🌱 Comparer les établissements", "📝 Saisie", "📖 Référentiel élèves"])
+tab_dashboard, tab_conso_graph, tab_glossaire = st.tabs(["📊 Tableau de bord", "🌱 Comparer les établissements", "📖 Référentiel élèves"])
 
 # ==========================================
 # ---          1. ONGLET DASHBOARD       ---
@@ -203,7 +213,6 @@ with tab_dashboard:
 
         st.subheader("Vue d’ensemble du réseau")
         
-        st.caption("Pour transmettre vos consommations, ouvrez l’onglet 📝 Saisie.")
 
         col_top1, col_top2 = st.columns([1, 1])
         with col_top1:
@@ -396,15 +405,6 @@ with tab_conso_graph:
 # ==========================================
 # ---          3. ONGLET GLOSSAIRE       ---
 # ==========================================
-
-# Saisie native : réutilise les établissements et le code de collecte existants.
-with tab_saisie:
-    code_saisie = st.text_input("Code de saisie du réseau", type="password", key="main_pwd")
-    if code_saisie == "CARBONE2026":
-        if afficher_saisie_carbone(df):
-            load_data.clear()
-    else:
-        st.caption("Utilisez le code de collecte habituel du réseau pour renseigner les consommations.")
 
 with tab_glossaire:
     st.markdown("<h2 style='color: #22d3ee; text-align: center; margin-bottom: 12px;'>📖 Dictionnaire Carbone : Unités & Équivalents Enfants</h2>", unsafe_allow_html=True)
