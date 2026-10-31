@@ -23,7 +23,7 @@ img_base64 = get_base64_image("image_1")
 # 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL
 def inject_glass_theme(img_b64):
     background = (
-        f"linear-gradient(rgba(9, 28, 23, 0.78), rgba(9, 28, 23, 0.90)), url('data:image/jpeg;base64,{img_b64}')"
+        f"url('data:image/jpeg;base64,{img_b64}')"
         if img_b64 else "linear-gradient(135deg, #12372b, #102b36)"
     )
     st.markdown(
@@ -48,7 +48,7 @@ def inject_glass_theme(img_b64):
     h2 { font-size: 1.3rem !important; margin-top: 1rem !important; }
     .stMarkdown p { font-weight: 400; line-height: 1.6; }
     div[data-testid="stColumn"] {
-        background: rgba(14, 35, 29, 0.88); border: 1px solid rgba(255,255,255,.16);
+        background: rgba(14, 35, 29, 0.38); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,.16);
         border-radius: 16px; padding: 18px; min-width: 0;
     }
     div[role="tablist"], div[data-baseweb="tab-list"] {
@@ -89,6 +89,14 @@ def inject_glass_theme(img_b64):
         div[data-testid="stColumn"] { width: 100% !important; flex: 1 1 100% !important; padding: 14px; }
         [role="tablist"] [role="tab"] { padding: 9px 12px !important; font-size: 13px !important; }
         #eco-navigation { margin-bottom: 20px; }
+    }
+    h1, h2, h3, [data-testid="stMarkdownContainer"] > p { text-shadow: 0 1px 4px rgba(0,0,0,.85); }
+    @media (min-width: 1100px) {
+        [data-testid="stMainBlockContainer"], .main .block-container {
+            width: 58% !important; max-width: 1050px !important;
+            margin-left: auto !important; margin-right: 2% !important;
+            padding-left: 1rem !important; padding-right: 1rem !important;
+        }
     }
     @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
     </style>
