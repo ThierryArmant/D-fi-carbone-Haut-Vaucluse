@@ -22,157 +22,73 @@ img_base64 = get_base64_image("image_1")
 
 # 2. INJECTION DU FILTRE GLASSMORPHISM UNIVERSEL
 def inject_glass_theme(img_b64):
-    bg_style = f"""
-    [data-testid="stAppViewContainer"], .stAppViewContainer {{
-        background-image: url("data:image/jpeg;base64,{img_b64}") !important;
-        background-size: cover !important;
-        background-position: center !important;
-        background-attachment: fixed !important;
-        background-repeat: no-repeat !important;
-    }}
-    """ if img_b64 else """
-    [data-testid="stAppViewContainer"] {{
-        background: linear-gradient(135deg, #111827 0%, #1f2937 100%) !important;
-    }}
-    """
-    
-    st.markdown(
-        f"""
-        <style>
-        {bg_style}
-
-        /* Nettoyage complet des fonds par défaut de Streamlit */
-        .stApp, [data-testid="stMain"], .main, [data-testid="stVerticalBlock"], [data-testid="stVerticalBlockContainer"] {{
-            background-color: transparent !important;
-        }}
-        
-        /* 📐 AMÉNAGEMENT DU CADRE */
-        [data-testid="stMainBlockContainer"], .main .block-container, .block-container {{
-            background-color: transparent !important;
-            padding-top: 0rem !important; 
-            padding-bottom: 6rem !important; 
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
-            max-width: 54% !important; 
-            width: 54% !important;
-            margin-left: auto !important; 
-            margin-right: 2% !important;  
-            margin-top: 5.5rem !important; 
-        }}
-
-        /* 💎 LES BLOCS DE VERRE */
-        div[data-testid="stColumn"], 
-        div[data-testid="stBorderedContainer"],
-        .stDataFrame,
-        div[role="tabpanel"] {{
-            background-color: rgba(22, 32, 49, 0.15) !important; 
-            backdrop-filter: blur(20px) saturate(130%) !important; 
-            -webkit-backdrop-filter: blur(20px) saturate(130%) !important;
-            border: 1px solid rgba(255, 255, 255, 0.18) !important; 
-            padding: 10px !important; 
-            border-radius: 10px !important;
-            margin-bottom: 6px !important;
-        }}
-
-        /* 🛡️ SÉCURISATION DES EXPANDERS ET DE LEURS CHEVRONS */
-        div[data-testid="stExpander"], .stExpander {{
-            background-color: rgba(17, 24, 39, 0.6) !important;
-            border: 1px solid rgba(255, 255, 255, 0.12) !important;
-            border-radius: 6px !important;
-            padding: 6px 10px !important;
-            margin-top: 3px !important;
-            margin-bottom: 3px !important;
-            box-shadow: none !important;
-        }}
-        
-        div[data-testid="stExpander"] svg, .stExpander svg, [data-testid="stExpanderToggleIcon"] {{
-            fill: #ffffff !important;
-            color: #ffffff !important;
-            display: inline-block !important;
-        }}
-
-        /* --- 🎛️ BOUTONS DE NAVIGATION DU HAUT --- */
-        div[data-baseweb="tab-list"] {{
-            gap: 6px !important;
-            background-color: transparent !important;
-            margin-bottom: 10px !important;
-            position: fixed !important; 
-            top: 55px !important; 
-            right: 2% !important;
-            width: 52% !important; 
-            z-index: 99999 !important; 
-        }}
-        div[data-baseweb="tab-list"] button {{
-            background-color: rgba(22, 32, 49, 0.85) !important;
-            backdrop-filter: blur(10px) !important;
-            border-radius: 6px 6px 0 0 !important;
-            padding: 5px 12px !important; 
-            color: #cbd5e1 !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            transition: all 0.2s ease !important;
-            font-weight: bold !important;
-            font-size: 13px !important; 
-        }}
-        div[data-baseweb="tab-list"] button:hover {{
-            background-color: rgba(55, 65, 81, 0.9) !important;
-            border-color: #22d3ee !important;
-            color: #ffffff !important;
-        }}
-        div[data-baseweb="tab-list"] button[aria-selected="true"] {{
-            background-color: #22d3ee !important;
-            color: #0f172a !important;
-            border-color: #22d3ee !important;
-            box-shadow: 0 4px 12px rgba(34, 211, 238, 0.4) !important;
-        }}
-
-        /* 🛡️ TEXTES ET TITRES GÉNÉRAUX */
-        h1, h2, h3, h4, h5, h6, label, p, .stMarkdown p, [data-testid="stWidgetLabel"] p, summary {{
-            color: #f8fafc !important;
-            font-weight: bold !important;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7) !important;
-        }}
-        
-        h1 {{ font-size: 20px !important; margin-bottom: 6px !important; }}
-        h2 {{ font-size: 16px !important; margin-bottom: 4px !important; }}
-        
-        .pole-header, .sub-pole-header {{ 
-            display: flex !important; 
-            justify-content: space-between !important; 
-            flex-wrap: wrap !important;
-            gap: 2px !important;
-            color: #f8fafc !important; 
-            font-weight: bold !important; 
-            font-size: 13px !important;
-        }}
-        
-        .inner-title {{ text-align: center; font-weight: bold; font-size: 13px; color: #38bdf8 !important; margin-bottom: 4px; }}
-        [data-testid="stHeader"] {{ height: 0px; }}
-        
-        /* ⚡ LABELS GRAPHIQUE */
-        .js-plotly-plot .plotly .yaxislayer-above .tick text {{
-            fill: #0f172a !important;
-            font-weight: 900 !important;
-            font-size: 12px !important;
-        }}
-        .js-plotly-plot .plotly .xaxislayer-above .tick text {{
-            fill: #0f172a !important;
-            font-weight: 900 !important;
-            font-size: 11px !important;
-        }}
-        
-        .anecdote {{ background-color: rgba(2, 132, 199, 0.25); padding: 8px 10px; border-left: 4px solid #0284c7; border-radius: 4px; color: #ffffff !important; font-size: 12px; margin-top: 3px; }}
-        .unit-box {{ background-color: rgba(17, 24, 39, 0.55) !important; padding: 6px 8px; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.2); font-size: 12px; color: #ffffff !important; margin-bottom: 3px; }}
-        
-        .bar-container {{ background-color: rgba(255, 255, 255, 0.15); border-radius: 4px; height: 8px; width: 100%; margin-bottom: 4px; overflow: hidden; }}
-        .sub-bar-container {{ background-color: rgba(255, 255, 255, 0.08); border-radius: 3px; height: 6px; width: 100%; margin-bottom: 3px; overflow: hidden; }}
-        
-        .js-plotly-plot .plotly .main-svg {{ background: transparent !important; }}
-        .stDataFrame div {{ background-color: transparent !important; }}
-        hr {{ margin-top: 6px !important; margin-bottom: 6px !important; }}
-        </style>
-        """,
-        unsafe_allow_html=True
+    background = (
+        f"linear-gradient(rgba(9, 28, 23, 0.78), rgba(9, 28, 23, 0.90)), url('data:image/jpeg;base64,{img_b64}')"
+        if img_b64 else "linear-gradient(135deg, #12372b, #102b36)"
     )
+    st.markdown(
+        f"<style>[data-testid='stAppViewContainer'] {{background-image: {background}; background-size: cover; background-position: center; background-attachment: fixed;}}</style>",
+        unsafe_allow_html=True,
+    )
+    st.markdown("""
+    <style>
+    .stApp, [data-testid="stMain"] { background: transparent; }
+    [data-testid="stMainBlockContainer"], .main .block-container {
+        max-width: 1240px !important; width: 100% !important;
+        margin: 0 auto !important; padding: 1.6rem 2rem 4rem !important;
+    }
+    [data-testid="stHeader"] { background: transparent; }
+    h1, h2, h3, h4, h5, h6, .stMarkdown p,
+    [data-testid="stWidgetLabel"] p, summary { color: #f3f8f5; }
+    h1 { font-size: clamp(1.8rem, 3vw, 2.5rem) !important; line-height: 1.15 !important; }
+    h2 { font-size: 1.3rem !important; margin-top: 1rem !important; }
+    .stMarkdown p { font-weight: 400; line-height: 1.6; }
+    div[data-testid="stColumn"] {
+        background: rgba(14, 35, 29, 0.88); border: 1px solid rgba(255,255,255,.16);
+        border-radius: 16px; padding: 18px; min-width: 0;
+    }
+    div[role="tablist"], div[data-baseweb="tab-list"] {
+        position: static !important; top: auto !important; right: auto !important;
+        width: 100% !important; gap: 8px !important; margin: 12px 0 20px !important;
+        background: transparent !important; overflow-x: auto !important;
+    }
+    div[role="tablist"] button {
+        color: #e6f0e9 !important; background: rgba(14,35,29,.90) !important;
+        border: 1px solid rgba(255,255,255,.25) !important; border-radius: 9px !important;
+        padding: 10px 16px !important; min-height: 46px !important; font-size: 14px !important;
+    }
+    div[role="tablist"] button[aria-selected="true"] {
+        background: #c8e8d4 !important; color: #123a29 !important; border-color: #c8e8d4 !important;
+    }
+    div[role="tablist"] button[aria-selected="true"] p { color: #123a29 !important; }
+    div[data-testid="stExpander"] {
+        background: rgba(10,28,23,.86); border: 1px solid rgba(255,255,255,.20);
+        border-radius: 10px; margin: 8px 0 14px;
+    }
+    div[data-testid="stExpander"] summary svg { color: #f3f8f5; fill: #f3f8f5; }
+    .inner-title { color: #a9dded !important; font-weight: 700; font-size: 15px; margin: 0 0 12px; }
+    .pole-header, .sub-pole-header {
+        display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
+        color: #f3f8f5; font-weight: 600; font-size: 15px; margin: 6px 0;
+    }
+    .sub-pole-header { font-size: 14px; }
+    .bar-container, .sub-bar-container { background: rgba(255,255,255,.14); height: 10px; border-radius: 6px; overflow: hidden; margin-bottom: 12px; }
+    .sub-bar-container { height: 7px; }
+    .unit-box { background: rgba(255,255,255,.08); color: #f3f8f5; border: 1px solid rgba(255,255,255,.20); border-radius: 10px; padding: 14px; font-size: 15px; line-height: 1.7; margin: 12px 0; }
+    .anecdote { background: rgba(34,140,168,.17); color: #f3f8f5; border-left: 4px solid #73c7df; border-radius: 6px; padding: 14px; font-size: 14px; line-height: 1.7; margin: 12px 0; }
+    .js-plotly-plot .plotly .main-svg { background: transparent !important; }
+    hr { border-color: rgba(255,255,255,.20); margin: 24px 0; }
+    [data-testid="stCaptionContainer"] p { color: #d0e1d5 !important; font-size: 13px; }
+    @media (max-width: 760px) {
+        [data-testid="stMainBlockContainer"], .main .block-container { padding: 1rem .85rem 3rem !important; }
+        [data-testid="stHorizontalBlock"] { flex-direction: column !important; gap: 16px !important; }
+        div[data-testid="stColumn"] { width: 100% !important; flex: 1 1 100% !important; padding: 14px; }
+        div[role="tablist"] button { padding: 9px 12px !important; font-size: 13px !important; }
+        #eco-navigation { margin-bottom: 20px; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+    </style>
+    """, unsafe_allow_html=True)
 
 inject_glass_theme(img_base64)
 
@@ -236,8 +152,17 @@ if not df.empty:
     df.columns = [str(c).replace('\xa0', ' ').replace('\n', ' ').strip() for c in df.columns]
     df.columns = [" ".join(c.split()) for c in df.columns]
 
+# Accès rapide : relire les données sans modifier les réponses des établissements.
+st.title("Défi Carbone · Haut Vaucluse")
+st.markdown("Explorez les consommations des établissements, comparez les postes d’émission et retrouvez les repères pour les élèves.")
+if st.button("↻ Actualiser les données", key="actualiser_donnees"):
+    load_data.clear()
+    st.rerun()
+if df.empty:
+    st.info("Aucune donnée disponible pour le moment. Vous pouvez consulter le référentiel et réessayer avec le bouton Actualiser.")
+
 # 5. INITIALISATION DES ONGLETS DE NAVIGATION
-tab_dashboard, tab_conso_graph, tab_glossaire = st.tabs(["📊 Tableau de Bord", "🌱 Empreinte carbone", "📖 Référentiel Éléves"])
+tab_dashboard, tab_conso_graph, tab_glossaire = st.tabs(["📊 Tableau de bord", "🌱 Comparer les établissements", "📖 Référentiel élèves"])
 
 # ==========================================
 # ---          1. ONGLET DASHBOARD       ---
@@ -256,7 +181,7 @@ with tab_dashboard:
         df_active = df[df[col_etab].astype(str).str.strip() != ""].copy()
         df_active = df_active[~df_active[col_etab].astype(str).str.lower().str.contains("total|moyenne")].copy()
 
-        st.markdown("<h1 style='text-align: center; color: #22d3ee; margin-bottom: 5px;'>🌱 Défi Carbone - Réseau Haut Vaucluse</h1>", unsafe_allow_html=True)
+        st.subheader("Vue d’ensemble du réseau")
         
         with st.expander("🔐 Saisie de nouvelles données", expanded=False):
             pwd = st.text_input("Code secret :", type="password", key="main_pwd")
@@ -268,7 +193,10 @@ with tab_dashboard:
             st.markdown('<p class="inner-title">📊 Classement des Établissements (kg/personne)</p>', unsafe_allow_html=True)
             if not df_active.empty:
                 df_ranking = df_active[[col_etab, col_conso]].sort_values(col_conso, ascending=False)
-                st.dataframe(df_ranking, hide_index=True, width="stretch", height=215)
+                recherche_etab = st.text_input("Rechercher un établissement", placeholder="Nom du collège, lycée ou école", key="recherche_classement")
+                if recherche_etab.strip():
+                    df_ranking = df_ranking[df_ranking[col_etab].astype(str).str.contains(recherche_etab.strip(), case=False, regex=False, na=False)]
+                st.dataframe(df_ranking, hide_index=True, width="stretch", height=300)
             else:
                 st.info("En attente de données...")
                 
@@ -294,7 +222,7 @@ with tab_dashboard:
                     'threshold': {'line': {'color': "red", 'width': 3}, 'value': 1000}
                 }
             ))
-            fig.update_layout(height=160, margin=dict(t=20, b=5, l=5, r=5), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+            fig.update_layout(height=240, margin=dict(t=20, b=5, l=5, r=5), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
             st.plotly_chart(fig, use_container_width=True)
         
         st.divider()
@@ -421,7 +349,8 @@ with tab_conso_graph:
     if not df.empty:
         st.markdown("<h2 style='text-align: center; color: #22d3ee; margin-bottom: 12px;'>📊 Comparatif Graphique Interactif du Réseau</h2>", unsafe_allow_html=True)
         
-        df_sorted_graph = df_active[[col_etab, col_conso]].sort_values(col_conso, ascending=True)
+        etabs_graphique = st.multiselect("Établissements à comparer", options=df_active[col_etab].tolist(), default=df_active[col_etab].tolist(), help="Retirez des établissements pour concentrer le graphique. Le tableau complet reste disponible plus bas.")
+        df_sorted_graph = df_active[df_active[col_etab].isin(etabs_graphique)][[col_etab, col_conso]].sort_values(col_conso, ascending=True)
         
         fig_bar = go.Figure()
         fig_bar.add_trace(go.Bar(
@@ -434,7 +363,7 @@ with tab_conso_graph:
         
         fig_bar.update_layout(
             margin=dict(l=20, r=20, t=10, b=10),
-            height=460,
+            height=max(340, min(900, 90 + 30 * len(df_sorted_graph))),
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
             xaxis=dict(title="Consommation Carbone (kg / personne)", color="#f1f5f9", gridcolor="rgba(255,255,255,0.1)", showgrid=True),
@@ -444,7 +373,8 @@ with tab_conso_graph:
         
         st.divider()
         st.markdown('<p class="inner-title" style="color:#38bdf8;">📋 Synthèse Globale Centralisée KgCo2e</p>', unsafe_allow_html=True)
-        st.dataframe(df, hide_index=True, width="stretch", height=280)
+        st.dataframe(df, hide_index=True, width="stretch", height=360)
+        st.download_button("Télécharger le bilan complet (CSV)", data=df.to_csv(index=False, sep=";").encode("utf-8-sig"), file_name="bilan-carbone-haut-vaucluse.csv", mime="text/csv", key="export_bilan_carbone")
 
 # ==========================================
 # ---          3. ONGLET GLOSSAIRE       ---
