@@ -39,7 +39,11 @@ def inject_glass_theme(img_b64):
     }
     [data-testid="stHeader"] { background: transparent; }
     h1, h2, h3, h4, h5, h6, .stMarkdown p,
-    [data-testid="stWidgetLabel"] p, summary { color: #f3f8f5; }
+    [data-testid="stWidgetLabel"] p, summary { color: #f3f8f5 !important; }
+    h1, h2, h3, h4, h5, h6, [data-heading-text] { color: #f3f8f5 !important; }
+    [role="tab"] p { color: #e6f0e9 !important; font-weight: 600; }
+    [role="tab"][aria-selected="true"] p { color: #123a29 !important; }
+    [role="tab"] { flex-shrink: 0; cursor: pointer; }
     h1 { font-size: clamp(1.8rem, 3vw, 2.5rem) !important; line-height: 1.15 !important; }
     h2 { font-size: 1.3rem !important; margin-top: 1rem !important; }
     .stMarkdown p { font-weight: 400; line-height: 1.6; }
@@ -52,15 +56,15 @@ def inject_glass_theme(img_b64):
         width: 100% !important; gap: 8px !important; margin: 12px 0 20px !important;
         background: transparent !important; overflow-x: auto !important;
     }
-    div[role="tablist"] button {
+    [role="tablist"] [role="tab"] {
         color: #e6f0e9 !important; background: rgba(14,35,29,.90) !important;
         border: 1px solid rgba(255,255,255,.25) !important; border-radius: 9px !important;
         padding: 10px 16px !important; min-height: 46px !important; font-size: 14px !important;
     }
-    div[role="tablist"] button[aria-selected="true"] {
+    [role="tablist"] [role="tab"][aria-selected="true"] {
         background: #c8e8d4 !important; color: #123a29 !important; border-color: #c8e8d4 !important;
     }
-    div[role="tablist"] button[aria-selected="true"] p { color: #123a29 !important; }
+    [role="tablist"] [role="tab"][aria-selected="true"] p { color: #123a29 !important; }
     div[data-testid="stExpander"] {
         background: rgba(10,28,23,.86); border: 1px solid rgba(255,255,255,.20);
         border-radius: 10px; margin: 8px 0 14px;
@@ -83,7 +87,7 @@ def inject_glass_theme(img_b64):
         [data-testid="stMainBlockContainer"], .main .block-container { padding: 1rem .85rem 3rem !important; }
         [data-testid="stHorizontalBlock"] { flex-direction: column !important; gap: 16px !important; }
         div[data-testid="stColumn"] { width: 100% !important; flex: 1 1 100% !important; padding: 14px; }
-        div[role="tablist"] button { padding: 9px 12px !important; font-size: 13px !important; }
+        [role="tablist"] [role="tab"] { padding: 9px 12px !important; font-size: 13px !important; }
         #eco-navigation { margin-bottom: 20px; }
     }
     @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
