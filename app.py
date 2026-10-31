@@ -98,6 +98,13 @@ def inject_glass_theme(img_b64):
             padding-left: 1rem !important; padding-right: 1rem !important;
         }
     }
+    .unit-box, .anecdote {
+        background: rgba(10, 28, 23, .88) !important;
+        color: #ffffff !important; backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px); box-shadow: 0 4px 16px rgba(0,0,0,.18);
+    }
+    .unit-box { border: 1px solid rgba(255,255,255,.30); }
+    .anecdote { border-left: 4px solid #73c7df; }
     @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
     </style>
     """, unsafe_allow_html=True)
@@ -105,7 +112,7 @@ def inject_glass_theme(img_b64):
 inject_glass_theme(img_base64)
 
 # Navigation commune aux trois espaces du projet.
-st.markdown('''<style id="eco-navigation-style">#eco-navigation{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:9px 12px;margin:0 0 16px;background:#f7faf8;color:#173e30;border:1px solid #ceded5;border-radius:10px;font:600 13px/1.3 system-ui,sans-serif;flex-shrink:0}#eco-navigation a{display:block;padding:9px 12px;border-radius:7px;color:#234b3b;text-decoration:none;white-space:normal}#eco-navigation a:hover,#eco-navigation a:focus-visible{background:#e1ede5;outline:2px solid #39785a;outline-offset:1px}#eco-navigation a[aria-current="page"]{background:#215e44;color:white}.main-container>#eco-navigation{margin:0;border-radius:0;border:0;border-bottom:1px solid #ceded5}@media print{#eco-navigation{display:none!important}}@media(max-width:600px){#eco-navigation{gap:3px;padding:6px;font-size:11px}#eco-navigation a{padding:8px}}</style><nav id="eco-navigation" aria-label="Changer d’espace"><a target="_blank" rel="noopener noreferrer" href="https://thierryarmant.github.io/Le-coin-des-ecodelegues/">Accueil</a><a target="_blank" rel="noopener noreferrer" href="https://thierryarmant.github.io/Le-coin-des-ecodelegues/cantine/">Planning</a><a target="_blank" rel="noopener noreferrer" href="https://thierryarmant.github.io/E3D-cantine/">A.B.C. Cantine Bas Carbone</a><a target="_blank" rel="noopener noreferrer" href="https://d-fi-carbone-haut-vaucluse-84.streamlit.app/" aria-current="page">Enquêtes</a></nav>''', unsafe_allow_html=True)
+st.markdown('''<style id="eco-navigation-style">#eco-navigation{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:9px 12px;margin:0 0 16px;background:#f7faf8;color:#173e30;border:1px solid #ceded5;border-radius:10px;font:600 13px/1.3 system-ui,sans-serif;flex-shrink:0}#eco-navigation a{display:block;padding:9px 12px;border-radius:7px;color:#234b3b;text-decoration:none;white-space:normal}#eco-navigation a:hover,#eco-navigation a:focus-visible{background:#e1ede5;outline:2px solid #39785a;outline-offset:1px}#eco-navigation a[aria-current="page"]{background:#215e44;color:white}.main-container>#eco-navigation{margin:0;border-radius:0;border:0;border-bottom:1px solid #ceded5}@media print{#eco-navigation{display:none!important}}@media(max-width:600px){#eco-navigation{gap:3px;padding:6px;font-size:11px}#eco-navigation a{padding:8px}}#eco-navigation a:first-of-type{background:#eef1ef;color:#43534b}#eco-navigation a:first-of-type[aria-current="page"]{background:#d3dad6;color:#213d2e}#eco-navigation a:nth-of-type(2){background:#e0f2e3;color:#215e44;border-bottom:3px solid #3e7b4f}#eco-navigation a:nth-of-type(3){background:#fbefd5;color:#795217;border-bottom:3px solid #bf8b2e}#eco-navigation a:nth-of-type(4){background:#e3edfa;color:#234f79;border-bottom:3px solid #2f5d8a}#eco-navigation a:nth-of-type(2)[aria-current="page"]{background:#215e44;color:#fff}#eco-navigation a:nth-of-type(3)[aria-current="page"]{background:#93681e;color:#fff}#eco-navigation a:nth-of-type(4)[aria-current="page"]{background:#2f5d8a;color:#fff}</style><nav id="eco-navigation" aria-label="Changer d’espace"><a target="_blank" rel="noopener noreferrer" href="https://thierryarmant.github.io/Le-coin-des-ecodelegues/">Accueil</a><a target="_blank" rel="noopener noreferrer" href="https://thierryarmant.github.io/Le-coin-des-ecodelegues/cantine/">Planning</a><a target="_blank" rel="noopener noreferrer" href="https://thierryarmant.github.io/E3D-cantine/">A.B.C. Cantine Bas Carbone</a><a target="_blank" rel="noopener noreferrer" href="https://d-fi-carbone-haut-vaucluse-84.streamlit.app/" aria-current="page">Enquêtes</a></nav>''', unsafe_allow_html=True)
 
 # 3. INTERFACE DE CONSTRUCTION DES JAUGE ADEME
 def draw_custom_bar(label, value_kg, total_kg, color, is_sub=False):
