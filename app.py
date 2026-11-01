@@ -1,3 +1,4 @@
+# Interface de saisie : panneau opaque et consignes simplifiées.
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
