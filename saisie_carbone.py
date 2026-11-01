@@ -199,6 +199,8 @@ def afficher_saisie_carbone(df):
     st.markdown('''<style>
     .st-key-saisie_lisible {background:#102c25!important;border:1px solid #527366;border-radius:12px;padding:22px!important;margin:12px 0 24px;color:#fff!important;}
     .st-key-saisie_lisible h2,.st-key-saisie_lisible h3,.st-key-saisie_lisible h4,.st-key-saisie_lisible p,.st-key-saisie_lisible label,.st-key-saisie_lisible [data-testid="stCaptionContainer"],.st-key-saisie_lisible summary {color:#fff!important;text-shadow:none!important;}
+    .st-key-saisie_lisible summary {background:#244e40!important;}
+    .st-key-saisie_lisible summary p {color:#fff!important;}
     .st-key-saisie_lisible [data-testid="stExpander"] {background:#183d32!important;border:1px solid #69877b!important;}
     .st-key-saisie_lisible [data-testid="stAlert"] {background:#e3efe9!important;color:#153b2b!important;}
     .st-key-saisie_lisible [data-testid="stAlert"] p {color:#153b2b!important;}
