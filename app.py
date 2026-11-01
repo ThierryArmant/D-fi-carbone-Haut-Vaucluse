@@ -192,6 +192,7 @@ st.markdown('''<div class="intro-carbone">Explorez les consommations des établi
 zone_saisie = st.container()
 if st.button("↻ Actualiser les données", key="actualiser_donnees"):
     load_data.clear()
+    st.cache_data.clear()
     st.rerun()
 if df.empty:
     st.info("Aucune donnée disponible pour le moment. Vous pouvez consulter le référentiel et réessayer avec le bouton Actualiser.")
@@ -203,8 +204,92 @@ with zone_saisie:
     elif code_saisie:
         st.caption("Code de saisie non reconnu.")
 
+
+@st.cache_data(ttl=30)
+def charger_historique():
+    lien = 'https://docs.google.com/spreadsheets/d/12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/export?format=csv&gid=717694895'
+    return pd.read_csv(lien, dtype=str)
+
+def afficher_suivi():
+    st.subheader('Suivi par période')
+    st.caption('Filtres sur la date d’envoi des réponses. Une facture annuelle saisie aujourd’hui reste rattachée à cet envoi, pas répartie sur les jours consommés. Le bilan général conserve son cumul complet.')
+    try:
+        historique = charger_historique().copy()
+    except Exception:
+        st.warning('Les réponses datées sont momentanément indisponibles. Réessayez avec Actualiser les données.')
+        return
+    if historique.empty or historique.shape[1] < 4:
+        st.info('Aucune réponse datée disponible.')
+        return
+    historique.columns = [' '.join(str(c).split()) for c in historique.columns]
+    date_col, ecole_col = historique.columns[:2]
+    dates = pd.to_datetime(historique[date_col], format='%d/%m/%Y %H:%M:%S', errors='coerce')
+    invalides = int(dates.isna().sum())
+    historique['_date'] = dates
+    historique = historique.dropna(subset=['_date'])
+    if invalides:
+        st.warning(f'{invalides} réponse(s) sans date valide exclue(s) de ce suivi uniquement.')
+    if historique.empty:
+        st.info('Aucune date exploitable dans les réponses.')
+        return
+    etablissements = sorted(historique[ecole_col].dropna().unique())
+    choix = st.selectbox('Établissement du suivi', ['Tous les établissements'] + etablissements, key='suivi_ecole')
+    if choix != 'Tous les établissements':
+        historique = historique[historique[ecole_col] == choix].copy()
+    mode = st.selectbox('Période', ['Tout le cumul', 'Jour', 'Semaine', 'Mois', 'Année'], key='suivi_mode')
+    debut = fin = None
+    if mode != 'Tout le cumul':
+        repere = pd.Timestamp(st.date_input('Date de référence', value=historique['_date'].max().date(), key='suivi_date'))
+        if mode == 'Jour':
+            debut, fin = repere, repere + pd.Timedelta(days=1)
+        elif mode == 'Semaine':
+            debut = repere - pd.Timedelta(days=repere.weekday())
+            fin = debut + pd.Timedelta(days=7)
+        elif mode == 'Mois':
+            debut = repere.replace(day=1)
+            fin = debut + pd.offsets.MonthBegin(1)
+        else:
+            debut = repere.replace(month=1, day=1)
+            fin = debut + pd.offsets.YearBegin(1)
+        historique = historique[(historique['_date'] >= debut) & (historique['_date'] < fin)].copy()
+        st.write(f'Du {debut:%d/%m/%Y} au {(fin - pd.Timedelta(days=1)):%d/%m/%Y}')
+    st.write(f'{len(historique)} réponse(s) dans la sélection')
+    if historique.empty:
+        st.info('Aucune saisie pour cette période et cet établissement.')
+        return
+    # Champs de consommation : exclure l’option sans libellé et les anciennes questions 2025.
+    indices = list(range(3, min(21, len(historique.columns)-1))) + [i for i in (23, 24) if i < len(historique.columns)-1]
+    champs = [historique.columns[i] for i in indices]
+    nombres = pd.DataFrame(index=historique.index)
+    for champ in champs:
+        texte = historique[champ].astype('string').str.replace(r'\s+', '', regex=True).str.replace(',', '.', regex=False)
+        nombres[champ] = pd.to_numeric(texte, errors='coerce')
+    resume = pd.DataFrame({'Donnée (unité du formulaire)': champs, 'Cumul': [nombres[c].sum(min_count=1) for c in champs], 'Réponses renseignées': [int(nombres[c].count()) for c in champs]})
+    st.dataframe(resume, hide_index=True, width='stretch')
+    st.caption('Une case vide reste non renseignée. Les unités ne sont pas additionnées entre elles. Ces quantités ne sont pas une nouvelle estimation carbone.')
+    indicateur = st.selectbox('Consommation à afficher', champs, key='suivi_indicateur')
+    rythme = st.selectbox('Regrouper le graphique par', ['Jour', 'Semaine', 'Mois', 'Année'], key='suivi_rythme')
+    frequence = {'Jour': 'D', 'Semaine': 'W-SUN', 'Mois': 'M', 'Année': 'Y'}[rythme]
+    periodes = historique['_date'].dt.to_period(frequence).dt.start_time
+    serie = nombres[indicateur].groupby(periodes).sum(min_count=1)
+    if serie.notna().any():
+        st.bar_chart(serie.rename(indicateur))
+    else:
+        st.info('Cette consommation n’est pas renseignée dans la sélection.')
+    export = historique.drop(columns=['_date'])
+    st.download_button('Télécharger les réponses filtrées', export.to_csv(index=False, sep=';').encode('utf-8-sig'), 'reponses_filtrees.csv', 'text/csv', key='export_suivi')
+    with st.expander('Voir les réponses de la sélection'):
+        st.dataframe(export, hide_index=True, width='stretch')
+
+
+st.markdown('''<style>.st-key-suivi_lisible {background:#102c25;padding:22px;border-radius:12px;color:white}.st-key-suivi_lisible p,.st-key-suivi_lisible h3 {color:white!important}</style>''', unsafe_allow_html=True)
+
 # 5. INITIALISATION DES ONGLETS DE NAVIGATION
-tab_dashboard, tab_conso_graph, tab_glossaire = st.tabs(["📊 Tableau de bord", "🌱 Comparer les établissements", "📖 Référentiel élèves"])
+tab_dashboard, tab_suivi, tab_conso_graph, tab_glossaire = st.tabs(["📊 Tableau de bord", "📅 Suivi par période", "🌱 Comparer les établissements", "📖 Référentiel élèves"])
+
+with tab_suivi:
+    with st.container(key="suivi_lisible"):
+        afficher_suivi()
 
 # ==========================================
 # ---          1. ONGLET DASHBOARD       ---
