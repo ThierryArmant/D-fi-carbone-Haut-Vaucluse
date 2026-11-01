@@ -122,17 +122,17 @@ def send_response(payload, opener=urlopen):
             raise RuntimeError('Google n’a pas confirmé l’enregistrement. Vérifiez les réponses avant de renvoyer les données.')
 
 
-def afficher_saisie_carbone(df):
+def _afficher_saisie_carbone(df):
     import streamlit as st
-    st.subheader('Saisie Carbone — Réseau Haut Vaucluse')
-    st.write('Les mêmes questions que votre collecte, directement dans l’application. Laissez vide ce que vous ne connaissez pas ; écrivez 0 uniquement si la quantité est réellement nulle.')
+    st.subheader('Saisissez vos données')
+    st.caption('Laissez vide une valeur inconnue. Indiquez 0 seulement si la consommation est nulle.')
     if df.empty:
         st.info('La liste des établissements est indisponible. Actualisez les données avant de saisir.')
         return False
     school_col = 'Etablissements' if 'Etablissements' in df.columns else df.columns[0]
     schools = [str(v) for v in df[school_col].dropna().unique()
                if str(v).strip() and not re.search(r'total|moyenne', str(v), re.I)]
-    st.info('Cet envoi ajoute une réponse aux totaux existants ; il ne corrige pas une réponse antérieure. Ne renvoyez pas des consommations déjà transmises.')
+    st.caption('Chaque envoi s’ajoute au cumul. Ne saisissez pas deux fois la même consommation.')
     with st.container(border=True):
         school = st.selectbox('Sélectionnez votre établissement', schools, index=None,
                               placeholder='Choisir dans la liste du bilan carbone')
@@ -193,3 +193,15 @@ def afficher_saisie_carbone(df):
         st.caption('L’eau est collectée en m³ ; sa conversion carbone reste à valider. Les repas viande blanche sont reliés au bilan existant.')
         return True
     return False
+
+def afficher_saisie_carbone(df):
+    import streamlit as st
+    st.markdown('''<style>
+    .st-key-saisie_lisible {background:#102c25!important;border:1px solid #527366;border-radius:12px;padding:22px!important;margin:12px 0 24px;color:#fff!important;}
+    .st-key-saisie_lisible h2,.st-key-saisie_lisible h3,.st-key-saisie_lisible h4,.st-key-saisie_lisible p,.st-key-saisie_lisible label,.st-key-saisie_lisible [data-testid="stCaptionContainer"],.st-key-saisie_lisible summary {color:#fff!important;text-shadow:none!important;}
+    .st-key-saisie_lisible [data-testid="stExpander"] {background:#183d32!important;border:1px solid #69877b!important;}
+    .st-key-saisie_lisible [data-testid="stAlert"] {background:#e3efe9!important;color:#153b2b!important;}
+    .st-key-saisie_lisible [data-testid="stAlert"] p {color:#153b2b!important;}
+    </style>''', unsafe_allow_html=True)
+    with st.container(key='saisie_lisible'):
+        return _afficher_saisie_carbone(df)
