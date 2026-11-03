@@ -232,9 +232,23 @@ def _colonne_disponible(columns, nom):
     return None
 
 
+def _nombre_carbone(value):
+    """Lit les décimales françaises sans transformer les erreurs en valeurs inventées."""
+    if pd.isna(value) or str(value).strip() == "":
+        return 0.0
+    chaine = str(value).replace("\u00a0", "").replace("\u202f", "").replace(" ", "").strip()
+    if "," in chaine:
+        chaine = chaine.replace(".", "").replace(",", ".")
+    try:
+        resultat = float(chaine)
+        return resultat if pd.notna(resultat) and abs(resultat) != float("inf") else 0.0
+    except (ValueError, TypeError):
+        return 0.0
+
+
 def safe_get_val(row_data, col_name):
     col = _colonne_disponible(row_data.index, col_name)
-    return float(row_data[col]) if col is not None and pd.notna(row_data[col]) else 0.0
+    return _nombre_carbone(row_data[col]) if col is not None else 0.0
 
 
 def safe_sum_val(dataframe, col_name):
@@ -362,7 +376,7 @@ with tab_dashboard:
 
         cols_to_convert = [c for c in df.columns if c not in (col_etab, "Statut")]
         for col in cols_to_convert:
-            df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
+            df[col] = df[col].map(_nombre_carbone)
         
         df_active = df[df[col_etab].astype(str).str.strip() != ""].copy()
         df_active = df_active[~df_active[col_etab].astype(str).str.lower().str.contains("total|moyenne")].copy()
@@ -464,6 +478,40 @@ with tab_dashboard:
                 + '</small></div>',
                 unsafe_allow_html=True,
             )
+
+            # Les cinq catégories sont exclusives ; le « repas moyen » désigne les autres repas.
+            facteurs_repas = {
+                "Repas viande rouge": 7.26,
+                "Repas viande blanche": 1.58,
+                "Repas Poisson": 2.00,
+                "Repas végétarien": 0.51,
+                "Repas moyen": 2.25,
+            }
+            # Les colonnes voisines du tableur alternent émissions (kg CO₂e) et quantités (repas).
+            # On vérifie la cohérence sans recalculer ni écraser les résultats du Google Sheets.
+            colonnes_repas = list(df_active.columns)
+            anomalies_repas = []
+            for nom_repas, facteur in facteurs_repas.items():
+                col_emission = _colonne_disponible(colonnes_repas, nom_repas)
+                if col_emission is None:
+                    anomalies_repas.append(f"{nom_repas} : colonne d’émissions absente")
+                    continue
+                idx = colonnes_repas.index(col_emission)
+                if idx + 1 >= len(colonnes_repas):
+                    anomalies_repas.append(f"{nom_repas} : colonne du nombre de repas absente")
+                    continue
+                emission = safe_get_val(school_data, nom_repas)
+                quantite = _nombre_carbone(school_data.iloc[idx + 1])
+                attendu = quantite * facteur
+                if abs(emission - attendu) > max(0.1, 0.001 * abs(attendu)):
+                    anomalies_repas.append(
+                        f"{nom_repas} : {format_kg_co2e(emission)} affichés "
+                        f"pour {quantite:g} repas, contre {format_kg_co2e(attendu)} attendus"
+                    )
+            if anomalies_repas:
+                with st.expander("⚠️ Vérification des cinq catégories de repas"):
+                    for anomalie in anomalies_repas:
+                        st.warning(anomalie)
 
             secteurs = [
                 ("❄️ Énergie & Bâtiments", "#4ade80", [
