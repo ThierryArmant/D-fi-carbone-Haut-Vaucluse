@@ -439,20 +439,6 @@ with tab_dashboard:
 
             nom_ecole = html.escape(str(selected_school))
             if not abc_mesures.empty:
-                noms_bilan = set(df_active[col_etab].astype(str).str.strip())
-                sans_correspondance = abc_mesures[
-                    ~abc_mesures["Nom dans le bilan"].isin(noms_bilan)
-                ]
-                if not sans_correspondance.empty:
-                    noms_abc = ", ".join(
-                        html.escape(str(n)) for n in sans_correspondance["Établissement (A.B.C.)"].tolist()
-                    )
-                    st.warning(
-                        f"A.B.C. : {len(sans_correspondance)} établissement(s) ont des repas "
-                        f"mais ne sont pas encore rattachés au bilan réseau : {noms_abc}. "
-                        "Leurs émissions alimentaires ne sont pas incluses dans le total réseau. "
-                        "Renseigner la correspondance dans le Google Sheets avant de les comptabiliser."
-                    )
                 ecole_abc = abc_mesures[
                     abc_mesures["Nom dans le bilan"] == str(selected_school).strip()
                 ]
