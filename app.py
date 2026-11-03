@@ -503,6 +503,12 @@ with tab_dashboard:
                                 unsafe_allow_html=True,
                             )
 
+            st.caption(
+                "Restauration : cinq catégories exclusives (viande rouge, viande blanche, poisson, "
+                "végétarien, repas moyen). Le tableur privilégie A.B.C. lorsqu'une période mesurée "
+                "est disponible pour l'établissement ; sinon, il reprend les saisies du formulaire. "
+                "Les deux sources ne sont pas additionnées."
+            )
             if abs(somme_ecole - tot_sch) > max(1.0, 0.01 * abs(tot_sch)):
                 st.warning(
                     f"Écart de ventilation pour {selected_school} : "
@@ -547,7 +553,7 @@ with tab_conso_graph:
         st.plotly_chart(fig_bar, use_container_width=True)
         
         st.divider()
-        st.markdown('<p class="inner-title" style="color:#38bdf8;">📋 Synthèse Globale Centralisée KgCo2e</p>', unsafe_allow_html=True)
+        st.markdown('<p class="inner-title" style="color:#38bdf8;">📋 Synthèse du bilan carbone (kg CO₂e)</p>', unsafe_allow_html=True)
         st.dataframe(df, hide_index=True, width="stretch", height=360)
         st.download_button("Télécharger le bilan complet (CSV)", data=df.to_csv(index=False, sep=";").encode("utf-8-sig"), file_name="bilan-carbone-haut-vaucluse.csv", mime="text/csv", key="export_bilan_carbone")
 
@@ -561,9 +567,9 @@ with tab_glossaire:
     g_tabs = st.tabs(["🍎 Cantine", "❄️ Énergie", "🚌 Transports", "📦 Biens & Équipements", "🗑️ Déchets"])
     
     with g_tabs[0]:
-        st.subheader("🍎 Référentiel Restauration (ADEME)")
+        st.subheader("🍎 Référentiel Restauration (facteurs du tableur réseau)")
         st.markdown('<p class="inner-title" style="text-align:left;">📊 Valeurs d\'empreinte de la Cantine :</p>', unsafe_allow_html=True)
-        st.markdown('<div class="unit-box">• <b>Repas viande rouge (bœuf) :</b> 7.26 kg CO2e<br>• <b>Repas poisson :</b> 2.00 kg CO2e<br>• <b>Repas moyen / standard :</b> 2.10 kg CO2e<br>• <b>Repas végétarien :</b> 0.50 kg CO2e</div>', unsafe_allow_html=True)
+        st.markdown('<div class="unit-box">• <b>Repas viande rouge :</b> 7,26 kg CO₂e<br>• <b>Repas viande blanche :</b> 1,58 kg CO₂e<br>• <b>Repas poisson :</b> 2,00 kg CO₂e<br>• <b>Repas végétarien :</b> 0,51 kg CO₂e<br>• <b>Repas moyen (autres repas) :</b> 2,25 kg CO₂e</div>', unsafe_allow_html=True)
         st.markdown("""<div class="anecdote">
             <b>💡 Équivalents frappants pour un élève :</b><br>
             • <b>1 seul repas au bœuf (7,2 kg)</b> = Fabriquer une paire de baskets de marque neuve 👟<br>
@@ -572,9 +578,9 @@ with tab_glossaire:
             </div>""", unsafe_allow_html=True)
 
     with g_tabs[1]:
-        st.subheader("❄️ Référentiel Énergie & Fluides (ADEME)")
+        st.subheader("❄️ Référentiel Énergie & Fluides (facteurs du tableur réseau)")
         st.markdown('<p class="inner-title" style="text-align:left;">📊 Facteurs d\'émissions des Bâtiments :</p>', unsafe_allow_html=True)
-        st.markdown('<div class="unit-box">• <b>Fioul de chauffage :</b> 3.24 kg CO2e par litre<br>• <b>Gaz naturel :</b> 0.24 kg CO2e par kWh<br>• <b>Électricité française :</b> 0.06 kg CO2e par kWh</div>', unsafe_allow_html=True)
+        st.markdown('<div class="unit-box">• <b>Fioul :</b> 0,324 kg CO₂e/kWh dans la base du tableur (attention : le formulaire demande des litres ; coefficient et conversion à vérifier)<br>• <b>Gaz naturel :</b> 0,243 kg CO₂e/kWh<br>• <b>Électricité française :</b> 0,0647 kg CO₂e/kWh</div>', unsafe_allow_html=True)
         st.markdown("""<div class="anecdote">
             <b>💡 Équivalents frappants pour un élève :</b><br>
             • <b>Chauffer une classe au fioul pendant 1 jour</b> = Parcourir 80 km en voiture thermique 🚘<br>
@@ -583,9 +589,9 @@ with tab_glossaire:
             </div>""", unsafe_allow_html=True)
 
     with g_tabs[2]:
-        st.subheader("🚌 Référentiel Déplacements (ADEME)")
+        st.subheader("🚌 Référentiel Déplacements (facteurs du tableur réseau)")
         st.markdown('<p class="inner-title" style="text-align:left;">📊 Empreinte des Transports :</p>', unsafe_allow_html=True)
-        st.markdown('<div class="unit-box">• <b>Voiture thermique (Moyenne) :</b> 0.22 kg CO2e par km<br>• <b>Autobus (Sortie scolaire / Voyage) :</b> 0.11 kg CO2e par km et par élève</div>', unsafe_allow_html=True)
+        st.markdown('<div class="unit-box">• <b>Voiture à essence :</b> 0,259 kg CO₂e/km<br>• <b>Bus urbain :</b> 0,182 kg CO₂e/passager-km<br>• <b>Autobus (sortie scolaire) :</b> 3,64 kg CO₂e/km de véhicule</div>', unsafe_allow_html=True)
         st.markdown("""<div class="anecdote">
             <b>💡 Équivalents frappants pour un élève :</b><br>
             • <b>Venir au collège à pied ou à vélo à l'année</b> = Économiser la capacité d'absorption de 5 arbres plantés 🌳<br>
@@ -596,7 +602,7 @@ with tab_glossaire:
     with g_tabs[3]:
         st.subheader("📦 Biens, Consommables & Équipements")
         st.markdown('<p class="inner-title" style="text-align:left;">📊 Empreinte du matériel :</p>', unsafe_allow_html=True)
-        st.markdown('<div class="unit-box">• <b>Paper (neuf) :</b> 1.20 kg CO2e par kg<br>• <b>Ordinateur portable :</b> ~250 kg CO2e (fabrication)<br>• <b>Vidéo projecteur :</b> ~180 kg CO2e (fabrication)</div>', unsafe_allow_html=True)
+        st.markdown('<div class="unit-box">• <b>Papier :</b> le tableur indique 0,919 kg CO₂e/tonne, unité à vérifier par rapport aux kg saisis<br>• <b>Ordinateur à écran plat :</b> 1 283 kg CO₂e/appareil<br>• <b>Vidéoprojecteur :</b> 94 kg CO₂e/appareil</div>', unsafe_allow_html=True)
         st.markdown("""<div class="anecdote">
             <b>💡 Équivalents frappants pour un élève :</b><br>
             • <b>Fabriquer un seul ordinateur portable (250 kg)</b> = Rouler 1200 km en voiture ou fabriquer 150 t-shirts en coton 💻<br>
@@ -607,7 +613,7 @@ with tab_glossaire:
     with g_tabs[4]:
         st.subheader("🗑️ Gestion des Déchets")
         st.markdown('<p class="inner-title" style="text-align:left;">📊 Empreinte des déchets :</p>', unsafe_allow_html=True)
-        st.markdown('<div class="unit-box">• <b>Déchets papier/carton :</b> 0.15 kg CO2e par kg (trié)<br>• <b>Déchets plastiques :</b> 0.30 kg CO2e par kg (trié)<br>• <b>Déchets alimentaires :</b> 0.20 kg CO2e par kg</div>', unsafe_allow_html=True)
+        st.markdown('<div class="unit-box">• <b>Déchets papier :</b> 0,0431 kg CO₂e/tonne dans la base du tableur (unité à vérifier)<br>• <b>Déchets plastiques :</b> 0,877 kg CO₂e/tonne dans la base (unité à vérifier)<br>• <b>Déchets alimentaires :</b> 0,0481 kg CO₂e/tonne dans la base (unité à vérifier)</div>', unsafe_allow_html=True)
         st.markdown("""<div class="anecdote">
             <b>💡 Équivalents frappants pour un élève :</b><br>
             • <b>Trier 1 kg de bouteilles en plastique (0,30 kg évités)</b> = Économiser l'énergie de 3 cycles complets de machine à laver 🧺<br>
@@ -616,4 +622,4 @@ with tab_glossaire:
             </div>""", unsafe_allow_html=True)
 
 st.divider()
-st.caption("Sources : Base Empreinte ADEME / Contexte Réseau Climat Haut Vaucluse - Juin 2026")
+st.caption("Facteurs affichés : onglet « base emission carbone » du Google Sheets « Projet EPLE bas carbone ». Certains facteurs et unités nécessitent une validation méthodologique avant une utilisation comme référence ADEME.")
