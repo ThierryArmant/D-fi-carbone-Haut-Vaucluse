@@ -4,6 +4,8 @@ import pandas as pd
 import plotly.graph_objects as go
 import base64
 import os
+import html
+import unicodedata
 from saisie_carbone import afficher_saisie_carbone
 
 # 1. CONFIGURATION INITIALE DE LA PAGE
@@ -95,11 +97,27 @@ def inject_glass_theme(img_b64):
     h1, h2, h3, [data-testid="stMarkdownContainer"] > p { text-shadow: 0 1px 4px rgba(0,0,0,.85); }
     @media (min-width: 1100px) {
         [data-testid="stMainBlockContainer"], .main .block-container {
-            width: 58% !important; max-width: 1050px !important;
-            margin-left: auto !important; margin-right: 2% !important;
+            width: 56% !important; max-width: 1050px !important;
+            margin-left: auto !important; margin-right: 1.5% !important;
             padding-left: 1rem !important; padding-right: 1rem !important;
         }
     }
+    .comparison-sector {
+        background: rgba(10, 28, 23, .88); border: 1px solid rgba(255,255,255,.24);
+        border-radius: 14px; padding: 14px 16px; margin: 12px 0;
+        box-shadow: 0 6px 20px rgba(0,0,0,.17);
+    }
+    .comparison-title { font-weight: 800; color: #fff; font-size: 17px; margin-bottom: 11px; }
+    .comparison-grid { display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; }
+    .comparison-label { font-size: 12px; color: #cde7db; margin-bottom: 3px; }
+    .comparison-value { color:#fff; font-size:clamp(13px,1.25vw,17px); font-weight:800; font-variant-numeric:tabular-nums; }
+    .comparison-track { height:8px; border-radius:99px; overflow:hidden; background:rgba(255,255,255,.19); margin:8px 0 4px; }
+    .comparison-fill { height:100%; border-radius:99px; }
+    .comparison-ratio { font-size:11px; color:#d4e4dc; }
+    .comparison-summary { background:rgba(10,28,23,.88); border:1px solid rgba(255,255,255,.24); border-radius:12px; padding:13px 16px; margin:10px 0 16px; color:#fff; }
+    .comparison-detail { display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-bottom:1px solid rgba(255,255,255,.09); color:#fff; font-size:13px; }
+    .comparison-detail span:last-child { font-weight:700; font-variant-numeric:tabular-nums; text-align:right; }
+    @media(max-width:640px) { .comparison-grid { grid-template-columns:1fr; gap:12px; } .comparison-sector { padding:12px; } }
     .unit-box, .anecdote {
         background: rgba(10, 28, 23, .88) !important;
         color: #ffffff !important; backdrop-filter: blur(10px);
@@ -130,9 +148,19 @@ with st.container(key="navigation_collecte"):
 
 
 # 3. INTERFACE DE CONSTRUCTION DES JAUGE ADEME
+def format_kg_co2e(value):
+    """Unité unique pour les résultats carbone, sans conversion en tonnes."""
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        number = 0.0
+    decimals = 1 if abs(number) < 10 and number != 0 else 0
+    return f"{number:,.{decimals}f}".replace(",", "\u00a0").replace(".", ",") + " kg CO₂e"
+
+
 def draw_custom_bar(label, value_kg, total_kg, color, is_sub=False):
     pct = (value_kg / total_kg * 100) if total_kg > 0 else 0
-    display_weight = f"{value_kg/1000:.2f} t" if value_kg >= 1000 else f"{value_kg:.1f} kg"
+    display_weight = format_kg_co2e(value_kg)
     
     if not is_sub:
         st.markdown(f"""
@@ -166,21 +194,37 @@ def load_data():
 
 df = load_data()
 
+def _normaliser_colonne(nom):
+    txt = unicodedata.normalize("NFD", str(nom or "").casefold())
+    txt = "".join(c for c in txt if unicodedata.category(c) != "Mn")
+    return " ".join(txt.split())
+
+
+def _colonne_disponible(columns, nom):
+    # Libellés historiques présents dans le Google Sheets : une seule source par poste.
+    aliases = {
+        "papier": ["Papier en kg 1 ramette = 2,5kg", "Paper"],
+        "paper": ["Papier en kg 1 ramette = 2,5kg", "Papier"],
+        "fioul de chauffage": ["Fioul"],
+        "fioul": ["Fioul de chauffage"],
+    }
+    candidats = [nom] + aliases.get(_normaliser_colonne(nom), [])
+    colonnes = {_normaliser_colonne(c): c for c in columns}
+    for candidat in candidats:
+        trouve = colonnes.get(_normaliser_colonne(candidat))
+        if trouve is not None:
+            return trouve
+    return None
+
+
 def safe_get_val(row_data, col_name):
-    if col_name in row_data.index:
-        return row_data[col_name]
-    for c in row_data.index:
-        if str(c).lower().replace('é','e').strip() == str(col_name).lower().replace('é','e').strip():
-            return row_data[c]
-    return 0.0
+    col = _colonne_disponible(row_data.index, col_name)
+    return float(row_data[col]) if col is not None and pd.notna(row_data[col]) else 0.0
+
 
 def safe_sum_val(dataframe, col_name):
-    if col_name in dataframe.columns:
-        return dataframe[col_name].sum()
-    for c in dataframe.columns:
-        if str(c).lower().replace('é','e').strip() == str(col_name).lower().replace('é','e').strip():
-            return dataframe[c].sum()
-    return 0.0
+    col = _colonne_disponible(dataframe.columns, col_name)
+    return float(dataframe[col].sum()) if col is not None else 0.0
 
 if not df.empty:
     df.columns = [str(c).replace('\xa0', ' ').replace('\n', ' ').strip() for c in df.columns]
@@ -301,7 +345,7 @@ with tab_dashboard:
         col_eff = "Effectif total" if "Effectif total" in df.columns else df.columns[1]
         col_conso = "conso carbone par personne" if "conso carbone par personne" in df.columns else df.columns[8]
 
-        cols_to_convert = [c for c in df.columns if c != col_etab]
+        cols_to_convert = [c for c in df.columns if c not in (col_etab, "Statut")]
         for col in cols_to_convert:
             df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
         
@@ -313,7 +357,7 @@ with tab_dashboard:
 
         col_top1, col_top2 = st.columns([1, 1])
         with col_top1:
-            st.markdown('<p class="inner-title">📊 Classement des Établissements (kg/personne)</p>', unsafe_allow_html=True)
+            st.markdown('<p class="inner-title">📊 Classement des établissements (kg CO₂e/personne)</p>', unsafe_allow_html=True)
             if not df_active.empty:
                 df_ranking = df_active[[col_etab, col_conso]].sort_values(col_conso, ascending=False)
                 recherche_etab = st.text_input("Rechercher un établissement", placeholder="Nom du collège, lycée ou école", key="recherche_classement")
@@ -324,7 +368,7 @@ with tab_dashboard:
                 st.info("En attente de données...")
                 
         with col_top2:
-            st.markdown('<p class="inner-title">🚀 Moyenne Globale du Réseau (kg/pers)</p>', unsafe_allow_html=True)
+            st.markdown('<p class="inner-title">🌍 Moyenne du réseau (kg CO₂e/personne)</p>', unsafe_allow_html=True)
             if not df_active.empty and df_active[col_eff].sum() > 0:
                 moyenne = df_active[col_total].sum() / df_active[col_eff].sum()
             else:
@@ -335,7 +379,7 @@ with tab_dashboard:
                 value = moyenne, 
                 domain = {'x': [0.1, 0.9], 'y': [0, 1]},
                 number = {
-                    'suffix': " kg", 
+                    'suffix': " kg CO₂e/pers", 
                     'font': {'color': '#f1f5f9', 'size': 18}
                 }, 
                 gauge = {
@@ -349,121 +393,129 @@ with tab_dashboard:
             st.plotly_chart(fig, use_container_width=True)
         
         st.divider()
-        st.markdown("<h2 style='text-align: center; color: #22d3ee; margin-bottom: 5px;'>🔍 Analyse Comparative des Pôles</h2>", unsafe_allow_html=True)
-        
+        st.markdown("<h2 style='text-align: center; color: #22d3ee; margin-bottom: 5px;'>🔍 Comparer l'établissement au réseau</h2>", unsafe_allow_html=True)
+
         if not df_active.empty:
-            col_mid1, col_mid2 = st.columns([1, 1])
-            
-            # --- 🏫 COLONNE DE GAUCHE : ÉTABLISSEMENT UNIQUE ---
-            with col_mid1:
-                selected_school = st.selectbox("Établissement audité :", df_active[col_etab].unique(), key="left_school_selector")
-                st.markdown(f'<p class="inner-title" style="color: #38bdf8; text-align: left; font-size: 15px; margin-bottom: 4px;">🏫 Établissement Audité : {selected_school}</p>', unsafe_allow_html=True)
-                
-                school_data = df_active[df_active[col_etab] == selected_school].iloc[0]
-                tot_sch = school_data[col_total]
-                
-                if tot_sch >= 0:
-                    sch_energie = safe_get_val(school_data, "Electricité française") + safe_get_val(school_data, "Fioul") + safe_get_val(school_data, "Gaz Naturel")
-                    sch_alimentation = safe_get_val(school_data, "Repas moyen") + safe_get_val(school_data, "Repas végétarien") + safe_get_val(school_data, "Repas viande rouge") + safe_get_val(school_data, "Repas viande blanche") + safe_get_val(school_data, "Repas POISSON")
-                    sch_transport = safe_get_val(school_data, "Voiture à essence") + safe_get_val(school_data, "Autobus (ville)") + safe_get_val(school_data, "Autobus (sortie scolaire)")
-                    b_pap = safe_get_val(school_data, "Paper") if safe_get_val(school_data, "Paper") > 0 else safe_get_val(school_data, "Papier")
-                    sch_biens = b_pap + safe_get_val(school_data, "Plastique") + safe_get_val(school_data, "Carton") + safe_get_val(school_data, "Ordinateur à écran plat") + safe_get_val(school_data, "Imprimante") + safe_get_val(school_data, "Photocopieurs") + safe_get_val(school_data, "Vidéo projecteur")
-                    sch_dechets = safe_get_val(school_data, "Déchets Papier") + safe_get_val(school_data, "Déchets alimentaire") + safe_get_val(school_data, "Déchets plastique")
+            selected_school = st.selectbox(
+                "Établissement à comparer",
+                df_active[col_etab].unique(),
+                key="left_school_selector",
+            )
+            school_data = df_active[df_active[col_etab] == selected_school].iloc[0]
+            tot_sch = float(school_data[col_total])
+            tot_net = float(df_active[col_total].sum())
+            nb_contributeurs = int((df_active[col_total] > 0).sum())
+            nb_etablissements = len(df_active)
+            nb_a_valider = int(
+                (df_active.loc[df_active[col_total] > 0, "Statut"].astype(str).str.casefold().str.contains("valider")).sum()
+            ) if "Statut" in df_active.columns else 0
 
-                    # Énergie
-                    draw_custom_bar("❄️ Énergie & Bâtiments", sch_energie, tot_sch, "#4ade80")
-                    with st.expander("🔍 Détails Énergie"):
-                        draw_custom_bar("• Électricité française", safe_get_val(school_data, "Electricité française"), sch_energie, "#22c55e", is_sub=True)
-                        draw_custom_bar("• Gaz Naturel", safe_get_val(school_data, "Gaz Naturel"), sch_energie, "#22c55e", is_sub=True)
-                        draw_custom_bar("• Fioul de chauffage", safe_get_val(school_data, "Fioul de chauffage"), sch_energie, "#22c55e", is_sub=True)
+            nom_ecole = html.escape(str(selected_school))
+            st.markdown(
+                f'<div class="comparison-summary"><strong>🏫 {nom_ecole}</strong> : '
+                f'{format_kg_co2e(tot_sch)}<br>'
+                f'<strong>🌍 Ensemble du réseau</strong> : {format_kg_co2e(tot_net)}<br>'
+                f'<small>{nb_contributeurs} établissement(s) avec émissions renseignées sur '
+                f'{nb_etablissements} établissement(s) listés.'
+                + (f' {nb_a_valider} bilan(s) encore à valider.' if nb_a_valider else '')
+                + '</small></div>',
+                unsafe_allow_html=True,
+            )
 
-                    # Alimentation
-                    draw_custom_bar("🍎 Alimentation & Cantine", sch_alimentation, tot_sch, "#fb923c")
-                    with st.expander("🔍 Détails Restauration"):
-                        draw_custom_bar("• Repas Viande Rouge", safe_get_val(school_data, "Repas viande rouge"), sch_alimentation, "#f97316", is_sub=True)
-                        draw_custom_bar("• Repas Poisson", safe_get_val(school_data, "Repas POISSON"), sch_alimentation, "#f97316", is_sub=True)
-                        draw_custom_bar("• Repas Standard Moyen", safe_get_val(school_data, "Repas moyen"), sch_alimentation, "#f97316", is_sub=True)
-                        draw_custom_bar("• Repas Végétarien", safe_get_val(school_data, "Repas végétarien"), sch_alimentation, "#f97316", is_sub=True)
+            secteurs = [
+                ("❄️ Énergie & Bâtiments", "#4ade80", [
+                    ("Électricité", "Electricité française"),
+                    ("Gaz naturel", "Gaz Naturel"),
+                    ("Fioul de chauffage", "Fioul"),
+                ]),
+                ("🍎 Alimentation & Cantine", "#fb923c", [
+                    ("Repas viande rouge", "Repas viande rouge"),
+                    ("Repas poisson", "Repas Poisson"),
+                    ("Repas standard moyen", "Repas moyen"),
+                    ("Repas végétarien", "Repas végétarien"),
+                    ("Repas viande blanche", "Repas viande blanche"),
+                ]),
+                ("🚌 Déplacements & Transports", "#60a5fa", [
+                    ("Voiture à essence", "Voiture à essence"),
+                    ("Autobus en ville", "Autobus (ville)"),
+                    ("Autobus (sorties scolaires)", "Autobus (sortie scolaire)"),
+                ]),
+                ("📦 Biens & Équipements", "#c084fc", [
+                    ("Papier", "Papier"),
+                    ("Plastique", "Plastique"),
+                    ("Carton", "Carton"),
+                    ("Ordinateurs", "Ordinateur à écran plat"),
+                    ("Imprimantes", "Imprimante"),
+                    ("Photocopieurs", "Photocopieurs"),
+                    ("Vidéoprojecteurs", "Vidéo projecteur"),
+                ]),
+                ("🗑️ Élimination des déchets", "#818cf8", [
+                    ("Papier / carton", "Déchets Papier"),
+                    ("Déchets alimentaires", "Déchets alimentaire"),
+                    ("Déchets plastiques", "Déchets plastique"),
+                ]),
+            ]
 
-                    # Transports
-                    draw_custom_bar("🚌 Déplacements & Transports", sch_transport, tot_sch, "#60a5fa")
-                    with st.expander("🔍 Détails Transports"):
-                        draw_custom_bar("• Voiture à essence", safe_get_val(school_data, "Voiture à essence"), sch_transport, "#3b82f6", is_sub=True)
-                        draw_custom_bar("• Autobus (sorties / voyages)", safe_get_val(school_data, "Autobus (sortie scolaire)"), sch_transport, "#3b82f6", is_sub=True)
+            somme_ecole = 0.0
+            somme_reseau = 0.0
+            for titre, couleur, champs in secteurs:
+                details = [
+                    (libelle, safe_get_val(school_data, colonne), safe_sum_val(df_active, colonne))
+                    for libelle, colonne in champs
+                ]
+                kg_ecole = sum(x[1] for x in details)
+                kg_reseau = sum(x[2] for x in details)
+                somme_ecole += kg_ecole
+                somme_reseau += kg_reseau
+                ratio_ecole = (100 * kg_ecole / tot_sch) if tot_sch > 0 else 0
+                ratio_reseau = (100 * kg_reseau / tot_net) if tot_net > 0 else 0
 
-                    # Biens & Équipements
-                    draw_custom_bar("📦 Biens, Consommables & Équipements", sch_biens, tot_sch, "#c084fc")
-                    with st.expander("🔍 Détails Consommables & Matériel"):
-                        draw_custom_bar("• Papier & Carton", b_pap + safe_get_val(school_data, "Carton"), sch_biens, "#a855f7", is_sub=True)
-                        draw_custom_bar("• Plastiques & Fournitures", safe_get_val(school_data, "Plastique"), sch_biens, "#a855f7", is_sub=True)
-                        draw_custom_bar("• Appareils Numériques", safe_get_val(school_data, "Ordinateur à écran plat") + safe_get_val(school_data, "Imprimante") + safe_get_val(school_data, "Photocopieurs") + safe_get_val(school_data, "Vidéo projecteur"), sch_biens, "#a855f7", is_sub=True)
+                def colonne_comparaison(libelle, kg, ratio):
+                    largeur = max(0, min(100, ratio))
+                    return (
+                        f'<div><div class="comparison-label">{libelle}</div>'
+                        f'<div class="comparison-value">{format_kg_co2e(kg)}</div>'
+                        f'<div class="comparison-track"><div class="comparison-fill" '
+                        f'style="width:{largeur:.1f}%;background:{couleur}"></div></div>'
+                        f'<div class="comparison-ratio">{ratio:.1f} % de l’empreinte totale</div></div>'
+                    )
 
-                    # Déchets
-                    draw_custom_bar("🗑️ Gestion des Déchets", sch_dechets, tot_sch, "#818cf8")
-                    with st.expander("🔍 Détails Élimination Déchets"):
-                        draw_custom_bar("• Déchets Papier / Carton", safe_get_val(school_data, "Déchets Papier"), sch_dechets, "#6366f1", is_sub=True)
-                        draw_custom_bar("• Déchets Alimentaires", safe_get_val(school_data, "Déchets alimentaire"), sch_dechets, "#6366f1", is_sub=True)
-                        draw_custom_bar("• Déchets Plastiques", safe_get_val(school_data, "Déchets plastique"), sch_dechets, "#6366f1", is_sub=True)
+                st.markdown(
+                    f'<div class="comparison-sector">'
+                    f'<div class="comparison-title">{titre}</div>'
+                    f'<div class="comparison-grid">'
+                    + colonne_comparaison("🏫 Établissement", kg_ecole, ratio_ecole)
+                    + colonne_comparaison("🌍 Réseau", kg_reseau, ratio_reseau)
+                    + '</div></div>',
+                    unsafe_allow_html=True,
+                )
+                details_actifs = [x for x in details if x[1] != 0 or x[2] != 0]
+                if details_actifs:
+                    with st.expander(f"🔎 Détails · {titre}"):
+                        st.caption("Valeurs établissement et réseau, calculées à partir des mêmes postes.")
+                        for libelle, individuel, global_ in details_actifs:
+                            st.markdown(
+                                '<div class="comparison-detail"><span>'
+                                + html.escape(libelle)
+                                + '</span><span>🏫 ' + format_kg_co2e(individuel)
+                                + ' · 🌍 ' + format_kg_co2e(global_)
+                                + '</span></div>',
+                                unsafe_allow_html=True,
+                            )
 
-            # --- 🌍 COLONNE DE DROITE : TOTAL RÉSEAU CENTRALISÉ ---
-            with col_mid2:
-                st.markdown('<p class="inner-title" style="color: #38bdf8; text-align: left; font-size: 15px;">🌍 Global : Secteurs d\'impact du Réseau</p>', unsafe_allow_html=True)
-                
-                tot_net = df_active[col_total].sum()
-                if tot_net >= 0:
-                    net_elec = safe_sum_val(df_active, "Electricité française")
-                    net_fioul = safe_sum_val(df_active, "Fioul") + safe_sum_val(df_active, "Fioul de chauffage")
-                    net_gaz = safe_sum_val(df_active, "Gaz Naturel")
-                    net_energie = net_elec + net_fioul + net_gaz
-
-                    net_alimentation = safe_sum_val(df_active, "Repas moyen") + safe_sum_val(df_active, "Repas végétarien") + safe_sum_val(df_active, "Repas viande rouge") + safe_sum_val(df_active, "Repas viande blanche") + safe_sum_val(df_active, "Repas POISSON")
-                    net_transport = safe_sum_val(df_active, "Voiture à essence") + safe_sum_val(df_active, "Autobus (ville)") + safe_sum_val(df_active, "Autobus (sortie scolaire)")
-                    
-                    net_pap = safe_sum_val(df_active, "Paper") + safe_sum_val(df_active, "Papier")
-                    net_carton = safe_sum_val(df_active, "Carton")
-                    net_plast = safe_sum_val(df_active, "Plastique")
-                    net_num = safe_sum_val(df_active, "Ordinateur à écran plat") + safe_sum_val(df_active, "Imprimante") + safe_sum_val(df_active, "Photocopieurs") + safe_sum_val(df_active, "Vidéo projecteur")
-                    net_biens = net_pap + net_carton + net_plast + net_num
-                    
-                    net_dec_pap = safe_sum_val(df_active, "Déchets Papier")
-                    net_dec_alim = safe_sum_val(df_active, "Déchets alimentaire")
-                    net_dec_plast = safe_sum_val(df_active, "Déchets plastique")
-                    net_dechets = net_dec_pap + net_dec_alim + net_dec_plast
-
-                    # Énergie Globale
-                    draw_custom_bar("❄️ Énergie & Bâtiments (Total Réseau)", net_energie, tot_net, "#4ade80")
-                    with st.expander("🔍 Détails Énergie Globaux"):
-                        draw_custom_bar("• Électricité française", net_elec, net_energie, "#22c55e", is_sub=True)
-                        draw_custom_bar("• Gaz Naturel", net_gaz, net_energie, "#22c55e", is_sub=True)
-                        draw_custom_bar("• Fioul de chauffage", net_fioul, net_energie, "#22c55e", is_sub=True)
-
-                    # Alimentation Globale
-                    draw_custom_bar("🍎 Alimentation & Cantine (Total Réseau)", net_alimentation, tot_net, "#fb923c")
-                    with st.expander("🔍 Détails Restauration Globaux"):
-                        draw_custom_bar("• Repas Viande Rouge", safe_sum_val(df_active, "Repas viande rouge"), net_alimentation, "#f97316", is_sub=True)
-                        draw_custom_bar("• Repas Poisson", safe_sum_val(df_active, "Repas POISSON"), net_alimentation, "#f97316", is_sub=True)
-                        draw_custom_bar("• Repas Standard Moyen", safe_sum_val(df_active, "Repas moyen"), net_alimentation, "#f97316", is_sub=True)
-                        draw_custom_bar("• Repas Végétarien", safe_sum_val(df_active, "Repas végétarien"), net_alimentation, "#f97316", is_sub=True)
-
-                    # Transports Globaux
-                    draw_custom_bar("🚌 Déplacements & Transports (Total Réseau)", net_transport, tot_net, "#60a5fa")
-                    with st.expander("🔍 Détails Transports Globaux"):
-                        draw_custom_bar("• Voiture à essence", safe_sum_val(df_active, "Voiture à essence"), net_transport, "#3b82f6", is_sub=True)
-                        draw_custom_bar("• Autobus", safe_sum_val(df_active, "Autobus (sortie scolaire)") + safe_sum_val(df_active, "Autobus (ville)"), net_transport, "#3b82f6", is_sub=True)
-
-                    # Biens Globaux
-                    draw_custom_bar("📦 Biens & Équipements (Total Réseau)", net_biens, tot_net, "#c084fc")
-                    with st.expander("🔍 Détails Biens Globaux"):
-                        draw_custom_bar("• Papier & Carton", net_pap + net_carton, net_biens, "#a855f7", is_sub=True)
-                        draw_custom_bar("• Plastiques consommables", net_plast, net_biens, "#a855f7", is_sub=True)
-                        draw_custom_bar("• Parc informatique & numérique", net_num, net_biens, "#a855f7", is_sub=True)
-
-                    # Déchets Globaux
-                    draw_custom_bar("🗑️ Élimination des Déchets (Total Réseau)", net_dechets, tot_net, "#818cf8")
-                    with st.expander("🔍 Détails Déchets Globaux"):
-                        draw_custom_bar("• Déchets Papier / Carton", net_dec_pap, net_dechets, "#6366f1", is_sub=True)
-                        draw_custom_bar("• Déchets Alimentaires", net_dec_alim, net_dechets, "#6366f1", is_sub=True)
-                        draw_custom_bar("• Déchets Plastiques", net_dec_plast, net_dechets, "#6366f1", is_sub=True)
+            if abs(somme_ecole - tot_sch) > max(1.0, 0.01 * abs(tot_sch)):
+                st.warning(
+                    f"Écart de ventilation pour {selected_school} : "
+                    f"{format_kg_co2e(somme_ecole)} répartis par poste, "
+                    f"contre {format_kg_co2e(tot_sch)} dans le total du tableur. "
+                    "Vérifier la correspondance des colonnes."
+                )
+            if abs(somme_reseau - tot_net) > max(1.0, 0.01 * abs(tot_net)):
+                st.warning(
+                    "Écart de ventilation pour le réseau : "
+                    f"{format_kg_co2e(somme_reseau)} répartis par poste, "
+                    f"contre {format_kg_co2e(tot_net)} dans le total du tableur."
+                )
 
 # ==========================================
 # ---    2. ONGLET EMPREINTE CARBONNE    ---
@@ -481,7 +533,7 @@ with tab_conso_graph:
             x=df_sorted_graph[col_conso],
             orientation='h',
             marker=dict(color='#22d3ee', line=dict(color='rgba(255,255,255,0.2)', width=1)),
-            hovertemplate="<b>%{y}</b><br>Empreinte : <b>%{x:.1f} kg CO2e/pers</b><extra></extra>"
+            hovertemplate="<b>%{y}</b><br>Empreinte : <b>%{x:.1f} kg CO₂e/pers</b><extra></extra>"
         ))
         
         fig_bar.update_layout(
@@ -489,7 +541,7 @@ with tab_conso_graph:
             height=max(340, min(900, 90 + 30 * len(df_sorted_graph))),
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
-            xaxis=dict(title="Consommation Carbone (kg / personne)", color="#f1f5f9", gridcolor="rgba(255,255,255,0.1)", showgrid=True),
+            xaxis=dict(title="Empreinte carbone (kg CO₂e/personne)", color="#f1f5f9", gridcolor="rgba(255,255,255,0.1)", showgrid=True),
             yaxis=dict(color="#f1f5f9", showgrid=False)
         )
         st.plotly_chart(fig_bar, use_container_width=True)
