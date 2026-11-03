@@ -38,8 +38,8 @@ def inject_glass_theme(img_b64):
     <style>
     .stApp, [data-testid="stMain"] { background: transparent; }
     [data-testid="stMainBlockContainer"], .main .block-container {
-        max-width: 1240px !important; width: 100% !important;
-        margin: 0 auto !important; padding: 1.6rem 2rem 4rem !important;
+        max-width: 1000px !important; width: 100% !important;
+        margin-left: 0 !important; margin-right: auto !important; padding: 1rem 1.1rem 2.5rem !important;
     }
     [data-testid="stHeader"] { background: transparent; }
     h1, h2, h3, h4, h5, h6, .stMarkdown p,
@@ -53,17 +53,17 @@ def inject_glass_theme(img_b64):
     .stMarkdown p { font-weight: 400; line-height: 1.6; }
     div[data-testid="stColumn"] {
         background: rgba(14, 35, 29, 0.38); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,.16);
-        border-radius: 16px; padding: 18px; min-width: 0;
+        border-radius: 11px; padding: 11px; min-width: 0;
     }
     div[role="tablist"], div[data-baseweb="tab-list"] {
         position: static !important; top: auto !important; right: auto !important;
-        width: 100% !important; gap: 8px !important; margin: 12px 0 20px !important;
+        width: 100% !important; gap: 5px !important; margin: 7px 0 12px !important;
         background: transparent !important; overflow-x: auto !important;
     }
     [role="tablist"] [role="tab"] {
         color: #e6f0e9 !important; background: rgba(14,35,29,.90) !important;
         border: 1px solid rgba(255,255,255,.25) !important; border-radius: 9px !important;
-        padding: 10px 16px !important; min-height: 46px !important; font-size: 14px !important;
+        padding: 7px 10px !important; min-height: 36px !important; font-size: 12px !important;
     }
     [role="tablist"] [role="tab"][aria-selected="true"] {
         background: #c8e8d4 !important; color: #123a29 !important; border-color: #c8e8d4 !important;
@@ -82,8 +82,8 @@ def inject_glass_theme(img_b64):
     .sub-pole-header { font-size: 14px; }
     .bar-container, .sub-bar-container { background: rgba(255,255,255,.14); height: 10px; border-radius: 6px; overflow: hidden; margin-bottom: 12px; }
     .sub-bar-container { height: 7px; }
-    .unit-box { background: rgba(255,255,255,.08); color: #f3f8f5; border: 1px solid rgba(255,255,255,.20); border-radius: 10px; padding: 14px; font-size: 15px; line-height: 1.7; margin: 12px 0; }
-    .anecdote { background: rgba(34,140,168,.17); color: #f3f8f5; border-left: 4px solid #73c7df; border-radius: 6px; padding: 14px; font-size: 14px; line-height: 1.7; margin: 12px 0; }
+    .unit-box { background: rgba(255,255,255,.08); color: #f3f8f5; border: 1px solid rgba(255,255,255,.20); border-radius: 9px; padding: 9px 11px; font-size: 13px; line-height: 1.5; margin: 7px 0; }
+    .anecdote { background: rgba(34,140,168,.17); color: #f3f8f5; border-left: 4px solid #73c7df; border-radius: 6px; padding: 9px 11px; font-size: 13px; line-height: 1.5; margin: 7px 0; }
     .js-plotly-plot .plotly .main-svg { background: transparent !important; }
     hr { border-color: rgba(255,255,255,.20); margin: 24px 0; }
     [data-testid="stCaptionContainer"] p { color: #d0e1d5 !important; font-size: 13px; }
@@ -97,24 +97,24 @@ def inject_glass_theme(img_b64):
     h1, h2, h3, [data-testid="stMarkdownContainer"] > p { text-shadow: 0 1px 4px rgba(0,0,0,.85); }
     @media (min-width: 1100px) {
         [data-testid="stMainBlockContainer"], .main .block-container {
-            width: 56% !important; max-width: 1050px !important;
-            margin-left: auto !important; margin-right: 1.5% !important;
-            padding-left: 1rem !important; padding-right: 1rem !important;
+            width: min(64%, 950px) !important; max-width: 950px !important;
+            margin-left: 1.5% !important; margin-right: auto !important;
+            padding-left: .75rem !important; padding-right: .75rem !important;
         }
     }
     .comparison-sector {
         background: rgba(10, 28, 23, .88); border: 1px solid rgba(255,255,255,.24);
-        border-radius: 14px; padding: 14px 16px; margin: 12px 0;
+        border-radius: 10px; padding: 9px 12px; margin: 7px 0;
         box-shadow: 0 6px 20px rgba(0,0,0,.17);
     }
-    .comparison-title { font-weight: 800; color: #fff; font-size: 17px; margin-bottom: 11px; }
-    .comparison-grid { display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; }
+    .comparison-title { font-weight: 800; color: #fff; font-size: 15px; margin-bottom: 6px; }
+    .comparison-grid { display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
     .comparison-label { font-size: 12px; color: #cde7db; margin-bottom: 3px; }
     .comparison-value { color:#fff; font-size:clamp(13px,1.25vw,17px); font-weight:800; font-variant-numeric:tabular-nums; }
-    .comparison-track { height:8px; border-radius:99px; overflow:hidden; background:rgba(255,255,255,.19); margin:8px 0 4px; }
+    .comparison-track { height:8px; border-radius:99px; overflow:hidden; background:rgba(255,255,255,.19); margin:5px 0 3px; }
     .comparison-fill { height:100%; border-radius:99px; }
     .comparison-ratio { font-size:11px; color:#d4e4dc; }
-    .comparison-summary { background:rgba(10,28,23,.88); border:1px solid rgba(255,255,255,.24); border-radius:12px; padding:13px 16px; margin:10px 0 16px; color:#fff; }
+    .comparison-summary { background:rgba(10,28,23,.88); border:1px solid rgba(255,255,255,.24); border-radius:10px; padding:9px 12px; margin:7px 0 10px; color:#fff; }
     .comparison-detail { display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-bottom:1px solid rgba(255,255,255,.09); color:#fff; font-size:13px; }
     .comparison-detail span:last-child { font-weight:700; font-variant-numeric:tabular-nums; text-align:right; }
     @media(max-width:640px) { .comparison-grid { grid-template-columns:1fr; gap:12px; } .comparison-sector { padding:12px; } }
@@ -125,13 +125,13 @@ def inject_glass_theme(img_b64):
     }
     .unit-box { border: 1px solid rgba(255,255,255,.30); }
     .anecdote { border-left: 4px solid #73c7df; }
-    .st-key-navigation_collecte { background: #f7faf8; border: 1px solid #ceded5; border-radius: 10px; padding: 7px 9px; margin-bottom: 16px; }
+    .st-key-navigation_collecte { background: #f7faf8; border: 1px solid #ceded5; border-radius: 9px; padding: 5px 7px; margin-bottom: 9px; }
     .st-key-navigation_collecte [data-testid="stColumn"] { background: transparent !important; backdrop-filter: none !important; border: 0 !important; padding: 0 !important; }
     .st-key-navigation_collecte #eco-navigation { background: transparent !important; border: 0 !important; margin: 0 !important; padding: 0 !important; gap: 4px !important; }
     .st-key-navigation_collecte #eco-navigation a { font-size: 11px; padding: 8px 9px; }
     .st-key-navigation_collecte #eco-navigation span { font-size: 11px; padding: 8px 9px !important; }
     .st-key-navigation_collecte [data-testid="stTextInput"] { margin: 0; }
-    .intro-carbone { color: #fff; background: rgba(10,28,23,.82); border-radius: 9px; padding: 12px 15px; font-size: 14px; line-height: 1.55; }
+    .intro-carbone { color: #fff; background: rgba(10,28,23,.82); border-radius: 9px; padding: 8px 11px; font-size: 13px; line-height: 1.45; }
     @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
     </style>
     """, unsafe_allow_html=True)
