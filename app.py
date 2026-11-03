@@ -699,8 +699,18 @@ with tab_conso_graph:
 
         st.divider()
         st.markdown('<p class="inner-title" style="color:#38bdf8;">📋 Synthèse du bilan carbone (kg CO₂e)</p>', unsafe_allow_html=True)
-        st.dataframe(df, hide_index=True, width="stretch", height=360)
-        st.download_button("Télécharger le bilan complet (CSV)", data=df.to_csv(index=False, sep=";").encode("utf-8-sig"), file_name="bilan-carbone-haut-vaucluse.csv", mime="text/csv", key="export_bilan_carbone")
+        # Les établissements ayant déclaré des émissions apparaissent en premier,
+        # par total décroissant. Ceux sans bilan restent visibles ensuite.
+        df_synthese = df_active.copy()
+        df_synthese["_bilan_renseigne"] = df_synthese[col_total] > 0
+        df_synthese = df_synthese.sort_values(
+            by=["_bilan_renseigne", col_total, col_etab],
+            ascending=[False, False, True],
+            kind="stable",
+        ).drop(columns=["_bilan_renseigne"])
+        st.caption("Établissements avec données en premier, classés par émissions totales décroissantes ; établissements sans bilan ensuite.")
+        st.dataframe(df_synthese, hide_index=True, width="stretch", height=360)
+        st.download_button("Télécharger le bilan complet (CSV)", data=df_synthese.to_csv(index=False, sep=";").encode("utf-8-sig"), file_name="bilan-carbone-haut-vaucluse.csv", mime="text/csv", key="export_bilan_carbone")
 
 # ==========================================
 # ---          3. ONGLET GLOSSAIRE       ---
