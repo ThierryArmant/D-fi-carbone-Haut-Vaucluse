@@ -194,6 +194,21 @@ def load_data():
 
 df = load_data()
 
+@st.cache_data(ttl=60)
+def load_import_abc():
+    """Lecture seule de l'import des repas A.B.C., commun à tous les établissements."""
+    url_abc = ("https://docs.google.com/spreadsheets/d/"
+               "12fo8cluTH5DmI1dZJh2P_iJaso-NmplnEvxcyb5pS0M/"
+               "export?format=csv&gid=2124365883")
+    try:
+        source = pd.read_csv(url_abc, dtype=str).fillna("")
+        source.columns = [" ".join(str(c).split()) for c in source.columns]
+        return source
+    except Exception:
+        return pd.DataFrame()
+
+import_abc = load_import_abc()
+
 def _normaliser_colonne(nom):
     txt = unicodedata.normalize("NFD", str(nom or "").casefold())
     txt = "".join(c for c in txt if unicodedata.category(c) != "Mn")
@@ -410,7 +425,49 @@ with tab_dashboard:
                 (df_active.loc[df_active[col_total] > 0, "Statut"].astype(str).str.casefold().str.contains("valider")).sum()
             ) if "Statut" in df_active.columns else 0
 
+            # Une école est rattachée à A.B.C. uniquement si le nom du bilan
+            # correspond et si au moins une journée a réellement été mesurée.
+            abc_mesures = pd.DataFrame()
+            if not import_abc.empty and {"Nom dans le bilan", "Jours mesurés"}.issubset(import_abc.columns):
+                abc_mesures = import_abc.copy()
+                abc_mesures["Jours mesurés"] = pd.to_numeric(
+                    abc_mesures["Jours mesurés"].astype(str).str.replace(",", ".", regex=False),
+                    errors="coerce",
+                ).fillna(0)
+                abc_mesures = abc_mesures[abc_mesures["Jours mesurés"] > 0].copy()
+                abc_mesures["Nom dans le bilan"] = abc_mesures["Nom dans le bilan"].astype(str).str.strip()
+
             nom_ecole = html.escape(str(selected_school))
+            if not abc_mesures.empty:
+                noms_bilan = set(df_active[col_etab].astype(str).str.strip())
+                sans_correspondance = abc_mesures[
+                    ~abc_mesures["Nom dans le bilan"].isin(noms_bilan)
+                ]
+                if not sans_correspondance.empty:
+                    noms_abc = ", ".join(
+                        html.escape(str(n)) for n in sans_correspondance["Établissement (A.B.C.)"].tolist()
+                    )
+                    st.warning(
+                        f"A.B.C. : {len(sans_correspondance)} établissement(s) ont des repas "
+                        f"mais ne sont pas encore rattachés au bilan réseau : {noms_abc}. "
+                        "Leurs émissions alimentaires ne sont pas incluses dans le total réseau. "
+                        "Renseigner la correspondance dans le Google Sheets avant de les comptabiliser."
+                    )
+                ecole_abc = abc_mesures[
+                    abc_mesures["Nom dans le bilan"] == str(selected_school).strip()
+                ]
+                if not ecole_abc.empty:
+                    n_jours = int(ecole_abc["Jours mesurés"].sum())
+                    st.caption(
+                        f"🍽️ Source des cinq catégories de repas : A.B.C. "
+                        f"({n_jours} jour(s) mesuré(s)). Le formulaire historique n'est pas additionné."
+                    )
+                else:
+                    st.caption(
+                        "🍽️ Source des catégories de repas : formulaire historique "
+                        "(en attendant des journées mesurées et rattachées dans A.B.C.)."
+                    )
+
             st.markdown(
                 f'<div class="comparison-summary"><strong>🏫 {nom_ecole}</strong> : '
                 f'{format_kg_co2e(tot_sch)}<br>'
