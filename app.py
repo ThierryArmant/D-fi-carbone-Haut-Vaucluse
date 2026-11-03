@@ -619,30 +619,84 @@ with tab_dashboard:
 # ==========================================
 with tab_conso_graph:
     if not df.empty:
-        st.markdown("<h2 style='text-align: center; color: #22d3ee; margin-bottom: 12px;'>📊 Comparatif Graphique Interactif du Réseau</h2>", unsafe_allow_html=True)
-        
-        etabs_graphique = st.multiselect("Établissements à comparer", options=df_active[col_etab].tolist(), default=df_active[col_etab].tolist(), help="Retirez des établissements pour concentrer le graphique. Le tableau complet reste disponible plus bas.")
-        df_sorted_graph = df_active[df_active[col_etab].isin(etabs_graphique)][[col_etab, col_conso]].sort_values(col_conso, ascending=True)
-        
-        fig_bar = go.Figure()
-        fig_bar.add_trace(go.Bar(
-            y=df_sorted_graph[col_etab],
-            x=df_sorted_graph[col_conso],
-            orientation='h',
-            marker=dict(color='#22d3ee', line=dict(color='rgba(255,255,255,0.2)', width=1)),
-            hovertemplate="<b>%{y}</b><br>Empreinte : <b>%{x:.1f} kg CO₂e/pers</b><extra></extra>"
-        ))
-        
-        fig_bar.update_layout(
-            margin=dict(l=20, r=20, t=10, b=10),
-            height=max(340, min(900, 90 + 30 * len(df_sorted_graph))),
-            paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='rgba(0,0,0,0)',
-            xaxis=dict(title="Empreinte carbone (kg CO₂e/personne)", color="#f1f5f9", gridcolor="rgba(255,255,255,0.1)", showgrid=True),
-            yaxis=dict(color="#f1f5f9", showgrid=False)
+        st.markdown("### 📊 Comparer les établissements")
+        st.caption("Empreinte carbone par personne · kg CO₂e/personne")
+
+        # Un établissement sans bilan ne doit pas être interprété comme un bilan à zéro.
+        avec_bilan = df_active[df_active[col_total] > 0].copy()
+        inclure_absents = st.checkbox(
+            "Afficher également les établissements sans bilan renseigné",
+            value=False,
+            key="comparaison_inclure_absents",
         )
-        st.plotly_chart(fig_bar, use_container_width=True)
-        
+        choix_disponibles = df_active if inclure_absents else avec_bilan
+        noms_disponibles = choix_disponibles[col_etab].astype(str).tolist()
+        st.caption(
+            f"{len(avec_bilan)} établissement(s) avec bilan sur "
+            f"{len(df_active)} inscrits dans le réseau."
+        )
+        if noms_disponibles:
+            # Sélection simple par défaut : évite les 19 étiquettes qui occupaient toute la page.
+            selection = st.selectbox(
+                "Établissement à examiner",
+                options=["Tous les établissements affichés"] + noms_disponibles,
+                key="comparaison_etablissement",
+            )
+            if selection == "Tous les établissements affichés":
+                df_sorted_graph = choix_disponibles[[col_etab, col_conso, col_total]].copy()
+            else:
+                df_sorted_graph = choix_disponibles[
+                    choix_disponibles[col_etab].astype(str) == selection
+                ][[col_etab, col_conso, col_total]].copy()
+
+            df_sorted_graph = df_sorted_graph.sort_values(col_conso, ascending=True)
+            if df_sorted_graph.empty:
+                st.info("Aucun établissement à afficher.")
+            else:
+                labels = df_sorted_graph[col_etab].astype(str).str.strip()
+                fig_bar = go.Figure()
+                fig_bar.add_trace(go.Bar(
+                    y=labels,
+                    x=df_sorted_graph[col_conso],
+                    orientation="h",
+                    marker=dict(color="#42d7d4", line=dict(color="#a9fff3", width=0.6)),
+                    text=df_sorted_graph[col_conso].map(lambda v: f"{v:,.1f}".replace(",", " ").replace(".", ",")),
+                    textposition="outside",
+                    textfont=dict(color="#f4fff9", size=12),
+                    cliponaxis=False,
+                    customdata=df_sorted_graph[col_total],
+                    hovertemplate=(
+                        "<b>%{y}</b><br>Par personne : %{x:.1f} kg CO₂e"
+                        "<br>Total : %{customdata:,.0f} kg CO₂e<extra></extra>"
+                    ),
+                ))
+                valeur_max = float(df_sorted_graph[col_conso].max())
+                fig_bar.update_layout(
+                    height=max(270, min(790, 125 + 38 * len(df_sorted_graph))),
+                    margin=dict(l=12, r=85, t=20, b=55),
+                    paper_bgcolor="rgba(10,30,25,0.95)",
+                    plot_bgcolor="rgba(10,30,25,0.95)",
+                    font=dict(color="#f4fff9", size=12),
+                    bargap=0.30,
+                    showlegend=False,
+                    xaxis=dict(
+                        title="kg CO₂e par personne",
+                        color="#f4fff9",
+                        gridcolor="rgba(255,255,255,0.16)",
+                        zeroline=False,
+                        range=[0, max(1, valeur_max * 1.22)],
+                    ),
+                    yaxis=dict(color="#f4fff9", showgrid=False, automargin=True, tickfont=dict(size=11)),
+                )
+                st.plotly_chart(fig_bar, use_container_width=True, config={"displayModeBar": False})
+                if inclure_absents:
+                    st.caption(
+                        "Les établissements sans bilan apparaissent à zéro uniquement "
+                        "pour signaler l'absence de données ; ce n'est pas une émission mesurée."
+                    )
+        else:
+            st.info("Aucun établissement ne dispose encore d'un bilan renseigné.")
+
         st.divider()
         st.markdown('<p class="inner-title" style="color:#38bdf8;">📋 Synthèse du bilan carbone (kg CO₂e)</p>', unsafe_allow_html=True)
         st.dataframe(df, hide_index=True, width="stretch", height=360)
